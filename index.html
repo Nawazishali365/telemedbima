@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <!-- TikTok Pixel Code Start -->
     <script>
-    !function (w, d, t) {
-      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
-      var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
-      ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
-     
-      ttq.load('D7QFD9RC77U02PK9T1L0');
-      ttq.page();
-    }(window, document, 'ttq');
+        !function (w, d, t) {
+            w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || []; ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"], ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } }; for (var i = 0; i < ttq.methods.length; i++)ttq.setAndDefer(ttq, ttq.methods[i]); ttq.instance = function (t) {
+                for (
+                    var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++)ttq.setAndDefer(e, ttq.methods[n]); return e
+            }, ttq.load = function (e, n) {
+                var r = "https://analytics.tiktok.com/i18n/pixel/events.js", o = n && n.partner; ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = r, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {}; n = document.createElement("script")
+                    ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
+            };
+
+            ttq.load('D7QFD9RC77U02PK9T1L0');
+            ttq.page();
+        }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
     <meta charset="UTF-8">
@@ -406,11 +411,12 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="logo-section">
             <img src="bima_logo.jpg" alt="BIMA" class="logo-img">
-        
+
         </div>
 
         <div class="heading">
@@ -428,26 +434,21 @@
                     <select class="country-code" id="countryCode">
                         <option value="+92">+92</option>
                     </select>
-                    <input 
-                        type="tel" 
-                        class="phone-number" 
-                        id="phoneNumber"
-                        placeholder="3XXXXXXXXX" 
-                        required
-                        pattern="[0-9]{10}"
-                        title="Please enter a 10-digit phone number"
-                    >
+                    <input type="tel" class="phone-number" id="phoneNumber" placeholder="3XXXXXXXXX" required
+                        pattern="[0-9]{10}" title="Please enter a 10-digit phone number">
                 </div>
             </div>
 
             <button type="submit" class="continue-btn">Activate Now</button>
             <p class="subscription-info">
                 Subscription Product
-                <span class="subscription-product">Fikrfree - BIMA MHealth @Rs.150+tax/month</span>
+                <span class="subscription-product">BIMA MHealth @Rs.300/month</span>
             </p>
 
 
-            <p class="trust-text">By clicking, you agree to recurring charges and our <a href="https://customerportal.milvikpakistan.com/bimasehat/terms-and-conditions" target="_blank">Privacy Policy and Terms</a>.</p>
+            <p class="trust-text">By clicking, you agree to recurring charges and our <a
+                    href="https://customerportal.milvikpakistan.com/bimasehat/terms-and-conditions"
+                    target="_blank">Privacy Policy and Terms</a>.</p>
         </form>
     </div>
 
@@ -514,7 +515,7 @@
 
             try {
                 // POST to https://bcare.milvikpakistan.com/authorize/tp/login (proxied via /api/token)
-                const tokenRes  = await fetch('/api/token', { method: 'POST' });
+                const tokenRes = await fetch('/api/token', { method: 'POST' });
                 const tokenData = await tokenRes.json().catch(() => ({}));
                 console.log('Token response:', tokenData);
 
@@ -537,7 +538,7 @@
                 console.log('✅ Auth token acquired:', authToken);
 
                 // ── Step 2: Service search ──
-                const serviceRes  = await fetch(`/api/service-search/${msisdn}`, {
+                const serviceRes = await fetch(`/api/service-search/${msisdn}`, {
                     method: 'GET',
                     headers: { 'auth-token': authToken }
                 });
@@ -559,7 +560,7 @@
                 console.log('transId:', transId);
 
                 // Get form fields + server-computed HMAC hash
-                const formRes  = await fetch(`/api/jazzcash-form?msisdn=${encodeURIComponent(msisdn)}&transId=${encodeURIComponent(transId)}`);
+                const formRes = await fetch(`/api/jazzcash-form?msisdn=${encodeURIComponent(msisdn)}&transId=${encodeURIComponent(transId)}`);
                 const formData = await formRes.json();
                 console.log('✅ JazzCash form data:', formData);
 
@@ -578,8 +579,8 @@
                 Object.entries(formData).forEach(([key, val]) => {
                     if (exclude.includes(key)) return;
                     const input = document.createElement('input');
-                    input.type  = 'hidden';
-                    input.name  = key;
+                    input.type = 'hidden';
+                    input.name = key;
                     input.value = val || '';
                     jcForm.appendChild(input);
                 });
@@ -597,14 +598,14 @@
         }
 
         /* ── Phone number input: digits only ── */
-        document.getElementById('phoneNumber').addEventListener('input', function() {
+        document.getElementById('phoneNumber').addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
         /* ── Clear icon (if used) ── */
         const errorIcon = document.querySelector('.error-icon');
         if (errorIcon) {
-            errorIcon.addEventListener('click', function() {
+            errorIcon.addEventListener('click', function () {
                 document.getElementById('phoneNumber').value = '';
                 document.getElementById('phoneNumber').focus();
             });
@@ -616,7 +617,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-        
+
         const firebaseConfig = {
             apiKey: "AIzaSyAcrAr64iAFaj8nyRQD575ZR_hfm0rEX2I",
             authDomain: "bima-telemedicine.firebaseapp.com",
@@ -626,13 +627,14 @@
             appId: "1:546079503906:web:fb1f2035431aa4ff8a7c7b",
             measurementId: "G-3HF87WXJPG"
         };
-        
+
         // Only fire configure on page load / page view
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             console.log('Page fully loaded. Firing Firebase configure...');
             const app = initializeApp(firebaseConfig);
             const analytics = getAnalytics(app);
         });
     </script>
 </body>
+
 </html>
