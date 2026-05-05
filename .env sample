@@ -1,0 +1,16 @@
+# ── BIMA API Credentials ──────────────────────────────────────────
+BIMA_USERNAME=
+BIMA_PASSWORD=
+BIMA_TOKEN_TYPE=
+BIMA_COUNTRY_PARTNER=
+BIMA_SESSION_COOKIE=
+
+# ── JazzCash DTC Form Fields ──────────────────────────────────────
+PP_MERCHANT_ID=
+PP_PASSWORD=
+INTEGRITY_SALT=
+PP_RETURN_URL=
+JAZZCASH_ACTION_URL=
+
+# ── Server ────────────────────────────────────────────────────────
+PORT=3000
