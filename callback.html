@@ -213,16 +213,25 @@
             const trxRefNoEl = document.getElementById('resTrxRefNo');
 
             statusEl.textContent = status;
-            messageEl.textContent = message;
+            
+            // Custom Message Logic based on Status
+            let displayMessage = message;
+            if (status === '0') {
+                displayMessage = "JazzCash Account Linkage Failed!";
+            } else if (status === '1') {
+                displayMessage = "JazzCash Account Linked Successfully!";
+            }
+            messageEl.textContent = displayMessage;
+            
             trxRefNoEl.textContent = trxRefNo;
 
             // Highlight border and text color for success
-            if (status.toLowerCase().includes('success') || status === '000') {
+            if (status === '1' || status.toLowerCase().includes('success') || status === '000') {
                 statusEl.classList.add('status-success');
                 const container = document.getElementById('resultContainer');
                 container.style.borderColor = '#4ecca7';
                 container.style.boxShadow = '0 8px 25px rgba(78, 204, 167, 0.25)';
-            } else if (status.toLowerCase().includes('fail') || status.toLowerCase().includes('error')) {
+            } else if (status === '0' || status.toLowerCase().includes('fail') || status.toLowerCase().includes('error')) {
                 statusEl.classList.add('status-error');
             }
         });
