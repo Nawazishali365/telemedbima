@@ -212,15 +212,19 @@
             const messageEl = document.getElementById('resMessage');
             const trxRefNoEl = document.getElementById('resTrxRefNo');
 
-            statusEl.textContent = status;
-            
             // Custom Message Logic based on Status
             let displayMessage = message;
+            let displayStatus = status;
+
             if (status === '0') {
+                displayStatus = "Failed!";
                 displayMessage = "JazzCash Account Linkage Failed!";
             } else if (status === '1') {
+                displayStatus = "Successful!";
                 displayMessage = "JazzCash Account Linked Successfully!";
             }
+
+            statusEl.textContent = displayStatus;
             messageEl.textContent = displayMessage;
             
             trxRefNoEl.textContent = trxRefNo;
