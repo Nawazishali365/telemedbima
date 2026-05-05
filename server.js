@@ -9,6 +9,7 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
 /* ── helper: HTTPS request → { status, body } ── */
@@ -134,6 +135,21 @@ app.get('/api/jazzcash-form', (req, res) => {
         pp_MSISDN:     msisdn,
         pp_SecureHash: secureHash
     });
+});
+
+/* ──────────────────────────────────────────────────────────────────
+   CALLBACK ENDPOINT
+   POST /jcms/callback
+   ────────────────────────────────────────────────────────────────── */
+app.post('/jcms/callback', (req, res) => {
+    // Extract parameters from body (POST) or query (GET)
+    const status = req.body.status || req.query.status || '';
+    const message = req.body.message || req.query.message || '';
+    const trxRefNo = req.body.trxRefNo || req.query.trxRefNo || '';
+
+    // Pass them to the frontend HTML page via query parameters
+    const query = new URLSearchParams({ status, message, trxRefNo }).toString();
+    res.redirect(`/callback.html?${query}`);
 });
 
 app.listen(PORT, () => {
