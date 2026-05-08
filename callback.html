@@ -258,8 +258,28 @@
                 const container = document.getElementById('resultContainer');
                 container.style.borderColor = '#4ecca7';
                 container.style.boxShadow = '0 8px 25px rgba(78, 204, 167, 0.25)';
+
+                // Trigger TikTok Subscribe event on success
+                if (typeof ttq !== 'undefined') {
+                    ttq.track('Subscribe', {
+                        value: 300,
+                        currency: 'PKR',
+                        content_type: 'insurance',
+                        content_name: 'BIMA Insurance',
+                        description: 'Monthly Insurance Subscription'
+                    });
+                }
             } else if (status === '0' || status.toLowerCase().includes('fail') || status.toLowerCase().includes('error')) {
                 statusEl.classList.add('status-error');
+
+                // Trigger TikTok failure event
+                if (typeof ttq !== 'undefined') {
+                    ttq.track('Subscribe_Failed', {
+                        content_type: 'insurance',
+                        content_name: 'BIMA Insurance',
+                        description: 'Monthly Insurance Subscription Failed'
+                    });
+                }
             }
         });
     </script>
