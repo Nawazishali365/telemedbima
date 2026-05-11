@@ -225,7 +225,23 @@
         <a href="/" class="home-btn">Return to Home</a>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAcrAr64iAFaj8nyRQD575ZR_hfm0rEX2I",
+            authDomain: "bima-telemedicine.firebaseapp.com",
+            projectId: "bima-telemedicine",
+            storageBucket: "bima-telemedicine.firebasestorage.app",
+            messagingSenderId: "546079503906",
+            appId: "1:546079503906:web:fb1f2035431aa4ff8a7c7b",
+            measurementId: "G-3HF87WXJPG"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+
         // Parse URL parameters and display them
         window.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
@@ -271,6 +287,15 @@
                         description: 'Monthly Insurance Subscription'
                     });
                 }
+                
+                // Trigger Firebase Subscribe event on success
+                logEvent(analytics, 'Subscribe', {
+                    value: 300,
+                    currency: 'PKR',
+                    content_type: 'insurance',
+                    content_name: 'BIMA Insurance',
+                    description: 'Monthly Insurance Subscription'
+                });
             } else if (status === '0' || status.toLowerCase().includes('fail') || status.toLowerCase().includes('error')) {
                 statusEl.classList.add('status-error');
 
@@ -282,6 +307,13 @@
                         description: 'Monthly Insurance Subscription Failed'
                     });
                 }
+                
+                // Trigger Firebase Subscribe_Failed event on failure
+                logEvent(analytics, 'Subscribe_Failed', {
+                    content_type: 'insurance',
+                    content_name: 'BIMA Insurance',
+                    description: 'Monthly Insurance Subscription Failed'
+                });
             }
         });
     </script>
