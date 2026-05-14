@@ -45,7 +45,8 @@
             background: white;
             border-radius: 0;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-            max-width: 430px; /* Optimal for iPhone Pro Max */
+            max-width: 430px;
+            /* Optimal for iPhone Pro Max */
             width: 100%;
             min-height: 100vh;
             padding: 30px 20px;
@@ -60,6 +61,7 @@
             body {
                 padding: 20px;
             }
+
             .container {
                 min-height: auto;
                 height: auto;
@@ -654,27 +656,27 @@
             // 1. Input field click
             const phoneInput = document.getElementById('phoneNumber');
             if (phoneInput) {
-                phoneInput.addEventListener('click', function() {
-                    console.log('Logging Firebase Event: input_field');
-                    logEvent(analytics, 'input_field');
+                phoneInput.addEventListener('click', function () {
+                    console.log('Logging Firebase Event: msisdn_field');
+                    logEvent(analytics, 'msisdn_field', { debug_mode: true });
                 });
             }
 
             // 2. Subscribe now button click
             const subscribeBtn = document.querySelector('.continue-btn');
             if (subscribeBtn) {
-                subscribeBtn.addEventListener('click', function() {
-                    console.log('Logging Firebase Event: subscribe_now');
-                    logEvent(analytics, 'subscribe_now');
+                subscribeBtn.addEventListener('click', function () {
+                    console.log('Logging Firebase Event: subscribe_now_btn');
+                    logEvent(analytics, 'subscribe_now_btn', { debug_mode: true });
                 });
             }
 
             // 3. Terms and conditions link click
             const termsLink = document.querySelector('.trust-text a');
             if (termsLink) {
-                termsLink.addEventListener('click', function() {
-                    console.log('Logging Firebase Event: terms_and_conditions');
-                    logEvent(analytics, 'terms_and_conditions');
+                termsLink.addEventListener('click', function () {
+                    console.log('Logging Firebase Event: terms_and_conditions_link');
+                    logEvent(analytics, 'terms_and_conditions_link', { debug_mode: true });
                 });
             }
         });

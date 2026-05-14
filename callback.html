@@ -294,7 +294,8 @@
                     currency: 'PKR',
                     content_type: 'insurance',
                     content_name: 'BIMA Insurance',
-                    description: 'Monthly Insurance Subscription'
+                    description: 'Monthly Insurance Subscription',
+                    debug_mode: true
                 });
             } else if (status === '0' || status.toLowerCase().includes('fail') || status.toLowerCase().includes('error')) {
                 statusEl.classList.add('status-error');
@@ -312,7 +313,8 @@
                 logEvent(analytics, 'Subscribe_Failed', {
                     content_type: 'insurance',
                     content_name: 'BIMA Insurance',
-                    description: 'Monthly Insurance Subscription Failed'
+                    description: 'Monthly Insurance Subscription Failed',
+                    debug_mode: true
                 });
             }
         });
