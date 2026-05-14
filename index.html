@@ -633,7 +633,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAcrAr64iAFaj8nyRQD575ZR_hfm0rEX2I",
@@ -650,6 +650,33 @@
             console.log('Page fully loaded. Firing Firebase configure...');
             const app = initializeApp(firebaseConfig);
             const analytics = getAnalytics(app);
+
+            // 1. Input field click
+            const phoneInput = document.getElementById('phoneNumber');
+            if (phoneInput) {
+                phoneInput.addEventListener('click', function() {
+                    console.log('Logging Firebase Event: input_field');
+                    logEvent(analytics, 'input_field');
+                });
+            }
+
+            // 2. Subscribe now button click
+            const subscribeBtn = document.querySelector('.continue-btn');
+            if (subscribeBtn) {
+                subscribeBtn.addEventListener('click', function() {
+                    console.log('Logging Firebase Event: subscribe_now');
+                    logEvent(analytics, 'subscribe_now');
+                });
+            }
+
+            // 3. Terms and conditions link click
+            const termsLink = document.querySelector('.trust-text a');
+            if (termsLink) {
+                termsLink.addEventListener('click', function() {
+                    console.log('Logging Firebase Event: terms_and_conditions');
+                    logEvent(analytics, 'terms_and_conditions');
+                });
+            }
         });
     </script>
 </body>
