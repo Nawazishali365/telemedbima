@@ -1,9 +1,10 @@
-require('dotenv').config();
-
 const express = require('express');
 const path    = require('path');
 const https   = require('https');
 const crypto  = require('crypto');
+
+// Load environment variables relative to the script directory
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
