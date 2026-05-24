@@ -152,6 +152,154 @@ app.post('/jcms/callback', (req, res) => {
     res.redirect(`/callback.html?${query}`);
 });
 
+/* ──────────────────────────────────────────────────────────────────
+   TELEMEDICINE REDIRECT & SECURE PROXY ROUTE
+   ────────────────────────────────────────────────────────────────── */
+
+// Serve consultation.html as the primary landing page on root '/' and '/consultation'
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'consultation.html'));
+});
+
+app.get('/consultation', (req, res) => {
+    res.sendFile(path.join(__dirname, 'consultation.html'));
+});
+
+app.post('/api/grant-access', async (req, res) => {
+    try {
+        let rawMsisdn = (req.body.msisdn || '').toString().trim();
+        if (!rawMsisdn) {
+            return res.status(400).json({ status: 'error', message: 'Phone number (MSISDN) is required.' });
+        }
+
+        // Format to Pakistani local format 03XXXXXXXXX
+        let cleanNumber = rawMsisdn.replace(/[^0-9]/g, '');
+        let msisdn = cleanNumber;
+        
+        if (cleanNumber.startsWith('92') && cleanNumber.length > 10) {
+            msisdn = '0' + cleanNumber.substring(2);
+        } else if (cleanNumber.startsWith('0') && cleanNumber.length === 11) {
+            msisdn = cleanNumber;
+        } else if (cleanNumber.length === 10 && cleanNumber.startsWith('3')) {
+            msisdn = '0' + cleanNumber;
+        }
+
+        if (msisdn.length !== 11 || !msisdn.startsWith('03')) {
+            return res.status(400).json({
+                status: 'error',
+                message: `Invalid phone number format: '${rawMsisdn}'. Please enter a valid 11-digit mobile number.`
+            });
+        }
+
+        const eligibilityApiKey = process.env.ELIGIBILITY_API_KEY;
+        const videoApiKey = process.env.VIDEO_API_KEY;
+
+        if (!eligibilityApiKey || !videoApiKey) {
+            console.error("API Keys missing in environment configuration (.env)");
+            return res.status(500).json({
+                status: 'error',
+                message: 'Server configuration error. API credentials are missing.'
+            });
+        }
+
+        // ── Step 1: Check Eligibility ──
+        console.log(`[Node.js Proxy] Calling Eligibility API for ${msisdn}...`);
+        const eligResult = await httpsRequest({
+            hostname: 'dtc.milvikpakistan.com',
+            path: `/tp/service/api/v1/check_consultation_eligibility?msisdn=${msisdn}`,
+            method: 'GET',
+            headers: {
+                'x-api-key': eligibilityApiKey
+            }
+        });
+
+        if (eligResult.status !== 200) {
+            console.error(`[Node.js Proxy] Eligibility API returned status ${eligResult.status}:`, eligResult.body);
+            return res.status(502).json({
+                status: 'error',
+                message: `Eligibility check failed (API returned code ${eligResult.status}).`
+            });
+        }
+
+        const eligData = eligResult.body;
+        const isEligible = eligData.isEligible;
+        const productCode = eligData.productCode || eligData.product_code;
+        const respMsisdn = eligData.msisdn || msisdn;
+
+        if (!isEligible) {
+            console.warn(`[Node.js Proxy] User ${msisdn} is not eligible.`);
+            return res.json({
+                status: 'error',
+                message: 'Your phone number is not eligible for telemedicine consultations at this time.'
+            });
+        }
+
+        if (!productCode) {
+            console.error(`[Node.js Proxy] productCode was missing in eligibility response:`, eligData);
+            return res.status(502).json({
+                status: 'error',
+                message: 'Eligibility confirmed, but subscription details are missing. Please contact customer support.'
+            });
+        }
+
+        // ── Step 2: Request Video deep-link ──
+        const correlationId = crypto.randomUUID ? crypto.randomUUID() : require('uuid').v4(); // fallback
+        const payload = JSON.stringify({
+            user_id: respMsisdn,
+            user_id_type: 'mobile_number',
+            policy_code: productCode,
+            service: 'mhealth',
+            device_id: '',
+            correlation_id: correlationId
+        });
+
+        console.log(`[Node.js Proxy] Requesting Video deep-link for ${respMsisdn}...`);
+        const grantResult = await httpsRequest({
+            hostname: 'pkcm.milvik.io',
+            path: '/authorize/partners/v1/service-access/grant',
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'Content-Type': 'application/json',
+                'x-api-key': videoApiKey,
+                'Content-Length': Buffer.byteLength(payload)
+            }
+        }, payload);
+
+        if (grantResult.status !== 200 && grantResult.status !== 201) {
+            console.error(`[Node.js Proxy] Video API returned status ${grantResult.status}:`, grantResult.body);
+            return res.status(502).json({
+                status: 'error',
+                message: 'Video service refused access. Please verify your subscription status.'
+            });
+        }
+
+        const grantData = grantResult.body;
+        const deepLink = grantData.deep_link;
+
+        if (!deepLink) {
+            console.error(`[Node.js Proxy] deep_link key missing in Video API response:`, grantData);
+            return res.status(502).json({
+                status: 'error',
+                message: 'Service authorized, but video call redirect link was not generated.'
+            });
+        }
+
+        console.log(`[Node.js Proxy] Successfully generated deep_link for ${msisdn}.`);
+        return res.json({
+            status: 'success',
+            deep_link: deepLink
+        });
+
+    } catch (err) {
+        console.error('[Node.js Proxy] Unhandled backend error:', err);
+        return res.status(500).json({
+            status: 'error',
+            message: 'An unexpected server error occurred. Please try again later.'
+        });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`\n✅  Server running → http://localhost:${PORT}\n`);
 });
