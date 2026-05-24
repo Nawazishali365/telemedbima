@@ -13,6 +13,29 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
+// CORS middleware to allow specific origins and any milvikpakistan.com subdomain
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+        try {
+            const url = new URL(origin);
+            if (url.hostname === 'milvikpakistan.com' || url.hostname.endsWith('.milvikpakistan.com')) {
+                res.setHeader('Access-Control-Allow-Origin', origin);
+            }
+        } catch (e) {
+            console.error('Invalid origin header:', origin);
+        }
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,auth-token,x-api-key');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 /* ── helper: HTTPS request → { status, body } ── */
 function httpsRequest(options, postBody) {
     return new Promise((resolve, reject) => {
