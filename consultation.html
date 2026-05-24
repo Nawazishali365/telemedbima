@@ -479,11 +479,27 @@
                     body: JSON.stringify({ msisdn: msisdn })
                 });
 
-                const data = await response.json().catch(() => ({}));
+                let data = {};
+                let isJson = false;
+                try {
+                    const text = await response.text();
+                    try {
+                        data = JSON.parse(text);
+                        isJson = true;
+                    } catch (e) {
+                        data = { message: text };
+                    }
+                } catch (e) {
+                    console.error("Failed to read response content:", e);
+                }
+
                 console.log('Grant access response:', data);
 
                 if (!response.ok || data.status === 'error') {
-                    throw new Error(data.message || 'Verification or authorization failed.');
+                    // Extract message from JSON, otherwise fallback to HTML status code or default
+                    const rawMsg = data.message || '';
+                    const cleanMsg = isJson && rawMsg ? rawMsg : `Server returned error ${response.status} (${response.statusText || 'Bad Gateway'})`;
+                    throw new Error(cleanMsg);
                 }
 
                 showToast('✓ Redirecting to video consultation…', true);
@@ -495,7 +511,7 @@
 
             } catch (err) {
                 console.error('Telemedicine Redirect Error:', err);
-                showToast('⚠ ' + (err.message || 'Something went wrong. Please try again.'), false);
+                showToast('⚠ ' + (err.message || 'Verification or authorization failed. Please try again.'), false);
             } finally {
                 setLoading(false);
             }

@@ -68,12 +68,12 @@ def grant_access():
 
         logger.info(f"Processing telemedicine access for formatted MSISDN: {msisdn}")
 
-        # Retrieve API keys from environment
+        # Retrieve API keys from environment securely
         eligibility_api_key = os.getenv('ELIGIBILITY_API_KEY')
         video_api_key = os.getenv('VIDEO_API_KEY')
 
         if not eligibility_api_key or not video_api_key:
-            logger.error("API Keys missing in environment configuration (.env)")
+            logger.error("API Keys missing in environment configuration")
             return jsonify({
                 "status": "error",
                 "message": "Server configuration error. API credentials are missing."
