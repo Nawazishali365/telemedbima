@@ -17,9 +17,10 @@ app.use(express.static(path.join(__dirname)));
 function httpsRequest(options, postBody) {
     return new Promise((resolve, reject) => {
         const req = https.request(options, (res) => {
-            let raw = '';
-            res.on('data', chunk => raw += chunk);
+            const chunks = [];
+            res.on('data', chunk => chunks.push(chunk));
             res.on('end', () => {
+                const raw = Buffer.concat(chunks).toString('utf8');
                 try { resolve({ status: res.statusCode, body: JSON.parse(raw) }); }
                 catch { resolve({ status: res.statusCode, body: raw }); }
             });
@@ -246,7 +247,32 @@ app.post('/api/grant-access', async (req, res) => {
         }
 
         // ── Step 2: Request Video deep-link ──
-        const correlationId = crypto.randomUUID ? crypto.randomUUID() : require('uuid').v4(); // fallback
+        let correlationId;
+        if (crypto.randomUUID) {
+            correlationId = crypto.randomUUID();
+        } else {
+            // Generate a valid v4 UUID without external dependencies
+            try {
+                const bytes = crypto.randomBytes(16);
+                bytes[6] = (bytes[6] & 0x0f) | 0x40; // set version to 4
+                bytes[8] = (bytes[8] & 0x3f) | 0x80; // set variant to RFC4122
+                const hex = bytes.toString('hex');
+                correlationId = [
+                    hex.substring(0, 8),
+                    hex.substring(8, 12),
+                    hex.substring(12, 16),
+                    hex.substring(16, 20),
+                    hex.substring(20)
+                ].join('-');
+            } catch (e) {
+                // simple fallback if crypto.randomBytes fails or is unavailable
+                correlationId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                    const r = Math.random() * 16 | 0;
+                    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+        }
         const payload = JSON.stringify({
             user_id: respMsisdn,
             user_id_type: 'mobile_number',
@@ -298,7 +324,7 @@ app.post('/api/grant-access', async (req, res) => {
         console.error('[Node.js Proxy] Unhandled backend error:', err);
         return res.status(500).json({
             status: 'error',
-            message: 'An unexpected server error occurred. Please try again later.'
+            message: `An unexpected server error occurred. Details: ${err.message}`
         });
     }
 });
