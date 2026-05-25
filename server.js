@@ -254,10 +254,11 @@ app.post('/api/grant-access', async (req, res) => {
         const respMsisdn = eligData.msisdn || msisdn;
 
         if (!isEligible) {
-            console.warn(`[Node.js Proxy] User ${msisdn} is not eligible.`);
+            console.warn(`[Node.js Proxy] User ${msisdn} is not eligible. Redirecting to registration...`);
             return res.json({
-                status: 'error',
-                message: 'Your phone number is not eligible for telemedicine consultations at this time.'
+                status: 'unregistered',
+                message: 'No product is registered on the provider msisdn.',
+                redirect_url: 'https://services.jazz.com.pk/signin/BIMAMHealth?ref=1&var=2&camp=BIMAMHealth_Jazz1'
             });
         }
 

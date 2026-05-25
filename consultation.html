@@ -495,6 +495,15 @@
 
                 console.log('Grant access response:', data);
 
+                // Handle the case where the customer is not registered (eligibility returns false)
+                if (data.status === 'unregistered') {
+                    showToast('⚠ ' + (data.message || 'No product is registered on the provider msisdn.'), false);
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || 'https://services.jazz.com.pk/signin/BIMAMHealth?ref=1&var=2&camp=BIMAMHealth_Jazz1';
+                    }, 2500); // Allow time to see the toast notification
+                    return;
+                }
+
                 if (!response.ok || data.status === 'error') {
                     // Extract message from JSON, otherwise fallback to HTML status code or default
                     const rawMsg = data.message || '';

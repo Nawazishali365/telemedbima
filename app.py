@@ -119,10 +119,11 @@ def grant_access():
         resp_msisdn = elig_data.get('msisdn') or msisdn
 
         if not is_eligible:
-            logger.warning(f"User {msisdn} is not eligible according to API.")
+            logger.warning(f"User {msisdn} is not eligible according to API. Redirecting to registration...")
             return jsonify({
-                "status": "error",
-                "message": "Your phone number is not eligible for telemedicine consultations at this time."
+                "status": "unregistered",
+                "message": "No product is registered on the provider msisdn.",
+                "redirect_url": "https://services.jazz.com.pk/signin/BIMAMHealth?ref=1&var=2&camp=BIMAMHealth_Jazz1"
             }), 200
 
         if not product_code:
