@@ -33,19 +33,19 @@ def consultation_page():
 
 @app.route('/bima-sehat')
 def bima_sehat_redirect():
-    return redirect('/BimaTelemedicine/index.html')
+    return redirect('/BimaTelemedicine/')
 
 @app.route('/bima_sehat')
 def bima_sehat_redirect_alt():
-    return redirect('/BimaTelemedicine/index.html')
+    return redirect('/BimaTelemedicine/')
 
 @app.route('/bima-family')
 def bima_family_redirect():
-    return redirect('/BimaTelemedicine/index.html')
+    return redirect('/BimaTelemedicine/')
 
 @app.route('/bima_family')
 def bima_family_redirect_alt():
-    return redirect('/BimaTelemedicine/index.html')
+    return redirect('/BimaTelemedicine/')
 
 @app.route('/api/token', methods=['POST'])
 def get_token():
