@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bima Sehat - Subscription</title>
+  <meta name="description"
+    content="Subscribe to Bima Sehat and get 24/7 access to qualified doctors, specialist care, and lab discounts.">
+  <link rel="stylesheet" href="style.css">
+  <!-- TikTok Pixel Script -->
+  <script>
+    !function (w, d, t) {
+      w.TiktokSdkObject = t;
+      var ttq = w[t] = w[t] || [];
+      ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "cleanCookie"];
+      ttq.setAndDefer = function (e, t) {
+        e[t] = function () {
+          e.push([t].concat(Array.prototype.slice.call(arguments, 0)))
+        }
+      };
+      for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
+      ttq.instance = function (t) {
+        for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]);
+        return e
+      };
+      ttq._i = {};
+      ttq._f = function (t) {
+        return function () {
+          var e = ttq._i[t] || [];
+          e.push(arguments);
+          ttq._i[t] = e
+        }
+      };
+      ttq.load = function (e, t) {
+        var n = "https://analytics.tiktok.com/i18n/pixel/events.js";
+        ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = n, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = t || {};
+        var o = d.createElement("script");
+        o.type = "text/javascript", o.async = !0, o.src = n + "?sdkid=" + e + "&lib=" + t;
+        var a = d.getElementsByTagName("script")[0];
+        a.parentNode.insertBefore(o, a)
+      };
+      ttq.load('D7VMUHJC77UDOFSGG2QG');
+      ttq.page();
+    }(window, document, 'ttq');
+  </script>
+</head>
+
+<body>
+
+  <div class="mobile-wrapper">
+    <!-- ==========================================
+         Header / Brand Bar (Centered BIMA Logo)
+         ========================================== -->
+    <header class="mobile-header">
+      <div class="logo-bima">
+        <img src="bima_logo.jpg" alt="BIMA" class="logo-img">
+      </div>
+    </header>
+
+    <!-- ==========================================
+         Hero Benefit Card
+         ========================================== -->
+    <section class="benefit-card">
+      <h1 class="benefit-title-primary">BIMA Family Telemedicine</h1>
+      <h2 class="benefit-title-secondary">Apni aur apni family ko sehat ki behtareen sahulat dein.</h2>
+
+      <!-- Short Bullet List -->
+      <ul class="benefit-points">
+        <li>
+          <span class="bullet-icon"></span>
+          24/7 Qualified Doctors se Muft Mashwara
+        </li>
+        <li>
+          <span class="bullet-icon"></span>
+          Adwayat par 10% tak Discount
+        </li>
+        <li>
+          <span class="bullet-icon"></span>
+          Lab Tests par 40% tak Discount
+        </li>
+        <li>
+          <span class="bullet-icon"></span>
+          Ghar baithe sehat ki sahulat
+        </li>
+      </ul>
+
+      <!-- Family Image Container -->
+      <div class="family-image-container">
+        <img src="family_protection.png" alt="Protected Family" class="family-img">
+        <div class="shield-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M2.166 4.9L10 1.154l7.834 3.746a1 1 0 01.536.892v4.757a12.02 12.02 0 01-5.618 10.228 1 1 0 01-1.042 0A12.02 12.02 0 011.63 11.55V6.688a1 1 0 01.536-.892zm11.293 3.707a1 1 0 00-1.414-1.414L9 10.172 7.707 8.879a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clip-rule="evenodd" />
+          </svg>
+          <span>YOUR HEALTH OUR PRIORITY</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         Subscription Input Card
+         ========================================== -->
+    <section class="subscription-card" id="subscription-area">
+      <!-- Form state container -->
+      <div id="form-inner">
+        <h3 class="input-heading">Enter Your Phone Number:</h3>
+
+        <form id="subscription-form" novalidate>
+          <div class="input-row">
+            <div class="country-prefix">+92</div>
+            <div class="input-wrapper">
+              <input type="tel" id="phone-number" class="phone-textbox" placeholder="3XXXXXXXXX or 03XXXXXXXXX"
+                maxlength="11" pattern="0?3[0-9]{9}" autocomplete="tel-national" required
+                aria-describedby="phone-error">
+            </div>
+          </div>
+
+          <!-- Validation message -->
+          <div class="validation-error" id="phone-error" aria-live="polite">
+            <span>Mobile number must be 10 digits (starts with 3) or 11 digits (starts with 03).</span>
+          </div>
+
+          <button type="submit" class="submit-btn" id="btn-continue">
+            <span class="btn-spinner"></span>
+            <span class="btn-text">Continue</span>
+          </button>
+
+          <div class="product-info-box">
+            <div class="product-info-title">Subscribe to Product</div>
+            <div class="product-info-subtitle">BIMA Family Telemedicine @Rs.300/month</div>
+            <div class="product-info-terms">
+              By continuing, you agree to recurring charges and our <a
+                href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions"
+                target="_blank">Privacy Policy and Terms
+              </a>.
+            </div>
+          </div>
+        </form>
+
+        <div class="secure-footer">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+              clip-rule="evenodd" />
+          </svg>
+          Secure & Encrypted Connection
+        </div>
+      </div>
+
+      <!-- Success state container (hidden initially) -->
+      <div class="success-view" id="form-success">
+        <div class="success-checkmark">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h4 class="success-title">Shukriya!</h4>
+        <p class="success-msg">Aap ko jald hi tasdeeqi SMS bheja jaye ga. Subscription mukammal karne ke liye SMS ka
+          jawab dein.</p>
+      </div>
+    </section>
+
+    <!-- Minimal branding footnote -->
+    <footer class="minimal-footer">
+      &copy; 2026 BIMA. All rights reserved.
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

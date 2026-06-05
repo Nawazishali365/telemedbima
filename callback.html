@@ -246,11 +246,16 @@
         window.addEventListener('DOMContentLoaded', () => {
             const source = localStorage.getItem('jazzcash_source') || 'index.html';
             const isIndex2 = source === 'index2.html';
+            const isBimaFamily = source === 'BIMA Family Telemedicine/index.html' || source === 'Bima Sehat/index.html';
             
             // Set home button destination dynamically
             const homeBtn = document.querySelector('.home-btn');
             if (homeBtn) {
-                homeBtn.href = isIndex2 ? '/index2.html' : '/';
+                if (isBimaFamily) {
+                    homeBtn.href = '/BIMA%20Family%20Telemedicine/index.html';
+                } else {
+                    homeBtn.href = isIndex2 ? '/index2.html' : '/';
+                }
             }
 
             const params = new URLSearchParams(window.location.search);
@@ -288,22 +293,32 @@
 
                 // Trigger TikTok Subscribe event on success
                 if (typeof ttq !== 'undefined') {
-                    ttq.track(isIndex2 ? 'Subscribe_2' : 'Subscribe', {
-                        value: 300,
-                        currency: 'PKR',
-                        content_type: 'product',
-                        content_name: 'BIMA Insurance',
-                        description: 'Monthly Insurance Subscription'
-                    });
+                    if (isBimaFamily) {
+                        ttq.track('Subscribe_BimaFamily', {
+                            value: 300,
+                            currency: 'PKR',
+                            content_type: 'product',
+                            content_name: 'BIMA Family Telemedicine',
+                            description: 'Monthly BIMA Family Telemedicine Subscription'
+                        });
+                    } else {
+                        ttq.track(isIndex2 ? 'Subscribe_2' : 'Subscribe', {
+                            value: 300,
+                            currency: 'PKR',
+                            content_type: 'product',
+                            content_name: 'BIMA Insurance',
+                            description: 'Monthly Insurance Subscription'
+                        });
+                    }
                 }
                 
                 // Trigger Firebase Subscribe event on success
-                logEvent(analytics, isIndex2 ? 'Subscribe_2' : 'Subscribe', {
+                logEvent(analytics, isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe'), {
                     value: 300,
                     currency: 'PKR',
                     content_type: 'insurance',
-                    content_name: 'BIMA Insurance',
-                    description: 'Monthly Insurance Subscription',
+                    content_name: isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance',
+                    description: isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription' : 'Monthly Insurance Subscription',
                     debug_mode: true
                 });
             } else if (status === '0' || status.toLowerCase().includes('fail') || status.toLowerCase().includes('error')) {
@@ -311,18 +326,26 @@
 
                 // Trigger TikTok failure event
                 if (typeof ttq !== 'undefined') {
-                    ttq.track(isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed', {
-                        content_type: 'product',
-                        content_name: 'BIMA Insurance',
-                        description: 'Monthly Insurance Subscription Failed'
-                    });
+                    if (isBimaFamily) {
+                        ttq.track('Subscribe_Failed_BimaFamily', {
+                            content_type: 'product',
+                            content_name: 'BIMA Family Telemedicine',
+                            description: 'Monthly BIMA Family Telemedicine Subscription Failed'
+                        });
+                    } else {
+                        ttq.track(isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed', {
+                            content_type: 'product',
+                            content_name: 'BIMA Insurance',
+                            description: 'Monthly Insurance Subscription Failed'
+                        });
+                    }
                 }
                 
                 // Trigger Firebase Subscribe_Failed event on failure
-                logEvent(analytics, isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed', {
+                logEvent(analytics, isBimaFamily ? 'Subscribe_Failed_BimaFamily' : (isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed'), {
                     content_type: 'insurance',
-                    content_name: 'BIMA Insurance',
-                    description: 'Monthly Insurance Subscription Failed',
+                    content_name: isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance',
+                    description: isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription Failed' : 'Monthly Insurance Subscription Failed',
                     debug_mode: true
                 });
             }

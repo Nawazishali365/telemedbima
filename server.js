@@ -190,6 +190,22 @@ app.get('/consultation', (req, res) => {
     res.sendFile(path.join(__dirname, 'consultation.html'));
 });
 
+app.get('/bima-sehat', (req, res) => {
+    res.redirect('/BIMA%20Family%20Telemedicine/index.html');
+});
+
+app.get('/bima_sehat', (req, res) => {
+    res.redirect('/BIMA%20Family%20Telemedicine/index.html');
+});
+
+app.get('/bima-family', (req, res) => {
+    res.redirect('/BIMA%20Family%20Telemedicine/index.html');
+});
+
+app.get('/bima_family', (req, res) => {
+    res.redirect('/BIMA%20Family%20Telemedicine/index.html');
+});
+
 app.post('/api/grant-access', async (req, res) => {
     try {
         let rawMsisdn = (req.body.msisdn || '').toString().trim();

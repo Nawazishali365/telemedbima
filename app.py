@@ -1,8 +1,10 @@
 import os
 import uuid
 import logging
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, redirect
 import requests
+import hmac
+import hashlib
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -28,6 +30,146 @@ def index():
 def consultation_page():
     """Serves the new video consultation landing page."""
     return send_from_directory('.', 'consultation.html')
+
+@app.route('/bima-sehat')
+def bima_sehat_redirect():
+    return redirect('/BIMA%20Family%20Telemedicine/index.html')
+
+@app.route('/bima_sehat')
+def bima_sehat_redirect_alt():
+    return redirect('/BIMA%20Family%20Telemedicine/index.html')
+
+@app.route('/bima-family')
+def bima_family_redirect():
+    return redirect('/BIMA%20Family%20Telemedicine/index.html')
+
+@app.route('/bima_family')
+def bima_family_redirect_alt():
+    return redirect('/BIMA%20Family%20Telemedicine/index.html')
+
+@app.route('/api/token', methods=['POST'])
+def get_token():
+    try:
+        username = os.getenv('BIMA_USERNAME')
+        password = os.getenv('BIMA_PASSWORD')
+        token_type = os.getenv('BIMA_TOKEN_TYPE')
+        country_partner = os.getenv('BIMA_COUNTRY_PARTNER')
+        session_cookie = os.getenv('BIMA_SESSION_COOKIE')
+
+        payload = {
+            "username": username,
+            "password": password,
+            "token_type": token_type,
+            "country_partner": country_partner
+        }
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+        if session_cookie:
+            headers["Cookie"] = session_cookie
+
+        logger.info("Calling BIMA login API...")
+        res = requests.post(
+            "https://bcare.milvikpakistan.com/authorize/tp/login",
+            json=payload,
+            headers=headers,
+            timeout=15
+        )
+
+        try:
+            body = res.json()
+        except ValueError:
+            body = res.text
+
+        return jsonify(body), res.status_code
+    except Exception as e:
+        logger.error(f"[/api/token] Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/service-search/<msisdn>', methods=['GET'])
+def service_search(msisdn):
+    auth_token = request.headers.get('auth-token')
+    if not auth_token:
+        return jsonify({"error": "Missing auth-token header"}), 400
+
+    try:
+        url = f"https://bcare.milvikpakistan.com/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY"
+        headers = {
+            "auth-token": auth_token
+        }
+
+        logger.info(f"Calling service search API for {msisdn}...")
+        res = requests.get(url, headers=headers, timeout=15)
+
+        try:
+            body = res.json()
+        except ValueError:
+            body = res.text
+
+        return jsonify(body), res.status_code
+    except Exception as e:
+        logger.error(f"[/api/service-search] Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/jazzcash-form', methods=['GET'])
+def jazzcash_form():
+    msisdn = request.args.get('msisdn')
+    trans_id = request.args.get('transId')
+
+    if not msisdn or not trans_id:
+        return jsonify({"error": "msisdn and transId are required"}), 400
+
+    merchant_id = os.getenv('PP_MERCHANT_ID')
+    password = os.getenv('PP_PASSWORD')
+    salt = os.getenv('INTEGRITY_SALT')
+    return_url = os.getenv('PP_RETURN_URL')
+    action_url = os.getenv('JAZZCASH_ACTION_URL')
+
+    # Hash order from the PHP: salt & pp_MSISDN & pp_MerchantID & pp_Password & pp_RequestID & pp_ReturnURL
+    parts = [salt]
+    if msisdn:
+        parts.append(msisdn)
+    if merchant_id:
+        parts.append(merchant_id)
+    if password:
+        parts.append(password)
+    if trans_id:
+        parts.append(trans_id)
+    if return_url:
+        parts.append(return_url)
+
+    hash_string = '&'.join(parts)
+    secure_hash = hmac.new(
+        salt.encode('utf-8') if salt else b'',
+        hash_string.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+
+    return jsonify({
+        "actionUrl": action_url,
+        "pp_MerchantID": merchant_id,
+        "pp_Password": password,
+        "pp_RequestID": trans_id,
+        "pp_ReturnURL": return_url,
+        "pp_MSISDN": msisdn,
+        "pp_SecureHash": secure_hash
+    })
+
+from urllib.parse import urlencode
+
+@app.route('/jcms/callback', methods=['GET', 'POST'])
+def jcms_callback():
+    status = request.values.get('status', '')
+    message = request.values.get('message', '')
+    trx_ref_no = request.values.get('trxRefNo', '')
+
+    query = urlencode({
+        "status": status,
+        "message": message,
+        "trxRefNo": trx_ref_no
+    })
+    return redirect(f"/callback.html?{query}")
 
 @app.route('/api/grant-access', methods=['POST'])
 def grant_access():
