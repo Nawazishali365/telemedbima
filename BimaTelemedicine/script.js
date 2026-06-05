@@ -134,7 +134,7 @@ function initPhoneValidation() {
       }
 
       // Store source in localStorage so callback knows where to redirect
-      localStorage.setItem('jazzcash_source', 'BIMA Family Telemedicine/index.html');
+      localStorage.setItem('jazzcash_source', 'BimaTelemedicine/index.html');
 
       // Create and submit JazzCash form
       const jcForm = document.createElement('form');

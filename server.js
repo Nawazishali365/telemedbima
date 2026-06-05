@@ -191,19 +191,19 @@ app.get('/consultation', (req, res) => {
 });
 
 app.get('/bima-sehat', (req, res) => {
-    res.redirect('/BIMA%20Family%20Telemedicine/index.html');
+    res.redirect('/BimaTelemedicine/index.html');
 });
 
 app.get('/bima_sehat', (req, res) => {
-    res.redirect('/BIMA%20Family%20Telemedicine/index.html');
+    res.redirect('/BimaTelemedicine/index.html');
 });
 
 app.get('/bima-family', (req, res) => {
-    res.redirect('/BIMA%20Family%20Telemedicine/index.html');
+    res.redirect('/BimaTelemedicine/index.html');
 });
 
 app.get('/bima_family', (req, res) => {
-    res.redirect('/BIMA%20Family%20Telemedicine/index.html');
+    res.redirect('/BimaTelemedicine/index.html');
 });
 
 app.post('/api/grant-access', async (req, res) => {

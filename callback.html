@@ -246,13 +246,13 @@
         window.addEventListener('DOMContentLoaded', () => {
             const source = localStorage.getItem('jazzcash_source') || 'index.html';
             const isIndex2 = source === 'index2.html';
-            const isBimaFamily = source === 'BIMA Family Telemedicine/index.html' || source === 'Bima Sehat/index.html';
+            const isBimaFamily = source === 'BimaTelemedicine/index.html' || source === 'Bima Sehat/index.html';
             
             // Set home button destination dynamically
             const homeBtn = document.querySelector('.home-btn');
             if (homeBtn) {
                 if (isBimaFamily) {
-                    homeBtn.href = '/BIMA%20Family%20Telemedicine/index.html';
+                    homeBtn.href = '/BimaTelemedicine/index.html';
                 } else {
                     homeBtn.href = isIndex2 ? '/index2.html' : '/';
                 }
