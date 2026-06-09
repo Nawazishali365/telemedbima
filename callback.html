@@ -15,7 +15,6 @@
 
             ttq.load('D7QFD9RC77U02PK9T1L0');
             ttq.load('D8J9AARC77UAEKHUNU60');
-            ttq.load('D7VN9VBC77U44OJJ0U0G');
             ttq.page();
         }(window, document, 'ttq');
     </script>
@@ -293,6 +292,16 @@
 
                 // Trigger TikTok Subscribe event on success
                 if (window.ttq) {
+                    // Standard event for TikTok Ads optimization
+                    window.ttq.track('Subscribe', {
+                        value: 300,
+                        currency: 'PKR',
+                        content_type: 'product',
+                        content_name: isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance',
+                        description: isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription' : 'Monthly Insurance Subscription'
+                    });
+
+                    // Legacy custom events
                     if (isBimaFamily) {
                         window.ttq.track('Subscribe_BimaFamily', {
                             value: 300,
@@ -301,8 +310,8 @@
                             content_name: 'BIMA Family Telemedicine',
                             description: 'Monthly BIMA Family Telemedicine Subscription'
                         });
-                    } else {
-                        window.ttq.track(isIndex2 ? 'Subscribe_2' : 'Subscribe', {
+                    } else if (isIndex2) {
+                        window.ttq.track('Subscribe_2', {
                             value: 300,
                             currency: 'PKR',
                             content_type: 'product',
