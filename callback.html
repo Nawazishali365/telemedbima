@@ -5,7 +5,7 @@
     <!-- TikTok Pixel Code Start -->
     <script>
         !function (w, d, t) {
-            w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || []; ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"], ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } }; for (var i = 0; i < ttq.methods.length; i++)ttq.setAndDefer(ttq, ttq.methods[i]); ttq.instance = function (t) {
+            w.TiktokSdkObject = t; var ttq = w[t] = w[t] || []; ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"], ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } }; for (var i = 0; i < ttq.methods.length; i++)ttq.setAndDefer(ttq, ttq.methods[i]); ttq.instance = function (t) {
                 for (
                     var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++)ttq.setAndDefer(e, ttq.methods[n]); return e
             }, ttq.load = function (e, n) {
@@ -292,9 +292,9 @@
                 container.style.boxShadow = '0 8px 25px rgba(78, 204, 167, 0.25)';
 
                 // Trigger TikTok Subscribe event on success
-                if (typeof ttq !== 'undefined') {
+                if (window.ttq) {
                     if (isBimaFamily) {
-                        ttq.track('Subscribe_BimaFamily', {
+                        window.ttq.track('Subscribe_BimaFamily', {
                             value: 300,
                             currency: 'PKR',
                             content_type: 'product',
@@ -302,7 +302,7 @@
                             description: 'Monthly BIMA Family Telemedicine Subscription'
                         });
                     } else {
-                        ttq.track(isIndex2 ? 'Subscribe_2' : 'Subscribe', {
+                        window.ttq.track(isIndex2 ? 'Subscribe_2' : 'Subscribe', {
                             value: 300,
                             currency: 'PKR',
                             content_type: 'product',
@@ -325,15 +325,15 @@
                 statusEl.classList.add('status-error');
 
                 // Trigger TikTok failure event
-                if (typeof ttq !== 'undefined') {
+                if (window.ttq) {
                     if (isBimaFamily) {
-                        ttq.track('Subscribe_Failed_BimaFamily', {
+                        window.ttq.track('Subscribe_Failed_BimaFamily', {
                             content_type: 'product',
                             content_name: 'BIMA Family Telemedicine',
                             description: 'Monthly BIMA Family Telemedicine Subscription Failed'
                         });
                     } else {
-                        ttq.track(isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed', {
+                        window.ttq.track(isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed', {
                             content_type: 'product',
                             content_name: 'BIMA Insurance',
                             description: 'Monthly Insurance Subscription Failed'
