@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- TikTok Pixel Code Start -->
+    <script>
+        !function (w, d, t) {
+            w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || []; ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"], ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } }; for (var i = 0; i < ttq.methods.length; i++)ttq.setAndDefer(ttq, ttq.methods[i]); ttq.instance = function (t) {
+                for (
+                    var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++)ttq.setAndDefer(e, ttq.methods[n]); return e
+            }, ttq.load = function (e, n) {
+                var r = "https://analytics.tiktok.com/i18n/pixel/events.js", o = n && n.partner; ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = r, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {}; n = document.createElement("script")
+                    ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
+            };
+
+            ttq.load('D8J9AARC77UAEKHUNU60');
+            ttq.track('view_content');
+        }(window, document, 'ttq');
+    </script>
+    <!-- TikTok Pixel Code End -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIMA Health - Free Food Voucher Campaign</title>
+    
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0d2743; /* Dark background behind the container frame */
+            height: 100vh;
+            height: 100dvh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* 
+           Responsive Aspect Ratio Container 
+           Locks layout to 9:16 (1080x1920) matching the design image.
+           Guarantees no scrollbars on any device or viewport.
+        */
+        .container {
+            container-type: inline-size;
+            position: relative;
+            width: 100vw;
+            height: 177.78vw; /* 16/9 ratio of viewport width */
+            max-height: 100vh;
+            max-height: 100dvh;
+            max-width: 56.25vh; /* 9/16 ratio of viewport height */
+            max-width: 56.25dvh;
+            background-image: url('landing_page.png?v=5');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        @media (max-width: 480px) and (max-aspect-ratio: 9/16) {
+            /* Full screen on mobile tall viewports */
+            .container {
+                box-shadow: none;
+            }
+        }
+
+        /* Form Overlay container spanning the lower portion */
+        .form-overlay {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 
+           Input Box Overlay 
+           Position: y=1403 to 1520, x=149 to 902 in 1080x1920
+           Left: 13.80%, Top: 73.07%, Width: 69.72%, Height: 6.09%
+        */
+        .input-box-overlay {
+            position: absolute;
+            left: 13.80%;
+            top: 73.07%;
+            width: 69.72%;
+            height: 6.09%;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 
+           Input field covering only the placeholder text area to the right of the JazzCash logo / divider
+           Logo/Divider area takes about 19.5% of the width
+        */
+        .phone-input {
+            position: absolute;
+            left: 19.5%;
+            top: 0;
+            width: 80.5%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background-color: #ffffff; /* White background to cover the printed placeholder text */
+            color: #1e293b;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 0 12px;
+            border-radius: 0 16px 16px 0; /* Match rounded corner of image box */
+        }
+
+        /* Responsive font sizing for input text */
+        @media (max-height: 700px) {
+            .phone-input {
+                font-size: 14px;
+            }
+        }
+
+        .phone-input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        /* 
+           Subscribe Button Overlay
+           Position: y=1560 to 1684, x=149 to 902 in 1080x1920
+           Left: 13.80%, Top: 81.25%, Width: 69.72%, Height: 6.46%
+        */
+        .subscribe-btn-overlay {
+            position: absolute;
+            left: 13.80%;
+            top: 81.25%;
+            width: 69.72%;
+            height: 6.46%;
+            background-color: #ffffff; /* Covers image button */
+            color: #16497B;
+            border: none;
+            border-radius: 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: all 0.2s ease;
+        }
+
+        @media (max-height: 700px) {
+            .subscribe-btn-overlay {
+                font-size: 16px;
+            }
+        }
+
+        .subscribe-btn-overlay:hover {
+            background-color: #f8fafc;
+            transform: scale(1.01);
+        }
+
+        .subscribe-btn-overlay:active {
+            transform: scale(0.99);
+        }
+
+        .subscribe-btn-overlay:disabled {
+            background-color: #cbd5e1;
+            color: #64748b;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Consent Container (perfectly centered flex container to align checkbox and text) */
+        .consent-container {
+            position: absolute;
+            left: 13.8%;
+            width: 72.4%; /* Align with input and button bounds */
+            top: 90.3%;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        .consent-label {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            user-select: none;
+            width: 100%;
+        }
+
+        /* Hide the native checkbox style */
+        .consent-label input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        /* Premium custom checkbox design */
+        .custom-checkbox {
+            position: relative;
+            margin-top: 1.5px;
+            margin-right: 8px;
+            height: 13px;
+            width: 13px;
+            min-width: 13px;
+            background-color: transparent;
+            border: 2px solid #ffffff;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+
+        /* Hover effect */
+        .consent-label:hover input ~ .custom-checkbox {
+            border-color: #FFE100;
+        }
+
+        /* Checked state: Yellow background */
+        .consent-label input:checked ~ .custom-checkbox {
+            background-color: #FFE100;
+            border-color: #FFE100;
+        }
+
+        /* Inner checkmark icon definition */
+        .custom-checkbox:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        /* Show mark when checked */
+        .consent-label input:checked ~ .custom-checkbox:after {
+            display: block;
+        }
+
+        /* Checkmark shape: dark blue tick mark */
+        .custom-checkbox:after {
+            left: 3px;
+            top: 0px;
+            width: 3px;
+            height: 6.5px;
+            border: solid #16497B;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        /* White text price info */
+        .price-info {
+            position: absolute;
+            left: 0;
+            top: 88.0%;
+            width: 100%;
+            text-align: center;
+            font-size: 14.5px;
+            font-size: clamp(10.5px, 2.8cqw, 14.5px);
+            font-weight: 500;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+        }
+
+        /* White text consent overlay with active hyperlink */
+        .consent-text {
+            color: #ffffff;
+            font-size: 10.5px;
+            font-size: clamp(9px, 2.1cqw, 10.5px);
+            line-height: 1.35;
+            text-align: left;
+            font-weight: 400;
+        }
+
+        .consent-text a {
+            color: #ffffff;
+            text-decoration: underline;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .consent-text a:hover {
+            color: #FFE100;
+        }
+
+        /* Toast notifications */
+        #toastMsg {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 9999;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.3s ease;
+            max-width: 90vw;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Interactive Overlay Form -->
+        <form class="form-overlay" onsubmit="handleSubmit(event)">
+            <!-- Phone Number Input Wrapper -->
+            <div class="input-box-overlay">
+                <input type="tel" class="phone-input" id="phoneNumber" placeholder="Enter your Jazzcash number" required
+                    pattern="(03|3)[0-9]{9}" title="Please enter a valid JazzCash mobile number (e.g. 03XXXXXXXXX)">
+            </div>
+
+            <!-- Subscribe Action Button -->
+            <button type="submit" class="subscribe-btn-overlay">Subscribe</button>
+
+            <!-- Price Info Text (now rendered as White HTML text over the painted block) -->
+            <div class="price-info">Only Rs. 10/Day – Full family covered</div>
+
+            <!-- Consent Row (combining visible styled checkbox and text in a single container for perfect layout) -->
+            <div class="consent-container">
+                <label class="consent-label">
+                    <input type="checkbox" id="consentCheckbox" checked required>
+                    <span class="custom-checkbox"></span>
+                    <span class="consent-text">
+                        By continuing, you agree to our <a href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions" target="_blank">Terms & Conditions and Privacy Policy</a>
+                    </span>
+                </label>
+            </div>
+        </form>
+    </div>
+
+    <!-- Toast Notification Box -->
+    <div id="toastMsg"></div>
+
+    <script>
+        /* ── Utility: Toast ── */
+        function showToast(message, isSuccess) {
+            const toast = document.getElementById('toastMsg');
+            toast.textContent = message;
+            toast.style.background = isSuccess ? '#1db97b' : '#e74c3c';
+            toast.style.display = 'block';
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => { toast.style.display = 'none'; }, 400);
+            }, 4000);
+        }
+
+        /* ── Utility: Button loading state ── */
+        function setLoading(isLoading) {
+            const btn = document.querySelector('.subscribe-btn-overlay');
+            btn.disabled = isLoading;
+            btn.textContent = isLoading ? 'Please wait…' : 'Subscribe';
+            btn.style.opacity = isLoading ? '0.7' : '1';
+        }
+
+        /* ── Main form submission handler ── */
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const phoneNumberInput = document.getElementById('phoneNumber').value.trim();
+            const consentChecked = document.getElementById('consentCheckbox').checked;
+
+            if (!consentChecked) {
+                showToast('You must agree to the Terms & Conditions and Privacy Policy to proceed.', false);
+                return;
+            }
+
+            // Standardize phone number format
+            let rawNum = phoneNumberInput.replace(/[^0-9]/g, '');
+            if (rawNum.startsWith('92') && rawNum.length > 10) {
+                rawNum = rawNum.substring(2);
+            }
+            if (rawNum.startsWith('0')) {
+                rawNum = rawNum.substring(1);
+            }
+
+            if (rawNum.length !== 10 || !rawNum.startsWith('3')) {
+                showToast('Please enter a valid 10 or 11-digit mobile number.', false);
+                return;
+            }
+
+            // Standardize format: "0" + 10-digit number (e.g. 03XXXXXXXXX)
+            const msisdn = '0' + rawNum;
+            console.log('Processed MSISDN:', msisdn);
+
+            if (window.ttq) {
+                window.ttq.track('initiate_checkout');
+            }
+
+            setLoading(true);
+
+            try {
+                // ── Step 1: Token Acquisition ──
+                const tokenRes = await fetch('/api/token', { method: 'POST' });
+                const tokenData = await tokenRes.json().catch(() => ({}));
+                console.log('Token response:', tokenData);
+
+                if (!tokenRes.ok) {
+                    throw new Error(tokenData.message || tokenData.error || 'Token request failed: ' + tokenRes.status);
+                }
+
+                // Extract token
+                const authToken = (tokenData.result && tokenData.result.token)
+                    || tokenData.token
+                    || tokenData.auth_token
+                    || tokenData.authToken
+                    || tokenData.access_token
+                    || tokenData.accessToken;
+
+                if (!authToken) {
+                    throw new Error('Auth token not found in API response.');
+                }
+
+                console.log('✅ Auth token acquired');
+
+                // ── Step 2: Service search ──
+                const serviceRes = await fetch(`/api/service-search/${msisdn}`, {
+                    method: 'GET',
+                    headers: { 'auth-token': authToken }
+                });
+                const serviceData = await serviceRes.json().catch(() => ({}));
+                console.log('✅ Service response:', serviceData);
+
+                if (!serviceRes.ok) {
+                    throw new Error(serviceData.message || serviceData.error || 'Service lookup failed: ' + serviceRes.status);
+                }
+
+                // ── Step 3: Fetch JazzCash DTC Form Data ──
+                const transId = (serviceData.result && (serviceData.result.transId || serviceData.result.requestId || serviceData.result.transaction_id))
+                    || serviceData.transId
+                    || serviceData.requestId
+                    || serviceData.transaction_id
+                    || '';
+
+                console.log('Transaction Request ID:', transId);
+
+                const formRes = await fetch(`/api/jazzcash-form?msisdn=${encodeURIComponent(msisdn)}&transId=${encodeURIComponent(transId)}`);
+                const formData = await formRes.json();
+                console.log('✅ JazzCash form configuration:', formData);
+
+                if (!formRes.ok) {
+                    throw new Error(formData.error || 'Failed to construct payment payload');
+                }
+
+                showToast('✓ Redirecting to JazzCash payment page…', true);
+
+                // Build dynamic form submit redirect
+                const jcForm = document.createElement('form');
+                jcForm.method = 'POST';
+                jcForm.action = formData.actionUrl;
+
+                const excludedKeys = ['actionUrl'];
+                Object.entries(formData).forEach(([key, val]) => {
+                    if (excludedKeys.includes(key)) return;
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = val || '';
+                    jcForm.appendChild(input);
+                });
+
+                document.body.appendChild(jcForm);
+                localStorage.setItem('jazzcash_source', 'BimaVoucher/index.html');
+                
+                setTimeout(() => jcForm.submit(), 1000);
+
+            } catch (err) {
+                console.error('Activation pipeline failed:', err);
+                showToast('⚠ ' + (err.message || 'Something went wrong. Please check your connection and try again.'), false);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        /* ── Keep input digits only ── */
+        document.getElementById('phoneNumber').addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    </script>
+</body>
+
+</html>

@@ -246,12 +246,15 @@
             const source = localStorage.getItem('jazzcash_source') || 'index.html';
             const isIndex2 = source === 'index2.html';
             const isBimaFamily = source.startsWith('BimaTelemedicine') || source === 'Bima Sehat/index.html';
+            const isBimaVoucher = source.startsWith('BimaVoucher') || source === 'BimaVoucher/index.html';
             
             // Set home button destination dynamically
             const homeBtn = document.querySelector('.home-btn');
             if (homeBtn) {
                 if (isBimaFamily) {
                     homeBtn.href = '/BimaTelemedicine/';
+                } else if (isBimaVoucher) {
+                    homeBtn.href = '/BimaVoucher/';
                 } else {
                     homeBtn.href = isIndex2 ? '/index2.html' : '/';
                 }
@@ -290,44 +293,54 @@
                 container.style.borderColor = '#4ecca7';
                 container.style.boxShadow = '0 8px 25px rgba(78, 204, 167, 0.25)';
 
-                // Trigger TikTok Subscribe event on success
+                // Trigger TikTok Subscribe/Purchase event on success
                 if (window.ttq) {
-                    // Standard event for TikTok Ads optimization
-                    window.ttq.track('Subscribe', {
-                        value: 300,
-                        currency: 'PKR',
-                        content_type: 'product',
-                        content_name: isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance',
-                        description: isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription' : 'Monthly Insurance Subscription'
-                    });
+                    if (isBimaVoucher) {
+                        window.ttq.track('purchase', {
+                            value: 300,
+                            currency: 'PKR',
+                            content_type: 'product',
+                            content_name: 'BIMA Voucher Food Campaign',
+                            description: 'BIMA Free Food Voucher Campaign Subscription'
+                        });
+                    } else {
+                        // Standard event for TikTok Ads optimization
+                        window.ttq.track('Subscribe', {
+                            value: 300,
+                            currency: 'PKR',
+                            content_type: 'product',
+                            content_name: isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance',
+                            description: isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription' : 'Monthly Insurance Subscription'
+                        });
 
-                    // Legacy custom events
-                    if (isBimaFamily) {
-                        window.ttq.track('Subscribe_BimaFamily', {
-                            value: 300,
-                            currency: 'PKR',
-                            content_type: 'product',
-                            content_name: 'BIMA Family Telemedicine',
-                            description: 'Monthly BIMA Family Telemedicine Subscription'
-                        });
-                    } else if (isIndex2) {
-                        window.ttq.track('Subscribe_2', {
-                            value: 300,
-                            currency: 'PKR',
-                            content_type: 'product',
-                            content_name: 'BIMA Insurance',
-                            description: 'Monthly Insurance Subscription'
-                        });
+                        // Legacy custom events
+                        if (isBimaFamily) {
+                            window.ttq.track('Subscribe_BimaFamily', {
+                                value: 300,
+                                currency: 'PKR',
+                                content_type: 'product',
+                                content_name: 'BIMA Family Telemedicine',
+                                description: 'Monthly BIMA Family Telemedicine Subscription'
+                            });
+                        } else if (isIndex2) {
+                            window.ttq.track('Subscribe_2', {
+                                value: 300,
+                                currency: 'PKR',
+                                content_type: 'product',
+                                content_name: 'BIMA Insurance',
+                                description: 'Monthly Insurance Subscription'
+                            });
+                        }
                     }
                 }
                 
-                // Trigger Firebase Subscribe event on success
-                logEvent(analytics, isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe'), {
+                // Trigger Firebase Subscribe/Purchase event on success
+                logEvent(analytics, isBimaVoucher ? 'purchase' : (isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe')), {
                     value: 300,
                     currency: 'PKR',
                     content_type: 'insurance',
-                    content_name: isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance',
-                    description: isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription' : 'Monthly Insurance Subscription',
+                    content_name: isBimaVoucher ? 'BIMA Voucher Food Campaign' : (isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance'),
+                    description: isBimaVoucher ? 'BIMA Free Food Voucher Campaign Subscription' : (isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription' : 'Monthly Insurance Subscription'),
                     debug_mode: true
                 });
             } else if (status === '0' || status.toLowerCase().includes('fail') || status.toLowerCase().includes('error')) {
@@ -335,7 +348,13 @@
 
                 // Trigger TikTok failure event
                 if (window.ttq) {
-                    if (isBimaFamily) {
+                    if (isBimaVoucher) {
+                        window.ttq.track('purchase_failed', {
+                            content_type: 'product',
+                            content_name: 'BIMA Voucher Food Campaign',
+                            description: 'BIMA Free Food Voucher Campaign Subscription Failed'
+                        });
+                    } else if (isBimaFamily) {
                         window.ttq.track('Subscribe_Failed_BimaFamily', {
                             content_type: 'product',
                             content_name: 'BIMA Family Telemedicine',
@@ -351,10 +370,10 @@
                 }
                 
                 // Trigger Firebase Subscribe_Failed event on failure
-                logEvent(analytics, isBimaFamily ? 'Subscribe_Failed_BimaFamily' : (isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed'), {
+                logEvent(analytics, isBimaVoucher ? 'purchase_failed' : (isBimaFamily ? 'Subscribe_Failed_BimaFamily' : (isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed')), {
                     content_type: 'insurance',
-                    content_name: isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance',
-                    description: isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription Failed' : 'Monthly Insurance Subscription Failed',
+                    content_name: isBimaVoucher ? 'BIMA Voucher Food Campaign' : (isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance'),
+                    description: isBimaVoucher ? 'BIMA Free Food Voucher Campaign Subscription Failed' : (isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription Failed' : 'Monthly Insurance Subscription Failed'),
                     debug_mode: true
                 });
             }
