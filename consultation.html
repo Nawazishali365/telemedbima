@@ -520,7 +520,7 @@
                 ttq.track('InitiateCheckout');
             }
             if (typeof fbq === 'function') {
-                fbq.track('InitiateCheckout');
+                fbq('track', 'InitiateCheckout');
             }
 
             try {
