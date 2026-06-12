@@ -515,12 +515,16 @@
 
             setLoading(true);
 
-            // Track InitiateCheckout / Contact event when user submits the form
-            if (typeof ttq === 'function') {
-                ttq.track('InitiateCheckout');
+            // Track button click / attempt to consult
+            console.log('Tracking Event: video_consultation_button_click');
+            if (typeof gtag === 'function') {
+                gtag('event', 'video_consultation_button_click');
             }
             if (typeof fbq === 'function') {
                 fbq('track', 'InitiateCheckout');
+            }
+            if (typeof ttq === 'function') {
+                ttq.track('InitiateCheckout');
             }
 
             try {
@@ -601,6 +605,31 @@
         document.getElementById('phoneNumber').addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
+
+        /* ── Event tracking helper: msisdn enter ── */
+        let msisdnTracked = false;
+        function trackMsisdnEnter() {
+            if (msisdnTracked) return;
+            msisdnTracked = true;
+            console.log('Tracking Event: msisdn_enter');
+            if (typeof gtag === 'function') {
+                gtag('event', 'msisdn_enter');
+            }
+            if (typeof fbq === 'function') {
+                fbq('trackCustom', 'msisdn_enter');
+                fbq('track', 'Contact');
+            }
+            if (typeof ttq === 'function') {
+                ttq.track('Contact');
+            }
+        }
+
+        const phoneInput = document.getElementById('phoneNumber');
+        if (phoneInput) {
+            phoneInput.addEventListener('click', trackMsisdnEnter);
+            phoneInput.addEventListener('focus', trackMsisdnEnter);
+            phoneInput.addEventListener('input', trackMsisdnEnter);
+        }
     </script>
 
     <!-- Google tag (gtag.js) -->
