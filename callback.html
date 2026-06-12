@@ -21,7 +21,6 @@
                     ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
             };
 
-            ttq.load('D7QFD9RC77U02PK9T1L0');
             ttq.load('D8J9AARC77UAEKHUNU60');
             ttq.page();
         }(window, document, 'ttq');
@@ -311,34 +310,6 @@
                             content_name: 'BIMA Voucher Food Campaign',
                             description: 'BIMA Free Food Voucher Campaign Subscription'
                         });
-                    } else {
-                        // Standard event for TikTok Ads optimization
-                        window.ttq.track('Subscribe', {
-                            value: 300,
-                            currency: 'PKR',
-                            content_type: 'product',
-                            content_name: isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance',
-                            description: isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription' : 'Monthly Insurance Subscription'
-                        });
-
-                        // Legacy custom events
-                        if (isBimaFamily) {
-                            window.ttq.track('Subscribe_BimaFamily', {
-                                value: 300,
-                                currency: 'PKR',
-                                content_type: 'product',
-                                content_name: 'BIMA Family Telemedicine',
-                                description: 'Monthly BIMA Family Telemedicine Subscription'
-                            });
-                        } else if (isIndex2) {
-                            window.ttq.track('Subscribe_2', {
-                                value: 300,
-                                currency: 'PKR',
-                                content_type: 'product',
-                                content_name: 'BIMA Insurance',
-                                description: 'Monthly Insurance Subscription'
-                            });
-                        }
                     }
                 }
 
@@ -369,18 +340,6 @@
                             content_type: 'product',
                             content_name: 'BIMA Voucher Food Campaign',
                             description: 'BIMA Free Food Voucher Campaign Subscription Failed'
-                        });
-                    } else if (isBimaFamily) {
-                        window.ttq.track('Subscribe_Failed_BimaFamily', {
-                            content_type: 'product',
-                            content_name: 'BIMA Family Telemedicine',
-                            description: 'Monthly BIMA Family Telemedicine Subscription Failed'
-                        });
-                    } else {
-                        window.ttq.track(isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed', {
-                            content_type: 'product',
-                            content_name: 'BIMA Insurance',
-                            description: 'Monthly Insurance Subscription Failed'
                         });
                     }
                 }
