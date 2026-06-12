@@ -521,10 +521,10 @@
                 gtag('event', 'video_consultation_button_click');
             }
             if (typeof fbq === 'function') {
-                fbq('track', 'InitiateCheckout');
+                fbq('trackCustom', 'video_consultation_button_click');
             }
             if (typeof ttq === 'function') {
-                ttq.track('InitiateCheckout');
+                ttq.track('video_consultation_button_click');
             }
 
             try {
@@ -571,23 +571,6 @@
 
                 showToast('✓ Redirecting to video consultation…', true);
 
-                // Fire Google Ads Conversion event
-                if (typeof gtag === 'function') {
-                    gtag('event', 'conversion', {
-                        'send_to': 'AW-18177011887/BEZgCN-XirccEK_hvNtD'
-                    });
-                }
-
-                // Fire Meta Pixel Lead event
-                if (typeof fbq === 'function') {
-                    fbq('track', 'Lead');
-                }
-
-                // Fire TikTok Pixel CompleteRegistration event
-                if (typeof ttq === 'function') {
-                    ttq.track('CompleteRegistration');
-                }
-
                 // Redirect to deep_link returned from Python server
                 setTimeout(() => {
                     window.location.href = data.deep_link;
@@ -611,16 +594,15 @@
         function trackMsisdnEnter() {
             if (msisdnTracked) return;
             msisdnTracked = true;
-            console.log('Tracking Event: msisdn_enter');
+            console.log('Tracking Event: msisdn_field');
             if (typeof gtag === 'function') {
-                gtag('event', 'msisdn_enter');
+                gtag('event', 'msisdn_field');
             }
             if (typeof fbq === 'function') {
-                fbq('trackCustom', 'msisdn_enter');
-                fbq('track', 'Contact');
+                fbq('trackCustom', 'msisdn_field');
             }
             if (typeof ttq === 'function') {
-                ttq.track('Contact');
+                ttq.track('msisdn_field');
             }
         }
 
