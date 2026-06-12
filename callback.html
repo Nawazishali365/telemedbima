@@ -8,7 +8,7 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-FLKEQYY9E9');
+        gtag('config', 'G-FLKEQYY9E9', { send_page_view: false });
     </script>
     <!-- TikTok Pixel Code Start -->
     <script>
@@ -21,8 +21,7 @@
                     ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
             };
 
-            ttq.load('D8J9AARC77UAEKHUNU60');
-            ttq.page();
+            ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: false });
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
@@ -303,7 +302,7 @@
                 // Trigger TikTok Subscribe/Purchase event on success
                 if (window.ttq) {
                     if (isBimaVoucher) {
-                        window.ttq.track('purchase', {
+                        window.ttq.track('Purchase', {
                             value: 300,
                             currency: 'PKR',
                             content_type: 'product',
@@ -314,7 +313,7 @@
                 }
 
                 if (isBimaVoucher && typeof gtag === 'function') {
-                    gtag('event', 'purchase', {
+                    gtag('event', 'Purchase', {
                         value: 300,
                         currency: 'PKR',
                         transaction_id: trxRefNo
@@ -322,7 +321,7 @@
                 }
                 
                 // Trigger Firebase Subscribe/Purchase event on success
-                logEvent(analytics, isBimaVoucher ? 'purchase' : (isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe')), {
+                logEvent(analytics, isBimaVoucher ? 'Purchase' : (isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe')), {
                     value: 300,
                     currency: 'PKR',
                     content_type: 'insurance',
@@ -336,7 +335,7 @@
                 // Trigger TikTok failure event
                 if (window.ttq) {
                     if (isBimaVoucher) {
-                        window.ttq.track('purchase_failed', {
+                        window.ttq.track('Purchase Failed', {
                             content_type: 'product',
                             content_name: 'BIMA Voucher Food Campaign',
                             description: 'BIMA Free Food Voucher Campaign Subscription Failed'
@@ -345,11 +344,11 @@
                 }
 
                 if (isBimaVoucher && typeof gtag === 'function') {
-                    gtag('event', 'purchase_failed');
+                    gtag('event', 'Purchase Failed');
                 }
                 
                 // Trigger Firebase Subscribe_Failed event on failure
-                logEvent(analytics, isBimaVoucher ? 'purchase_failed' : (isBimaFamily ? 'Subscribe_Failed_BimaFamily' : (isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed')), {
+                logEvent(analytics, isBimaVoucher ? 'Purchase Failed' : (isBimaFamily ? 'Subscribe_Failed_BimaFamily' : (isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed')), {
                     content_type: 'insurance',
                     content_name: isBimaVoucher ? 'BIMA Voucher Food Campaign' : (isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance'),
                     description: isBimaVoucher ? 'BIMA Free Food Voucher Campaign Subscription Failed' : (isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription Failed' : 'Monthly Insurance Subscription Failed'),

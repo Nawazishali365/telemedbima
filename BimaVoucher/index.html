@@ -8,8 +8,8 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-FLKEQYY9E9');
-        gtag('event', 'view_content');
+        gtag('config', 'G-FLKEQYY9E9', { send_page_view: false });
+        gtag('event', 'View Content');
     </script>
     <!-- TikTok Pixel Code Start -->
     <script>
@@ -22,8 +22,8 @@
                     ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
             };
 
-            ttq.load('D8J9AARC77UAEKHUNU60');
-            ttq.track('view_content');
+            ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: false });
+            ttq.track('View Content');
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
@@ -356,10 +356,10 @@
             console.log('Processed MSISDN:', msisdn);
 
             if (window.ttq) {
-                window.ttq.track('initiate_checkout');
+                window.ttq.track('Initiate Checkout');
             }
             if (typeof gtag === 'function') {
-                gtag('event', 'initiate_checkout');
+                gtag('event', 'Initiate Checkout');
             }
 
             setLoading(true);
