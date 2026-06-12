@@ -21,12 +21,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIMA Health - Free Food Voucher Campaign</title>
-    
+
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -36,7 +37,8 @@
 
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: #0d2743; /* Dark background behind the container frame */
+            background-color: #0d2743;
+            /* Dark background behind the container frame */
             height: 100vh;
             height: 100dvh;
             margin: 0;
@@ -57,10 +59,12 @@
             container-type: inline-size;
             position: relative;
             width: 100vw;
-            height: 177.78vw; /* 16/9 ratio of viewport width */
+            height: 177.78vw;
+            /* 16/9 ratio of viewport width */
             max-height: 100vh;
             max-height: 100dvh;
-            max-width: 56.25vh; /* 9/16 ratio of viewport height */
+            max-width: 56.25vh;
+            /* 9/16 ratio of viewport height */
             max-width: 56.25dvh;
             background-image: url('landing_page.png?v=5');
             background-size: cover;
@@ -71,6 +75,7 @@
         }
 
         @media (max-width: 480px) and (max-aspect-ratio: 9/16) {
+
             /* Full screen on mobile tall viewports */
             .container {
                 box-shadow: none;
@@ -113,13 +118,15 @@
             height: 100%;
             border: none;
             outline: none;
-            background-color: #ffffff; /* White background to cover the printed placeholder text */
+            background-color: #ffffff;
+            /* White background to cover the printed placeholder text */
             color: #1e293b;
             font-family: 'Outfit', sans-serif;
             font-size: 16px;
             font-weight: 500;
             padding: 0 12px;
-            border-radius: 0 16px 16px 0; /* Match rounded corner of image box */
+            border-radius: 0 16px 16px 0;
+            /* Match rounded corner of image box */
         }
 
         /* Responsive font sizing for input text */
@@ -145,7 +152,8 @@
             top: 81.25%;
             width: 69.72%;
             height: 6.46%;
-            background-color: #ffffff; /* Covers image button */
+            background-color: #ffffff;
+            /* Covers image button */
             color: #16497B;
             border: none;
             border-radius: 20px;
@@ -156,7 +164,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             transition: all 0.2s ease;
         }
 
@@ -186,7 +194,8 @@
         .consent-container {
             position: absolute;
             left: 13.8%;
-            width: 72.4%; /* Align with input and button bounds */
+            width: 72.4%;
+            /* Align with input and button bounds */
             top: 90.3%;
             display: flex;
             justify-content: flex-start;
@@ -202,61 +211,6 @@
             width: 100%;
         }
 
-        /* Hide the native checkbox style */
-        .consent-label input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        }
-
-        /* Premium custom checkbox design */
-        .custom-checkbox {
-            position: relative;
-            margin-top: 1.5px;
-            margin-right: 8px;
-            height: 13px;
-            width: 13px;
-            min-width: 13px;
-            background-color: transparent;
-            border: 2px solid #ffffff;
-            border-radius: 3px;
-            transition: all 0.2s ease;
-        }
-
-        /* Hover effect */
-        .consent-label:hover input ~ .custom-checkbox {
-            border-color: #FFE100;
-        }
-
-        /* Checked state: Yellow background */
-        .consent-label input:checked ~ .custom-checkbox {
-            background-color: #FFE100;
-            border-color: #FFE100;
-        }
-
-        /* Inner checkmark icon definition */
-        .custom-checkbox:after {
-            content: "";
-            position: absolute;
-            display: none;
-        }
-
-        /* Show mark when checked */
-        .consent-label input:checked ~ .custom-checkbox:after {
-            display: block;
-        }
-
-        /* Checkmark shape: dark blue tick mark */
-        .custom-checkbox:after {
-            left: 3px;
-            top: 0px;
-            width: 3px;
-            height: 6.5px;
-            border: solid #16497B;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
         }
 
         /* White text price info */
@@ -335,10 +289,10 @@
             <!-- Consent Row (combining visible styled checkbox and text in a single container for perfect layout) -->
             <div class="consent-container">
                 <label class="consent-label">
-                    <input type="checkbox" id="consentCheckbox" checked required>
-                    <span class="custom-checkbox"></span>
                     <span class="consent-text">
-                        By continuing, you agree to our <a href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions" target="_blank">Terms & Conditions and Privacy Policy</a>
+                        By continuing, you agree to our <a
+                            href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions"
+                            target="_blank">Terms & Conditions and Privacy Policy</a>
                     </span>
                 </label>
             </div>
@@ -375,12 +329,6 @@
             event.preventDefault();
 
             const phoneNumberInput = document.getElementById('phoneNumber').value.trim();
-            const consentChecked = document.getElementById('consentCheckbox').checked;
-
-            if (!consentChecked) {
-                showToast('You must agree to the Terms & Conditions and Privacy Policy to proceed.', false);
-                return;
-            }
 
             // Standardize phone number format
             let rawNum = phoneNumberInput.replace(/[^0-9]/g, '');
@@ -478,7 +426,7 @@
 
                 document.body.appendChild(jcForm);
                 localStorage.setItem('jazzcash_source', 'BimaVoucher/index.html');
-                
+
                 setTimeout(() => jcForm.submit(), 1000);
 
             } catch (err) {
