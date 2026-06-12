@@ -517,13 +517,13 @@
 
             // Track button click / attempt to consult
             console.log('Tracking Event: video_consultation_button_click');
-            if (typeof gtag === 'function') {
+            if (window.gtag) {
                 gtag('event', 'video_consultation_button_click');
             }
-            if (typeof fbq === 'function') {
+            if (window.fbq) {
                 fbq('trackCustom', 'video_consultation_button_click');
             }
-            if (typeof ttq === 'function') {
+            if (window.ttq) {
                 ttq.track('video_consultation_button_click');
             }
 
@@ -595,13 +595,13 @@
             if (msisdnTracked) return;
             msisdnTracked = true;
             console.log('Tracking Event: msisdn_field');
-            if (typeof gtag === 'function') {
+            if (window.gtag) {
                 gtag('event', 'msisdn_field');
             }
-            if (typeof fbq === 'function') {
+            if (window.fbq) {
                 fbq('trackCustom', 'msisdn_field');
             }
-            if (typeof ttq === 'function') {
+            if (window.ttq) {
                 ttq.track('msisdn_field');
             }
         }
