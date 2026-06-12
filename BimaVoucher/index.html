@@ -2,6 +2,15 @@
 <html lang="en">
 
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FLKEQYY9E9"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FLKEQYY9E9');
+        gtag('event', 'view_content');
+    </script>
     <!-- TikTok Pixel Code Start -->
     <script>
         !function (w, d, t) {
@@ -350,6 +359,9 @@
 
             if (window.ttq) {
                 window.ttq.track('initiate_checkout');
+            }
+            if (typeof gtag === 'function') {
+                gtag('event', 'initiate_checkout');
             }
 
             setLoading(true);

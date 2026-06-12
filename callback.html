@@ -2,6 +2,14 @@
 <html lang="en">
 
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FLKEQYY9E9"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FLKEQYY9E9');
+    </script>
     <!-- TikTok Pixel Code Start -->
     <script>
         !function (w, d, t) {
@@ -333,6 +341,14 @@
                         }
                     }
                 }
+
+                if (isBimaVoucher && typeof gtag === 'function') {
+                    gtag('event', 'purchase', {
+                        value: 300,
+                        currency: 'PKR',
+                        transaction_id: trxRefNo
+                    });
+                }
                 
                 // Trigger Firebase Subscribe/Purchase event on success
                 logEvent(analytics, isBimaVoucher ? 'purchase' : (isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe')), {
@@ -367,6 +383,10 @@
                             description: 'Monthly Insurance Subscription Failed'
                         });
                     }
+                }
+
+                if (isBimaVoucher && typeof gtag === 'function') {
+                    gtag('event', 'purchase_failed');
                 }
                 
                 // Trigger Firebase Subscribe_Failed event on failure
