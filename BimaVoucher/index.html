@@ -22,7 +22,7 @@
                     ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
             };
 
-            ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: false });
+            ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: true });
             ttq.track('View Content');
         }(window, document, 'ttq');
     </script>
@@ -355,7 +355,14 @@
             const msisdn = '0' + rawNum;
             console.log('Processed MSISDN:', msisdn);
 
+            // Format phone number to E.164 format (+923XXXXXXXXX) for TikTok matching
+            const e164_phone = '+92' + rawNum;
+            localStorage.setItem('user_phone_e164', e164_phone);
+
             if (window.ttq) {
+                window.ttq.identify({
+                    phone_number: e164_phone
+                });
                 window.ttq.track('Initiate Checkout');
             }
             if (typeof gtag === 'function') {

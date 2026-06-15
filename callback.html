@@ -21,7 +21,7 @@
                     ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
             };
 
-            ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: false });
+            ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: true });
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
@@ -302,6 +302,12 @@
                 // Trigger TikTok Subscribe/Purchase event on success
                 if (window.ttq) {
                     if (isBimaVoucher) {
+                        const userPhone = localStorage.getItem('user_phone_e164');
+                        if (userPhone) {
+                            window.ttq.identify({
+                                phone_number: userPhone
+                            });
+                        }
                         window.ttq.track('Purchase', {
                             value: 300,
                             currency: 'PKR',
@@ -344,6 +350,12 @@
                 // Trigger TikTok failure event
                 if (window.ttq) {
                     if (isBimaVoucher) {
+                        const userPhone = localStorage.getItem('user_phone_e164');
+                        if (userPhone) {
+                            window.ttq.identify({
+                                phone_number: userPhone
+                            });
+                        }
                         window.ttq.track('Purchase Failed', {
                             content_type: 'product',
                             content_id: 'bima_voucher_food_campaign',
