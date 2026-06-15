@@ -306,8 +306,17 @@
                             value: 300,
                             currency: 'PKR',
                             content_type: 'product',
+                            content_id: 'bima_voucher_food_campaign',
+                            content_ids: ['bima_voucher_food_campaign'],
                             content_name: 'BIMA Voucher Food Campaign',
-                            description: 'BIMA Free Food Voucher Campaign Subscription'
+                            description: 'BIMA Free Food Voucher Campaign Subscription',
+                            contents: [{
+                                content_id: 'bima_voucher_food_campaign',
+                                content_type: 'product',
+                                content_name: 'BIMA Voucher Food Campaign',
+                                quantity: 1,
+                                price: 300
+                            }]
                         });
                     }
                 }
@@ -337,8 +346,17 @@
                     if (isBimaVoucher) {
                         window.ttq.track('Purchase Failed', {
                             content_type: 'product',
+                            content_id: 'bima_voucher_food_campaign',
+                            content_ids: ['bima_voucher_food_campaign'],
                             content_name: 'BIMA Voucher Food Campaign',
-                            description: 'BIMA Free Food Voucher Campaign Subscription Failed'
+                            description: 'BIMA Free Food Voucher Campaign Subscription Failed',
+                            contents: [{
+                                content_id: 'bima_voucher_food_campaign',
+                                content_type: 'product',
+                                content_name: 'BIMA Voucher Food Campaign',
+                                quantity: 1,
+                                price: 300
+                            }]
                         });
                     }
                 }
