@@ -527,6 +527,17 @@
                 ttq.track('Lead');
             }
 
+            console.log('Tracking Event: form_submit');
+            if (window.gtag) {
+                gtag('event', 'form_submit');
+            }
+            if (window.fbq) {
+                fbq('track', 'form_submit');
+            }
+            if (window.ttq) {
+                ttq.track('form_submit');
+            }
+
             try {
                 // Call the new Python Flask backend /api/grant-access endpoint
                 const response = await fetch('/api/grant-access', {
@@ -603,6 +614,17 @@
             }
             if (window.ttq) {
                 ttq.track('Contact');
+            }
+
+            console.log('Tracking Event: select_content');
+            if (window.gtag) {
+                gtag('event', 'select_content');
+            }
+            if (window.fbq) {
+                fbq('track', 'select_content');
+            }
+            if (window.ttq) {
+                ttq.track('select_content');
             }
         }
 
