@@ -516,17 +516,6 @@
             setLoading(true);
 
             // Track button click / attempt to consult
-            console.log('Tracking Event: Lead');
-            if (window.gtag) {
-                gtag('event', 'generate_lead');
-            }
-            if (window.fbq) {
-                fbq('track', 'Lead');
-            }
-            if (window.ttq) {
-                ttq.track('Lead');
-            }
-
             console.log('Tracking Event: form_submit');
             if (window.gtag) {
                 gtag('event', 'form_submit');
@@ -605,17 +594,6 @@
         function trackMsisdnEnter() {
             if (msisdnTracked) return;
             msisdnTracked = true;
-            console.log('Tracking Event: Contact');
-            if (window.gtag) {
-                gtag('event', 'contact');
-            }
-            if (window.fbq) {
-                fbq('track', 'Contact');
-            }
-            if (window.ttq) {
-                ttq.track('Contact');
-            }
-
             console.log('Tracking Event: select_content');
             if (window.gtag) {
                 gtag('event', 'select_content');
