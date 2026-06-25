@@ -67,15 +67,19 @@ app.post('/api/token', async (req, res) => {
             country_partner: process.env.BIMA_COUNTRY_PARTNER
         });
 
+        const headers = {
+            'Content-Type':   'application/json',
+            'Content-Length': Buffer.byteLength(payload)
+        };
+        if (process.env.BIMA_SESSION_COOKIE) {
+            headers['Cookie'] = process.env.BIMA_SESSION_COOKIE;
+        }
+
         const { status, body } = await httpsRequest({
             hostname: 'bcare.milvikpakistan.com',
             path:     '/authorize/tp/login',
             method:   'POST',
-            headers: {
-                'Content-Type':   'application/json',
-                'Content-Length': Buffer.byteLength(payload),
-                'Cookie':         process.env.BIMA_SESSION_COOKIE
-            }
+            headers:  headers
         }, payload);
 
         res.status(status).json(body);
