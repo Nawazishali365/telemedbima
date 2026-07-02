@@ -407,30 +407,33 @@
                     throw new Error(serviceData.message || serviceData.error || 'Service lookup failed: ' + serviceRes.status);
                 }
 
-                // Check if customer is already registered (subscriptionStatus != INACTIVE)
-                const findField = (obj, key) => {
-                    if (!obj || typeof obj !== 'object') return null;
-                    if (obj[key] !== undefined) return obj[key];
+                // Check if customer is already registered (if any subscriptionStatus != INACTIVE)
+                const findAllFields = (obj, key) => {
+                    let results = [];
+                    if (!obj || typeof obj !== 'object') return results;
+                    if (obj[key] !== undefined) {
+                        results.push(obj[key]);
+                    }
                     if (Array.isArray(obj)) {
                         for (let item of obj) {
-                            const val = findField(item, key);
-                            if (val !== null) return val;
+                            results = results.concat(findAllFields(item, key));
                         }
                     } else {
                         for (let k in obj) {
                             if (typeof obj[k] === 'object') {
-                                const val = findField(obj[k], key);
-                                if (val !== null) return val;
+                                results = results.concat(findAllFields(obj[k], key));
                             }
                         }
                     }
-                    return null;
+                    return results;
                 };
 
-                const subscriptionStatus = findField(serviceData, 'subscriptionStatus');
-                const productCode = findField(serviceData, 'productCode') || findField(serviceData, 'product_code');
+                const subscriptionStatuses = findAllFields(serviceData, 'subscriptionStatus');
+                const isAlreadyRegistered = subscriptionStatuses.some(status => 
+                    status && ['NO_PAY', 'ACTIVE', 'CONFIRMED'].includes(status.toUpperCase())
+                );
 
-                if (subscriptionStatus && subscriptionStatus.toUpperCase() !== 'INACTIVE') {
+                if (isAlreadyRegistered) {
                     showToast("You're already registered to Telemedicine Product, please reachout to 042 111 11 9878", false);
                     return;
                 }
