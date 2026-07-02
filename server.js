@@ -59,12 +59,24 @@ function httpsRequest(options, postBody) {
    POST /api/token  →  bcare.milvikpakistan.com/authorize/tp/login
    ────────────────────────────────────────────────────────────────── */
 app.post('/api/token', async (req, res) => {
+    const username = process.env.BIMA_USERNAME;
+    const password = process.env.BIMA_PASSWORD;
+    const tokenType = process.env.BIMA_TOKEN_TYPE;
+    const countryPartner = process.env.BIMA_COUNTRY_PARTNER;
+
+    if (!username || !password || !tokenType || !countryPartner) {
+        console.error('[/api/token] Error: Missing BIMA API credentials in environment variables.');
+        return res.status(500).json({
+            error: 'Server configuration error: BIMA API credentials are missing in the server environment variables. Please ensure the .env file is present and the server has been restarted.'
+        });
+    }
+
     try {
         const payload = JSON.stringify({
-            username:        process.env.BIMA_USERNAME,
-            password:        process.env.BIMA_PASSWORD,
-            token_type:      process.env.BIMA_TOKEN_TYPE,
-            country_partner: process.env.BIMA_COUNTRY_PARTNER
+            username:        username,
+            password:        password,
+            token_type:      tokenType,
+            country_partner: countryPartner
         });
 
         const headers = {

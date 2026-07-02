@@ -407,6 +407,34 @@
                     throw new Error(serviceData.message || serviceData.error || 'Service lookup failed: ' + serviceRes.status);
                 }
 
+                // Check if customer is already registered (subscriptionStatus != INACTIVE)
+                const findField = (obj, key) => {
+                    if (!obj || typeof obj !== 'object') return null;
+                    if (obj[key] !== undefined) return obj[key];
+                    if (Array.isArray(obj)) {
+                        for (let item of obj) {
+                            const val = findField(item, key);
+                            if (val !== null) return val;
+                        }
+                    } else {
+                        for (let k in obj) {
+                            if (typeof obj[k] === 'object') {
+                                const val = findField(obj[k], key);
+                                if (val !== null) return val;
+                            }
+                        }
+                    }
+                    return null;
+                };
+
+                const subscriptionStatus = findField(serviceData, 'subscriptionStatus');
+                const productCode = findField(serviceData, 'productCode') || findField(serviceData, 'product_code');
+
+                if (subscriptionStatus && subscriptionStatus.toUpperCase() !== 'INACTIVE') {
+                    showToast(`You're already registered to ${productCode || 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY'}`, false);
+                    return;
+                }
+
                 // ── Step 3: Fetch JazzCash DTC Form Data ──
                 const transId = (serviceData.result && (serviceData.result.transId || serviceData.result.requestId || serviceData.result.transaction_id))
                     || serviceData.transId

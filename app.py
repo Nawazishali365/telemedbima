@@ -49,13 +49,19 @@ def bima_family_redirect_alt():
 
 @app.route('/api/token', methods=['POST'])
 def get_token():
-    try:
-        username = os.getenv('BIMA_USERNAME')
-        password = os.getenv('BIMA_PASSWORD')
-        token_type = os.getenv('BIMA_TOKEN_TYPE')
-        country_partner = os.getenv('BIMA_COUNTRY_PARTNER')
-        session_cookie = os.getenv('BIMA_SESSION_COOKIE')
+    username = os.getenv('BIMA_USERNAME')
+    password = os.getenv('BIMA_PASSWORD')
+    token_type = os.getenv('BIMA_TOKEN_TYPE')
+    country_partner = os.getenv('BIMA_COUNTRY_PARTNER')
+    session_cookie = os.getenv('BIMA_SESSION_COOKIE')
 
+    if not all([username, password, token_type, country_partner]):
+        logger.error("[/api/token] Error: Missing BIMA API credentials in environment variables.")
+        return jsonify({
+            "error": "Server configuration error: BIMA API credentials are missing in the server environment variables. Please ensure the .env file is present and the server has been restarted."
+        }), 500
+
+    try:
         payload = {
             "username": username,
             "password": password,
