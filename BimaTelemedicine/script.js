@@ -74,6 +74,13 @@ function initPhoneValidation() {
   // Handle Form Submission
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    const consentChecked = document.getElementById('consentCheckbox').checked;
+    if (!consentChecked) {
+      showValidationError("Please agree to the Terms & Conditions and charges to continue.");
+      return;
+    }
+
     const isValid = validatePhoneNumber();
     if (!isValid) return;
 
@@ -89,29 +96,11 @@ function initPhoneValidation() {
     }
 
     try {
-      // 1. Get Auth Token
-      const tokenRes = await fetch('/api/token', { method: 'POST' });
-      const tokenData = await tokenRes.json().catch(() => ({}));
-      
-      if (!tokenRes.ok) {
-        throw new Error(tokenData.message || tokenData.error || 'Token request failed: ' + tokenRes.status);
-      }
-
-      const authToken = (tokenData.result && tokenData.result.token)
-          || tokenData.token
-          || tokenData.auth_token
-          || tokenData.authToken
-          || tokenData.access_token
-          || tokenData.accessToken;
-
-      if (!authToken) {
-        throw new Error('Auth token not found in response.');
-      }
-
-      // 2. Service Search
-      const serviceRes = await fetch(`/api/service-search/${msisdn}`, {
-        method: 'GET',
-        headers: { 'auth-token': authToken }
+      // 1. Service Search (POST request)
+      const serviceRes = await fetch('/api/service-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ msisdn })
       });
       const serviceData = await serviceRes.json().catch(() => ({}));
 
@@ -119,22 +108,21 @@ function initPhoneValidation() {
         throw new Error(serviceData.message || serviceData.error || 'Service request failed: ' + serviceRes.status);
       }
 
-      // 3. Build & submit JazzCash DTC form
-      const transId = (serviceData.result && (serviceData.result.transId || serviceData.result.requestId || serviceData.result.transaction_id))
-          || serviceData.transId
-          || serviceData.requestId
-          || serviceData.transaction_id
-          || '';
+      const paymentSessionToken = serviceData.paymentSessionToken;
+      if (!paymentSessionToken) {
+        throw new Error('Verification session token missing from service response.');
+      }
 
-      const formRes = await fetch(`/api/jazzcash-form?msisdn=${encodeURIComponent(msisdn)}&transId=${encodeURIComponent(transId)}`);
+      // 2. Fetch JazzCash form fields using verification token
+      const formRes = await fetch(`/api/jazzcash-form?token=${encodeURIComponent(paymentSessionToken)}`);
       const formData = await formRes.json().catch(() => ({}));
 
       if (!formRes.ok) {
         throw new Error(formData.error || 'Failed to build JazzCash form.');
       }
 
-      // Store source in localStorage so callback knows where to redirect
-      localStorage.setItem('jazzcash_source', 'BimaTelemedicine/');
+      // Store source in sessionStorage so callback knows where to redirect
+      sessionStorage.setItem('jazzcash_source', 'BimaTelemedicine/');
 
       // Create and submit JazzCash form
       const jcForm = document.createElement('form');

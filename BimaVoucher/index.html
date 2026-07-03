@@ -409,13 +409,10 @@
             <div class="price-info">Only Rs. 10/Day – Full family covered</div>
 
             <!-- Consent Row (combining visible styled checkbox and text in a single container for perfect layout) -->
-            <div class="consent-container">
-                <label class="consent-label">
-                    <span class="consent-text">
-                        By continuing, you agree to our <a
-                            href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions"
-                            target="_blank">Terms & Conditions and Privacy Policy</a>
-                    </span>
+            <div class="consent-container" style="display: flex; align-items: flex-start; gap: 8px; margin: 12px auto; max-width: 320px; text-align: left; background: rgba(0, 0, 0, 0.4); padding: 8px 12px; border-radius: 8px;">
+                <input type="checkbox" id="consentCheckbox" style="margin-top: 3px; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0;" required>
+                <label for="consentCheckbox" style="font-size: 11px; color: #ffffff; line-height: 1.4; cursor: pointer; user-select: none;">
+                    I agree to the recurring charges of Rs. 10/day and accept the <a href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions" target="_blank" style="color: #bfdbfe; text-decoration: underline;">Terms & Conditions and Privacy Policy</a>
                 </label>
             </div>
         </form>
@@ -486,9 +483,23 @@
             btn.style.opacity = isLoading ? '0.7' : '1';
         }
 
+        /* ── Helper: SHA-256 Hashing ── */
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         /* ── Main form submission handler ── */
         async function handleSubmit(event) {
             event.preventDefault();
+
+            const consentChecked = document.getElementById('consentCheckbox').checked;
+            if (!consentChecked) {
+                showToast('Please check the box to agree to the Terms & Conditions.', false);
+                return;
+            }
 
             const phoneNumberInput = document.getElementById('phoneNumber').value.trim();
 
@@ -512,13 +523,18 @@
 
             // Format phone number to E.164 format (+923XXXXXXXXX) for TikTok matching
             const e164_phone = '+92' + rawNum;
-            localStorage.setItem('user_phone_e164', e164_phone);
+            sessionStorage.setItem('user_phone_e164', e164_phone);
 
             if (window.ttq) {
-                window.ttq.identify({
-                    phone_number: e164_phone
+                sha256(e164_phone).then(hashedPhone => {
+                    window.ttq.identify({
+                        phone_number: hashedPhone
+                    });
+                    window.ttq.track('Initiate Checkout');
+                }).catch(err => {
+                    console.error('TikTok identification hashing failed:', err);
+                    window.ttq.track('Initiate Checkout');
                 });
-                window.ttq.track('Initiate Checkout');
             }
             if (typeof gtag === 'function') {
                 gtag('event', 'Initiate Checkout');
@@ -527,33 +543,11 @@
             setLoading(true);
 
             try {
-                // ── Step 1: Token Acquisition ──
-                const tokenRes = await fetch('/api/token', { method: 'POST' });
-                const tokenData = await tokenRes.json().catch(() => ({}));
-                console.log('Token response:', tokenData);
-
-                if (!tokenRes.ok) {
-                    throw new Error(tokenData.message || tokenData.error || 'Token request failed: ' + tokenRes.status);
-                }
-
-                // Extract token
-                const authToken = (tokenData.result && tokenData.result.token)
-                    || tokenData.token
-                    || tokenData.auth_token
-                    || tokenData.authToken
-                    || tokenData.access_token
-                    || tokenData.accessToken;
-
-                if (!authToken) {
-                    throw new Error('Auth token not found in API response.');
-                }
-
-                console.log('✅ Auth token acquired');
-
-                // ── Step 2: Service search ──
-                const serviceRes = await fetch(`/api/service-search/${msisdn}`, {
-                    method: 'GET',
-                    headers: { 'auth-token': authToken }
+                // ── Step 1: Service search (POST request to prevent URL logging of PII) ──
+                const serviceRes = await fetch('/api/service-search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ msisdn })
                 });
                 const serviceData = await serviceRes.json().catch(() => ({}));
                 console.log('✅ Service response:', serviceData);
@@ -593,16 +587,13 @@
                     return;
                 }
 
-                // ── Step 3: Fetch JazzCash DTC Form Data ──
-                const transId = (serviceData.result && (serviceData.result.transId || serviceData.result.requestId || serviceData.result.transaction_id))
-                    || serviceData.transId
-                    || serviceData.requestId
-                    || serviceData.transaction_id
-                    || '';
+                const paymentSessionToken = serviceData.paymentSessionToken;
+                if (!paymentSessionToken) {
+                    throw new Error('Verification session token missing from service response');
+                }
 
-                console.log('Transaction Request ID:', transId);
-
-                const formRes = await fetch(`/api/jazzcash-form?msisdn=${encodeURIComponent(msisdn)}&transId=${encodeURIComponent(transId)}`);
+                // ── Step 2: Fetch JazzCash DTC Form Data using session token ──
+                const formRes = await fetch(`/api/jazzcash-form?token=${encodeURIComponent(paymentSessionToken)}`);
                 const formData = await formRes.json();
                 console.log('✅ JazzCash form configuration:', formData);
 
@@ -628,7 +619,7 @@
                 });
 
                 document.body.appendChild(jcForm);
-                localStorage.setItem('jazzcash_source', 'BimaVoucher/index.html');
+                sessionStorage.setItem('jazzcash_source', 'BimaVoucher/index.html');
 
                 setTimeout(() => jcForm.submit(), 1000);
 

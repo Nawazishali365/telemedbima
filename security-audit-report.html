@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Audit Report — jzmhealth.milvikpakistan.com</title>
+<style>
+:root{
+  --bg:#f7f9fc;
+  --panel:#ffffff;
+  --ink:#1a2233;
+  --ink-soft:#52617a;
+  --ink-faint:#7a8499;
+  --border:#e3e8f0;
+  --border-strong:#cdd5e3;
+  --accent:#1d4ed8;
+  --accent-soft:#eaf0ff;
+  --critical:#dc2626;
+  --critical-bg:#fef2f2;
+  --critical-border:#fecaca;
+  --high:#ea580c;
+  --high-bg:#fff7ed;
+  --high-border:#fed7aa;
+  --medium:#ca8a04;
+  --medium-bg:#fefce8;
+  --medium-border:#fef08a;
+  --low:#0891b2;
+  --low-bg:#ecfeff;
+  --low-border:#a5f3fc;
+  --info:#475569;
+  --good:#15803d;
+  --good-bg:#f0fdf4;
+  --good-border:#bbf7d0;
+  --code-bg:#0f172a;
+  --code-ink:#e2e8f0;
+  --shadow:0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.wrap{max-width:1040px;margin:0 auto;padding:40px 28px 80px}
+@media(max-width:640px){.wrap{padding:24px 16px 60px}}
+
+/* ── Hero ── */
+.hero{
+  background:linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 60%,#2563eb 100%);
+  color:#fff;
+  border-radius:18px;
+  padding:42px 40px;
+  box-shadow:var(--shadow);
+  position:relative;
+  overflow:hidden;
+}
+.hero::after{
+  content:"";
+  position:absolute;right:-80px;top:-80px;
+  width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero .eyebrow{
+  font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+  font-weight:600;color:#bfdbfe;margin-bottom:10px;
+}
+.hero h1{font-size:30px;font-weight:700;margin:0 0 8px;letter-spacing:-.01em}
+.hero .subtitle{font-size:15px;color:#dbeafe;margin:0 0 22px;max-width:640px}
+.hero .meta-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;
+  margin-top:18px;
+}
+.hero .meta-item{
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:10px;padding:12px 14px;backdrop-filter:blur(8px);
+}
+.hero .meta-label{font-size:11px;color:#bfdbfe;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.hero .meta-value{font-size:14px;font-weight:600;color:#fff;word-break:break-word}
+
+/* ── Risk banner ── */
+.risk-banner{
+  margin-top:22px;background:var(--critical-bg);
+  border:1px solid var(--critical-border);border-left:4px solid var(--critical);
+  border-radius:12px;padding:18px 22px;display:flex;align-items:center;gap:16px;
+  box-shadow:var(--shadow);
+}
+.risk-banner .risk-icon{
+  flex:0 0 auto;width:42px;height:42px;border-radius:50%;
+  background:var(--critical);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:700;
+}
+.risk-banner .risk-text strong{display:block;font-size:17px;color:var(--critical);margin-bottom:2px}
+.risk-banner .risk-text span{font-size:14px;color:var(--ink-soft)}
+
+/* ── Section ── */
+.section{margin-top:38px}
+.section-title{
+  font-size:20px;font-weight:700;color:var(--ink);
+  margin:0 0 4px;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:10px;
+}
+.section-title .num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;
+  font-size:14px;font-weight:700;flex:0 0 auto;
+}
+.section-desc{color:var(--ink-soft);font-size:14px;margin:0 0 18px;padding-left:40px}
+
+/* ── Severity table ── */
+.sev-table{
+  width:100%;border-collapse:separate;border-spacing:0;
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.sev-table th,.sev-table td{padding:14px 18px;text-align:left;font-size:14px}
+.sev-table th{background:#f1f5f9;color:var(--ink-soft);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.sev-table td{border-top:1px solid var(--border)}
+.sev-table tr:hover td{background:#fafbfc}
+.sev-count{font-weight:700;font-size:18px}
+.sev-count.critical{color:var(--critical)}
+.sev-count.high{color:var(--high)}
+.sev-count.medium{color:var(--medium)}
+.sev-count.low{color:var(--low)}
+
+/* ── Finding card ── */
+.finding{
+  background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  margin-bottom:18px;box-shadow:var(--shadow);overflow:hidden;
+}
+.finding-header{
+  padding:18px 22px;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;
+  border-bottom:1px solid var(--border);
+}
+.finding-header.critical{background:var(--critical-bg);border-bottom-color:var(--critical-border)}
+.finding-header.high{background:var(--high-bg);border-bottom-color:var(--high-border)}
+.finding-header.medium{background:var(--medium-bg);border-bottom-color:var(--medium-border)}
+.finding-header.low{background:var(--low-bg);border-bottom-color:var(--low-border)}
+.finding-header.good{background:var(--good-bg);border-bottom-color:var(--good-border)}
+.badge{
+  display:inline-block;padding:4px 10px;border-radius:6px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  flex:0 0 auto;
+}
+.badge.critical{background:var(--critical);color:#fff}
+.badge.high{background:var(--high);color:#fff}
+.badge.medium{background:var(--medium);color:#fff}
+.badge.low{background:var(--low);color:#fff}
+.badge.good{background:var(--good);color:#fff}
+.finding-title{font-size:17px;font-weight:700;color:var(--ink);margin:0;flex:1;min-width:200px;line-height:1.4}
+.finding-id{font-size:12px;color:var(--ink-faint);font-weight:600;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+
+.finding-body{padding:20px 22px}
+.finding-body h4{
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);
+  margin:18px 0 8px;font-weight:700;
+}
+.finding-body h4:first-child{margin-top:0}
+.finding-body p{margin:0 0 10px;color:var(--ink);font-size:14.5px}
+.finding-body ul{margin:8px 0 12px;padding-left:22px}
+.finding-body li{margin-bottom:6px;font-size:14.5px;color:var(--ink)}
+.finding-body li strong{color:var(--ink)}
+
+/* ── Code block ── */
+.code-block{
+  background:var(--code-bg);color:var(--code-ink);
+  border-radius:10px;padding:16px 18px;margin:10px 0;
+  font-family:ui-monospace,"SF Mono",Menlo,Consolas,"Courier New",monospace;
+  font-size:12.5px;line-height:1.6;overflow-x:auto;
+  border:1px solid #1e293b;
+}
+.code-block .k{color:#7dd3fc}        /* key */
+.code-block .s{color:#86efac}        /* string */
+.code-block .c{color:#94a3b8;font-style:italic}  /* comment */
+.code-block .h{color:#fde047}        /* highlight */
+.code-block .arrow{color:#fbbf24;font-weight:700}
+
+/* ── Evidence callout ── */
+.evidence{
+  background:#f8fafc;border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:8px;padding:12px 16px;margin:10px 0;font-size:13.5px;color:var(--ink-soft);
+}
+.evidence strong{color:var(--ink)}
+
+/* ── Compact finding table ── */
+.finding-table{
+  width:100%;border-collapse:separate;border-spacing:0;
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  box-shadow:var(--shadow);margin-top:14px;
+}
+.finding-table th,.finding-table td{padding:13px 16px;text-align:left;font-size:13.5px;vertical-align:top}
+.finding-table th{background:#f1f5f9;color:var(--ink-soft);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+.finding-table td{border-top:1px solid var(--border)}
+.finding-table td.id{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--ink-faint);font-weight:600;font-size:12px;white-space:nowrap}
+.finding-table td.fix{color:var(--ink-soft);font-size:13px}
+
+/* ── Action checklist ── */
+.checklist{
+  background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  padding:20px 22px;box-shadow:var(--shadow);
+}
+.checklist-item{
+  display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);
+}
+.checklist-item:last-child{border-bottom:none}
+.checklist-num{
+  flex:0 0 auto;width:28px;height:28px;border-radius:50%;
+  background:var(--critical);color:#fff;font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.checklist-text{flex:1;font-size:14.5px;color:var(--ink)}
+.checklist-text strong{color:var(--ink)}
+.checklist-text .desc{display:block;color:var(--ink-soft);font-size:13px;margin-top:3px}
+
+/* ── Good findings grid ── */
+.good-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:14px}
+.good-card{
+  background:var(--good-bg);border:1px solid var(--good-border);border-radius:10px;
+  padding:14px 16px;display:flex;align-items:flex-start;gap:10px;
+}
+.good-card .check{
+  flex:0 0 auto;width:22px;height:22px;border-radius:50%;
+  background:var(--good);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;
+}
+.good-card .text{font-size:13.5px;color:var(--ink);line-height:1.5}
+.good-card .text strong{color:#166534}
+
+/* ── Footer ── */
+.footer{
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--border);
+  font-size:12.5px;color:var(--ink-faint);text-align:center;
+}
+.footer .conf{font-weight:600;color:var(--ink-soft);margin-bottom:4px;display:block}
+
+/* ── Utilities ── */
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:var(--ink)}
+.lead{font-size:15.5px;color:var(--ink-soft);line-height:1.7;margin:0 0 16px}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:8px 16px;margin:8px 0;font-size:13.5px}
+.kv .k{color:var(--ink-soft);font-weight:600}
+.kv .v{color:var(--ink);word-break:break-word}
+@media print{
+  body{background:#fff}
+  .hero,.risk-banner,.finding,.sev-table,.finding-table,.checklist,.good-card{box-shadow:none}
+  .finding{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── HERO ── -->
+  <header class="hero">
+    <div class="eyebrow">Web Application Security Audit</div>
+    <h1>Security Audit Report</h1>
+    <p class="subtitle">Unauthenticated black-box assessment of the BIMA Health telemedicine activation pages served from <span class="mono" style="background:rgba(255,255,255,.15);color:#fff">jzmhealth.milvikpakistan.com</span> and the connected JazzCash payment flow.</p>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Primary Target</div><div class="meta-value">jzmhealth.milvikpakistan.com</div></div>
+      <div class="meta-item"><div class="meta-label">Assessment Date</div><div class="meta-value">03 July 2026</div></div>
+      <div class="meta-item"><div class="meta-label">Audit Type</div><div class="meta-value">Unauthenticated Black-box</div></div>
+      <div class="meta-item"><div class="meta-label">Overall Risk</div><div class="meta-value" style="color:#fecaca">CRITICAL</div></div>
+    </div>
+  </header>
+
+  <!-- Risk banner -->
+  <div class="risk-banner">
+    <div class="risk-icon">!</div>
+    <div class="risk-text">
+      <strong>Overall Risk: CRITICAL</strong>
+      <span>Two unauthenticated vulnerabilities allow attackers to extract JazzCash merchant credentials and forge HMAC-signed payment requests for arbitrary phone numbers — enabling direct financial fraud.</span>
+    </div>
+  </div>
+
+  <!-- ── 1. EXECUTIVE SUMMARY ── -->
+  <section class="section">
+    <h2 class="section-title"><span class="num">1</span>Executive Summary</h2>
+    <p class="section-desc">High-level overview of the audit scope, methodology, and headline findings.</p>
+    <p class="lead">The assessed application is a Node.js / Express frontend that proxies an upstream Spring Boot service (<span class="mono">bcare.milvikpakistan.com</span>) to drive a JazzCash "Direct To Consumer" (DTC) subscription flow for the BIMA MHealth product (Rs. 10/day or Rs. 300/month). The frontend is hosted behind Cloudflare and uses HTTPS with modern TLS.</p>
+    <p class="lead">However, the audit identified <strong>two CRITICAL vulnerabilities</strong> that completely bypass the proxy authentication model. Together, they allow any anonymous internet user to (a) obtain a valid 7-day service-account JWT, (b) query the subscription status of <em>any</em> Pakistani mobile number, and (c) request an HMAC-signed JazzCash "LinkWallet" payment payload — including the cleartext merchant password — for <em>any</em> phone number of their choosing. This constitutes end-to-end unauthenticated subscription-stuffing with direct financial impact on victims.</p>
+
+    <div class="kv" style="margin-top:18px">
+      <div class="k">Scope</div><div class="v">Two landing pages and three backend API endpoints (token, service-search, jazzcash-form). Upstream host <span class="mono">bcare.milvikpakistan.com</span> was checked for direct reachability.</div>
+      <div class="k">Methodology</div><div class="v">Passive review of served HTML/JS; active probing of exposed endpoints with no credentials; TLS/SSL inspection; security header analysis; common sensitive path enumeration.</div>
+      <div class="k">Findings</div><div class="v"><strong>13 issues</strong> total: 2 Critical, 4 High, 7 Medium, 4 Low. Plus 9 positive controls verified as working.</div>
+      <div class="k">Tester Note</div><div class="v">No payloads were submitted that completed a real payment. All testing used synthetic numbers (e.g. <span class="mono">03000000001</span>) and inspected responses only.</div>
+    </div>
+  </section>
+
+  <!-- ── 2. SEVERITY SUMMARY ── -->
+  <section class="section">
+    <h2 class="section-title"><span class="num">2</span>Severity Summary</h2>
+    <p class="section-desc">Findings grouped by CVSS-style severity rating.</p>
+    <table class="sev-table">
+      <thead><tr><th>Severity</th><th style="width:120px">Count</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge critical">Critical</span></td><td><span class="sev-count critical">2</span></td><td>Direct financial fraud / unauthenticated credential leakage. Exploitable today with zero authentication.</td></tr>
+        <tr><td><span class="badge high">High</span></td><td><span class="sev-count high">4</span></td><td>Significant exposure that materially weakens the security posture; should be fixed within days.</td></tr>
+        <tr><td><span class="badge medium">Medium</span></td><td><span class="sev-count medium">7</span></td><td>Defence-in-depth gaps and information disclosure that aid attackers or harm privacy.</td></tr>
+        <tr><td><span class="badge low">Low</span></td><td><span class="sev-count low">4</span></td><td>Hygiene items and minor information leaks.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── 3. CRITICAL FINDINGS ── -->
+  <section class="section">
+    <h2 class="section-title"><span class="num">3</span>Critical Findings</h2>
+    <p class="section-desc">Issues that must be remediated within 24 hours.</p>
+
+    <!-- C1 -->
+    <article class="finding">
+      <header class="finding-header critical">
+        <span class="badge critical">Critical</span>
+        <h3 class="finding-title">JazzCash merchant credentials leaked + arbitrary signed payment requests for any phone number</h3>
+        <span class="finding-id">C1</span>
+      </header>
+      <div class="finding-body">
+        <h4>Endpoint</h4>
+        <p><span class="mono">GET /api/jazzcash-form?msisdn=&lt;any&gt;&amp;transId=&lt;any&gt;</span> — no authentication, no CSRF, no rate limit.</p>
+
+        <h4>Evidence</h4>
+        <p>The following response was returned for an attacker-supplied arbitrary MSISDN and transId, with no authentication required:</p>
+        <pre class="code-block">{
+  <span class="k">"actionUrl"</span>: <span class="s">"https://onlinepayments.jazzcash.com.pk/payment-orchestrator/WalletLinkingPortal/wallet/LinkWallet"</span>,
+  <span class="k">"pp_MerchantID"</span>: <span class="s">"8768948"</span>,
+  <span class="k">"pp_Password"</span>: <span class="h">"p4hn4362xt"</span>,                              <span class="c">// ← plaintext merchant password</span>
+  <span class="k">"pp_RequestID"</span>: <span class="s">"attackerCanPickThis"</span>,                  <span class="c">// ← fully attacker-controlled</span>
+  <span class="k">"pp_ReturnURL"</span>: <span class="s">"https://bcare.milvikpakistan.com/jz/pk/callback/payment-token"</span>,
+  <span class="k">"pp_MSISDN"</span>: <span class="s">"03007654321"</span>,                            <span class="c">// ← victim number attacker chose</span>
+  <span class="k">"pp_SecureHash"</span>: <span class="h">"18d9a7b50f3871ff68a3686c84cceb5c01b1da8a44abb390b25b4be354174bae"</span>  <span class="c">// ← valid server HMAC</span>
+}</pre>
+
+        <h4>Why this is catastrophic</h4>
+        <ul>
+          <li><strong>Cleartext <span class="mono">pp_Password</span></strong> lets anyone impersonate BIMA's merchant identity against JazzCash. This credential must be considered fully compromised and rotated immediately.</li>
+          <li><strong>For ANY MSISDN an attacker supplies,</strong> the server returns a valid HMAC-signed "LinkWallet" payload. An attacker can build a malicious page that auto-submits this form for any victim's phone number — the victim gets subscribed to Rs. 10/day charges <em>without their consent or interaction</em>. This is direct financial fraud.</li>
+          <li>Reproduced for multiple numbers (<span class="mono">03007654321</span>, <span class="mono">03331234567</span>, <span class="mono">03000000001</span>…). The <span class="mono">transId</span> parameter is fully attacker-controlled.</li>
+          <li><strong>No throttling:</strong> 5 out of 5 rapid requests succeeded in ~250ms each. An attacker can mass-enumerate at will.</li>
+        </ul>
+
+        <h4>Remediation (do today)</h4>
+        <ul>
+          <li><strong>Rotate the JazzCash merchant password AND the Integrity salt</strong> in the JazzCash merchant portal immediately. Treat both as compromised.</li>
+          <li><strong>Stop returning <span class="mono">pp_Password</span></strong> (and ideally <span class="mono">pp_MerchantID</span>) to the browser. The client does not need them — the server signs the payload and the browser just submits the form.</li>
+          <li><strong>Bind the signed form to a server-side session</strong> that completed <span class="mono">/api/service-search</span> for that specific MSISDN, with a single-use CSRF token.</li>
+          <li><strong>Reject caller-supplied <span class="mono">transId</span>.</strong> Always derive it from the prior service-search step stored server-side.</li>
+          <li><strong>Add per-IP and per-MSISDN rate limits</strong> (e.g. 5/min) and a CAPTCHA threshold after 3 attempts from one IP.</li>
+          <li>Log and alert on every call to <span class="mono">/api/jazzcash-form</span> with the source IP.</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- C2 -->
+    <article class="finding">
+      <header class="finding-header critical">
+        <span class="badge critical">Critical</span>
+        <h3 class="finding-title">Unauthenticated issuance of 7-day service-account JWTs</h3>
+        <span class="finding-id">C2</span>
+      </header>
+      <div class="finding-body">
+        <h4>Endpoint</h4>
+        <p><span class="mono">POST /api/token</span> — no body, no authentication, no rate limit.</p>
+
+        <h4>Evidence</h4>
+        <p>Every anonymous call returns a 7-day JWT bound to the same service user id:</p>
+        <pre class="code-block"><span class="c">// Decoded JWT payload (HS256):</span>
+{
+  <span class="k">"iss"</span>: <span class="h">"Prashant"</span>,                                  <span class="c">// ← developer name as issuer = dev config in prod</span>
+  <span class="k">"iat"</span>: 1783052502,
+  <span class="k">"exp"</span>: 1783657302,                                  <span class="c">// ← 7-day validity</span>
+  <span class="k">"sub"</span>: <span class="s">"{\"token\":\"501615c6...\",\"type\":\"auth-token\",\"userId\":2013864437756051456}"</span>
+}</pre>
+
+        <h4>Why this is critical</h4>
+        <ul>
+          <li><strong>Every anonymous caller gets the same 7-day token</strong> bound to the same <span class="mono">userId</span> (<span class="mono">2013864437756051456</span>). All callers effectively operate as the same backend service account.</li>
+          <li>Combined with C1, an attacker can: <span class="arrow">→</span> get a token <span class="arrow">→</span> query any MSISDN's subscription status via <span class="mono">/api/service-search/{msisdn}</span> <span class="arrow">→</span> generate a signed payment form for that MSISDN. <strong>End-to-end unauthenticated subscription-stuffing.</strong></li>
+          <li>The JWT uses <span class="mono">alg=HS256</span>. If the secret is weak or default, tokens can be forged. Verify the secret is ≥32 random bytes and rotate.</li>
+          <li><strong>No throttling:</strong> 3 out of 3 rapid requests succeeded in ~330ms each.</li>
+        </ul>
+
+        <h4>Remediation</h4>
+        <ul>
+          <li>Replace the shared service-account token with <strong>per-session tokens</strong> bound to MSISDN + device fingerprint.</li>
+          <li>Shorten TTL to <strong>5–15 minutes</strong>; implement refresh semantics if longer sessions are needed.</li>
+          <li>Issue the token as an <span class="mono">HttpOnly; Secure; SameSite=Strict</span> cookie so JavaScript (and XSS) cannot read it.</li>
+          <li>Add <strong>per-IP rate limit</strong> (e.g. 5/hour) on <span class="mono">/api/token</span>.</li>
+          <li>Change <span class="mono">iss</span> from a personal name to a service identifier (e.g. <span class="mono">bima-tp-frontend</span>).</li>
+          <li>Rotate the JWT signing secret; verify ≥32 random bytes.</li>
+        </ul>
+      </div>
+    </article>
+  </section>
+
+  <!-- ── 4. HIGH FINDINGS ── -->
+  <section class="section">
+    <h2 class="section-title"><span class="num">4</span>High Findings</h2>
+    <p class="section-desc">Significant exposure that materially weakens the security posture; should be fixed within days.</p>
+
+    <article class="finding">
+      <header class="finding-header high">
+        <span class="badge high">High</span>
+        <h3 class="finding-title">Upstream host bcare.milvikpakistan.com is directly internet-reachable</h3>
+        <span class="finding-id">H1</span>
+      </header>
+      <div class="finding-body">
+        <h4>Evidence</h4>
+        <p>The JavaScript comments in the served HTML reveal the intended design: <span class="mono">jzmhealth</span> should proxy calls to <span class="mono">bcare</span>, but the upstream host accepts direct traffic:</p>
+        <pre class="code-block"><span class="c">// Served HTML comment:</span>
+POST to https://bcare.milvikpakistan.com/authorize/tp/login <span class="c">(proxied via /api/token)</span>
+
+<span class="c">// Direct probe of upstream:</span>
+$ curl https://bcare.milvikpakistan.com/
+HTTP/1.1 301 Moved Permanently
+Server: <span class="h">nginx/1.24.0 (Ubuntu)</span>
+Location: https://bcare.milvikpakistan.com/ui/
+
+$ curl -X POST https://bcare.milvikpakistan.com/authorize/tp/login
+{"status":415,"error":"Unsupported Media Type","path":"/authorize/tp/login"}  <span class="c">// Spring Boot responds directly</span></pre>
+        <h4>Impact</h4>
+        <ul>
+          <li>Attackers can <strong>bypass the proxy entirely</strong> and call the Spring Boot APIs on <span class="mono">bcare</span> directly — sidestepping any future rate-limit or WAF rules applied at <span class="mono">jzmhealth</span>.</li>
+          <li>Also leaks server software (<span class="mono">nginx 1.24.0 (Ubuntu)</span>) and the existence of a Spring Boot app.</li>
+        </ul>
+        <h4>Fix</h4>
+        <ul>
+          <li>Restrict <span class="mono">bcare</span> ingress to <span class="mono">jzmhealth</span>'s origin IP / Cloudflare Worker egress only.</li>
+          <li>Block all direct external access at the firewall level.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="finding">
+      <header class="finding-header high">
+        <span class="badge high">High</span>
+        <h3 class="finding-title">Permissive CORS policy with credentials</h3>
+        <span class="finding-id">H2</span>
+      </header>
+      <div class="finding-body">
+        <h4>Evidence</h4>
+        <pre class="code-block"><span class="c">// OPTIONS /api/token preflight response:</span>
+access-control-allow-methods: GET, POST, OPTIONS, PUT, PATCH, DELETE
+access-control-allow-headers:  X-Requested-With, Content-Type, auth-token, x-api-key
+access-control-allow-credentials: <span class="h">true</span></pre>
+        <h4>Impact</h4>
+        <ul>
+          <li><span class="mono">access-control-allow-credentials: true</span> combined with no observed strict Origin allowlist means a malicious website could potentially call your API from a victim's browser using their cookies or token.</li>
+          <li>If any Origin is reflected back as <span class="mono">Access-Control-Allow-Origin</span>, the combination with credentials is a textbook CORS-bypass vulnerability.</li>
+        </ul>
+        <h4>Fix</h4>
+        <ul>
+          <li>Implement a strict Origin allowlist (only <span class="mono">https://jzmhealth.milvikpakistan.com</span>).</li>
+          <li>Never use <span class="mono">*</span> with credentials.</li>
+          <li>Reject all other Origins with a 403.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="finding">
+      <header class="finding-header high">
+        <span class="badge high">High</span>
+        <h3 class="finding-title">Weak / incomplete Content Security Policy</h3>
+        <span class="finding-id">H3</span>
+      </header>
+      <div class="finding-body">
+        <h4>Evidence</h4>
+        <pre class="code-block">content-security-policy: <span class="h">frame-ancestors 'none';</span>  <span class="c">// ← only this; nothing else</span></pre>
+        <h4>Impact</h4>
+        <ul>
+          <li>CSP contains only <span class="mono">frame-ancestors</span>. There is <strong>no <span class="mono">script-src</span>, no <span class="mono">connect-src</span>, no <span class="mono">form-action</span></strong>.</li>
+          <li>Inline <span class="mono">&lt;script&gt;</span> blocks are unrestricted — every page contains large inline JS including the Firebase config and the form-submission logic.</li>
+          <li>Any XSS can exfiltrate the JWT from JS memory and POST phone numbers to attacker-controlled domains.</li>
+        </ul>
+        <h4>Fix</h4>
+        <p>Adopt a strict CSP, e.g.:</p>
+        <pre class="code-block">default-src 'self';
+script-src 'self' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com 'sha256-&lt;inline-hash&gt;';
+connect-src 'self' https://bcare.milvikpakistan.com https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com;
+form-action https://onlinepayments.jazzcash.com.pk 'self';
+frame-ancestors 'none';
+base-uri 'self';
+object-src 'none';</pre>
+      </div>
+    </article>
+
+    <article class="finding">
+      <header class="finding-header high">
+        <span class="badge high">High</span>
+        <h3 class="finding-title">No rate limiting on any endpoint</h3>
+        <span class="finding-id">H4</span>
+      </header>
+      <div class="finding-body">
+        <h4>Evidence</h4>
+        <p>Five rapid sequential requests to <span class="mono">/api/jazzcash-form</span> all returned 200 in ~250ms each:</p>
+        <pre class="code-block">Req 1: 200 (0.243077s)
+Req 2: 200 (0.237790s)
+Req 3: 200 (0.248389s)
+Req 4: 200 (0.249943s)
+Req 5: 200 (0.250050s)</pre>
+        <h4>Impact</h4>
+        <ul>
+          <li>Enables <strong>mass subscription-stuffing</strong>: an attacker can hammer <span class="mono">/api/jazzcash-form</span> for thousands of MSISDNs per minute.</li>
+          <li>Also enables token-issuance DoS against <span class="mono">/api/token</span> and abuse of <span class="mono">/api/service-search</span> for user-enumeration.</li>
+        </ul>
+        <h4>Fix</h4>
+        <ul>
+          <li>Add Cloudflare WAF rate-limit rules for <span class="mono">/api/token</span>, <span class="mono">/api/service-search/*</span>, and <span class="mono">/api/jazzcash-form</span>.</li>
+          <li>Add per-IP and per-MSISDN limits at the Express layer (e.g. <span class="mono">express-rate-limit</span>).</li>
+          <li>Implement exponential backoff and temporary IP bans for repeat offenders.</li>
+        </ul>
+      </div>
+    </article>
+  </section>
+
+  <!-- ── 5. MEDIUM FINDINGS ── -->
+  <section class="section">
+    <h2 class="section-title"><span class="num">5</span>Medium Findings</h2>
+    <p class="section-desc">Defence-in-depth gaps and information disclosure that aid attackers or harm privacy.</p>
+
+    <table class="finding-table">
+      <thead><tr><th style="width:50px">ID</th><th style="width:200px">Issue</th><th>Impact &amp; Fix</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="id">M1</td>
+          <td><strong>/package.json exposed</strong></td>
+          <td class="fix">Returns 200 with project name (<span class="mono">telemed-bima</span>), entry point (<span class="mono">server.js</span>), and dependencies (<span class="mono">dotenv</span>, <span class="mono">express</span>). Reveals stack and likely config-file naming. <strong>Fix:</strong> Block <span class="mono">/package.json</span>, <span class="mono">/package-lock.json</span>, <span class="mono">/server.js</span>, <span class="mono">/.env*</span>, <span class="mono">/node_modules/</span> at Cloudflare.</td>
+        </tr>
+        <tr>
+          <td class="id">M2</td>
+          <td><strong>No HSTS header</strong></td>
+          <td class="fix">HTTP→HTTPS 301 redirect exists but first HTTP visit is SSL-strip vulnerable. <strong>Fix:</strong> Enable HSTS in Cloudflare: <span class="mono">Strict-Transport-Security: max-age=63072000; includeSubDomains; preload</span>.</td>
+        </tr>
+        <tr>
+          <td class="id">M3</td>
+          <td><strong>Framework fingerprinting</strong></td>
+          <td class="fix"><span class="mono">x-powered-by: Express</span> header and the default <span class="mono">Cannot GET /api/</span> error page both leak the framework. <strong>Fix:</strong> <span class="mono">app.disable('x-powered-by')</span>; replace default error handler with a generic JSON 404.</td>
+        </tr>
+        <tr>
+          <td class="id">M4</td>
+          <td><strong>PII mishandling (phone numbers)</strong></td>
+          <td class="fix">MSISDN travels as URL path param (<span class="mono">/api/service-search/03001234567</span>) — lands in Cloudflare logs, nginx logs, browser history, and could leak via <span class="mono">Referer</span>. Numbers also stored in <span class="mono">localStorage</span> (<span class="mono">user_phone_e164</span>, <span class="mono">jazzcash_source</span>) and sent raw to the TikTok pixel (<span class="mono">ttq.identify({phone_number: e164_phone})</span>). <strong>Fix:</strong> Move MSISDN to POST body. Use <span class="mono">sessionStorage</span> or omit storage. Send SHA-256 hashed identifiers to TikTok. Add a privacy disclosure.</td>
+        </tr>
+        <tr>
+          <td class="id">M5</td>
+          <td><strong>Deprecated X-XSS-Protection header</strong></td>
+          <td class="fix"><span class="mono">X-XSS-Protection: 1; mode=block</span> is deprecated by modern browsers and can introduce vulnerabilities in legacy engines. <strong>Fix:</strong> Remove; rely on a strong CSP instead.</td>
+        </tr>
+        <tr>
+          <td class="id">M6</td>
+          <td><strong>Upstream server version disclosure</strong></td>
+          <td class="fix"><span class="mono">bcare</span> returns <span class="mono">Server: nginx/1.24.0 (Ubuntu)</span> and verbose Spring Boot error JSON (<span class="mono">{"timestamp":...,"path":...}</span>). <strong>Fix:</strong> <span class="mono">server_tokens off;</span> in nginx; set <span class="mono">server.error.include-message=never</span> in Spring Boot.</td>
+        </tr>
+        <tr>
+          <td class="id">M7</td>
+          <td><strong>Implicit consent on BimaVoucher page</strong></td>
+          <td class="fix">There is no checkbox on the BimaVoucher page — "agreeing" simply means clicking Subscribe. This is weak both legally (under PDPB 2023 / consumer protection law) and from a UX-abuse perspective. <strong>Fix:</strong> Add an explicit unchecked checkbox that must be ticked to enable the Subscribe button; log the consent timestamp + T&amp;C version server-side.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── 6. LOW FINDINGS ── -->
+  <section class="section">
+    <h2 class="section-title"><span class="num">6</span>Low Findings</h2>
+    <p class="section-desc">Hygiene items and minor information leaks.</p>
+
+    <table class="finding-table">
+      <thead><tr><th style="width:50px">ID</th><th style="width:240px">Issue</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="id">L1</td>
+          <td>No <span class="mono">/robots.txt</span>, <span class="mono">/sitemap.xml</span>, <span class="mono">/.well-known/security.txt</span></td>
+          <td class="fix">Add a <span class="mono">security.txt</span> at <span class="mono">/.well-known/</span> with a responsible-disclosure contact.</td>
+        </tr>
+        <tr>
+          <td class="id">L2</td>
+          <td>Firebase web API key in client JS</td>
+          <td class="fix">Key <span class="mono">AIzaSyAcrAr64iAFaj8nyRQD575ZR_hfm0rEX2I</span> is in client JS — normal for Firebase web, but verify it is restricted to authorized domains in Google Cloud Console.</td>
+        </tr>
+        <tr>
+          <td class="id">L3</td>
+          <td>JWT <span class="mono">iss: "Prashant"</span></td>
+          <td class="fix">Personal name as issuer suggests dev config in production. Use a service identifier such as <span class="mono">bima-tp-frontend</span>.</td>
+        </tr>
+        <tr>
+          <td class="id">L4</td>
+          <td>Multiple third-party trackers</td>
+          <td class="fix">TikTok Pixel (×2 SDK IDs), Google Analytics, Firebase Analytics all loaded. Ensure the privacy policy discloses all of them and consent is captured where required (e.g. GDPR/PECA).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── 7. POSITIVE FINDINGS ── -->
+  <section class="section">
+    <h2 class="section-title"><span class="num">7</span>Positive Findings</h2>
+    <p class="section-desc">Controls verified as correctly implemented during the audit.</p>
+    <div class="good-grid">
+      <div class="good-card"><div class="check">✓</div><div class="text"><strong>TLS 1.0 / 1.1 disabled.</strong> Only TLS 1.2 and 1.3 accepted with strong ciphers (<span class="mono">ECDHE-ECDSA-CHACHA20-POLY1305</span>, <span class="mono">TLS_AES_256_GCM_SHA384</span>).</div></div>
+      <div class="good-card"><div class="check">✓</div><div class="text"><strong>HTTP → HTTPS 301 redirect</strong> in place at the Cloudflare edge.</div></div>
+      <div class="good-card"><div class="check">✓</div><div class="text"><strong>Strong clickjacking protection.</strong> <span class="mono">X-Frame-Options: Deny</span> + <span class="mono">CSP: frame-ancestors 'none'</span>.</div></div>
+      <div class="good-card"><div class="check">✓</div><div class="text"><strong>MIME-type sniffing disabled.</strong> <span class="mono">X-Content-Type-Options: nosniff</span> is set.</div></div>
+      <div class="good-card"><div class="check">✓</div><div class="text"><strong>Dotfiles protected.</strong> <span class="mono">/.env</span> and <span class="mono">/.git/</span> return 403, not exposed.</div></div>
+      <div class="good-card"><div class="check">✓</div><div class="text"><strong>Valid TLS certificate.</strong> Wildcard <span class="mono">*.milvikpakistan.com</span> via Google Trust Services (valid until 09 Aug 2026).</div></div>
+      <div class="good-card"><div class="check">✓</div><div class="text"><strong>Cloudflare CDN protection</strong> in front of the origin, including challenge-platform JS injection.</div></div>
+      <div class="good-card"><div class="check">✓</div><div class="text"><strong>Directory listing disabled.</strong> <span class="mono">/BimaVoucher/</span> serves the index page rather than a file listing.</div></div>
+      <div class="good-card"><div class="check">✓</div><div class="text"><strong>No sensitive directory traversal.</strong> <span class="mono">/admin/</span>, <span class="mono">/wp-admin/</span>, <span class="mono">/server-status</span> all 404.</div></div>
+    </div>
+  </section>
+
+  <!-- ── 8. RECOMMENDED IMMEDIATE ACTIONS ── -->
+  <section class="section">
+    <h2 class="section-title"><span class="num">8</span>Recommended Immediate Actions</h2>
+    <p class="section-desc">Priority remediation checklist — next 24 hours.</p>
+    <div class="checklist">
+      <div class="checklist-item">
+        <div class="checklist-num">1</div>
+        <div class="checklist-text">
+          <strong>Rotate JazzCash merchant password + Integrity salt</strong>
+          <span class="desc">They are public now. Do this in the JazzCash merchant portal before anything else.</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <div class="checklist-num">2</div>
+        <div class="checklist-text">
+          <strong>Remove <span class="mono">pp_Password</span> from <span class="mono">/api/jazzcash-form</span> response</strong>
+          <span class="desc">Bind the signed form to a server-side session + single-use CSRF token; reject caller-supplied <span class="mono">transId</span>.</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <div class="checklist-num">3</div>
+        <div class="checklist-text">
+          <strong>Require authentication on <span class="mono">/api/token</span></strong>
+          <span class="desc">Or replace with an <span class="mono">HttpOnly</span> session cookie; shorten TTL to ≤15 min; rate-limit per IP.</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <div class="checklist-num">4</div>
+        <div class="checklist-text">
+          <strong>Firewall <span class="mono">bcare.milvikpakistan.com</span></strong>
+          <span class="desc">Only accept traffic from <span class="mono">jzmhealth</span> origin / Cloudflare egress IPs.</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <div class="checklist-num">5</div>
+        <div class="checklist-text">
+          <strong>Add rate-limiting rules</strong>
+          <span class="desc">In Cloudflare for <span class="mono">/api/token</span>, <span class="mono">/api/service-search/*</span>, <span class="mono">/api/jazzcash-form</span>. Per-IP and per-MSISDN.</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <div class="checklist-num">6</div>
+        <div class="checklist-text">
+          <strong>Block <span class="mono">/package.json</span> at the edge</strong>
+          <span class="desc">Along with <span class="mono">package-lock.json</span>, <span class="mono">server.js</span>, and any other source files.</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <div class="checklist-num">7</div>
+        <div class="checklist-text">
+          <strong>Enable HSTS</strong>
+          <span class="desc">In Cloudflare: <span class="mono">max-age=63072000; includeSubDomains; preload</span>.</span>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <div class="checklist-num">8</div>
+        <div class="checklist-text">
+          <strong>Adopt a strict CSP</strong>
+          <span class="desc">With <span class="mono">script-src</span>, <span class="mono">connect-src</span>, <span class="mono">form-action</span> directives — see H3 for a reference policy.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 9. APPENDIX ── -->
+  <section class="section">
+    <h2 class="section-title"><span class="num">9</span>Appendix — Target Metadata</h2>
+    <p class="section-desc">Technical details captured during the audit.</p>
+    <div class="kv">
+      <div class="k">Hostnames in scope</div><div class="v"><span class="mono">jzmhealth.milvikpakistan.com</span> (Cloudflare proxied, Express backend)<br><span class="mono">bcare.milvikpakistan.com</span> (direct internet-reachable, nginx 1.24.0 + Spring Boot)</div>
+      <div class="k">TLS certificate</div><div class="v">Subject: <span class="mono">CN=milvikpakistan.com</span> · Issuer: Google Trust Services WE1 · Valid: 11 May 2026 → 09 Aug 2026 · SAN: <span class="mono">milvikpakistan.com, *.milvikpakistan.com</span></div>
+      <div class="k">Protocols supported</div><div class="v">TLS 1.2 (<span class="mono">ECDHE-ECDSA-CHACHA20-POLY1305</span>) · TLS 1.3 (<span class="mono">TLS_AES_256_GCM_SHA384</span>) · TLS 1.0/1.1 correctly rejected</div>
+      <div class="k">Frontend stack</div><div class="v">Static HTML + inline JS · Firebase Analytics SDK 10.8.0 · Google Analytics (G-FLKEQYY9E9) · TikTok Pixel (D7QFD9RC77U02PK9T1L0, D8J9AARC77UAEKHUNU60) · Google Fonts (Outfit)</div>
+      <div class="k">Backend stack</div><div class="v">Node.js + Express (per <span class="mono">package.json</span>) · proxies to Spring Boot on <span class="mono">bcare.milvikpakistan.com</span></div>
+      <div class="k">Endpoints observed</div><div class="v"><span class="mono">POST /api/token</span> · <span class="mono">GET /api/service-search/:msisdn</span> (requires auth-token header) · <span class="mono">GET /api/jazzcash-form?msisdn=&amp;transId=</span></div>
+      <div class="k">Third-party payment</div><div class="v">JazzCash DTC — <span class="mono">https://onlinepayments.jazzcash.com.pk/payment-orchestrator/WalletLinkingPortal/wallet/LinkWallet</span></div>
+      <div class="k">Audit method</div><div class="v">Black-box, unauthenticated. Tools: curl, openssl. No payloads were submitted that completed a real payment.</div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span class="conf">CONFIDENTIAL — For internal use only</span>
+    Generated 03 July 2026 · Security Audit Report · jzmhealth.milvikpakistan.com<br>
+    This report contains findings from an unauthenticated black-box assessment. Verification of remediation should be performed before any production deployment changes are considered complete.
+  </footer>
+
+</div>
+</body>
+</html>

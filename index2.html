@@ -195,6 +195,13 @@
                     pattern="[0-9]{10}" title="Please enter a 10-digit phone number">
             </div>
 
+            <div class="consent-group" style="display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; margin-bottom: 12px; text-align: left;">
+                <input type="checkbox" id="consentCheckbox" style="margin-top: 3px; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0;" required>
+                <label for="consentCheckbox" style="font-size: 11px; color: #ffffff; line-height: 1.4; cursor: pointer; user-select: none;">
+                    I agree to the recurring charges for BIMA subscription and accept the <a href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions" target="_blank" style="color: #bfdbfe; text-decoration: underline;">Privacy Policy and Terms & Conditions</a>.
+                </label>
+            </div>
+
             <button type="submit" class="continue-btn">Activate Now</button>
 
             <p class="trust-text">
@@ -251,6 +258,12 @@
         async function handleSubmit(event) {
             event.preventDefault();
 
+            const consentChecked = document.getElementById('consentCheckbox').checked;
+            if (!consentChecked) {
+                showToast('Please agree to the Terms & Conditions and charges to continue.', false);
+                return;
+            }
+
             const countryCode = document.getElementById('countryCode').value; // e.g. "+92"
             const phoneNumber = document.getElementById('phoneNumber').value.trim();
 
@@ -266,33 +279,11 @@
             setLoading(true);
 
             try {
-                // POST to https://bcare.milvikpakistan.com/authorize/tp/login (proxied via /api/token)
-                const tokenRes = await fetch('/api/token', { method: 'POST' });
-                const tokenData = await tokenRes.json().catch(() => ({}));
-                console.log('Token response:', tokenData);
-
-                if (!tokenRes.ok) {
-                    throw new Error(tokenData.message || tokenData.error || 'Token request failed: ' + tokenRes.status);
-                }
-
-                // Token is nested under result.token
-                const authToken = (tokenData.result && tokenData.result.token)
-                    || tokenData.token
-                    || tokenData.auth_token
-                    || tokenData.authToken
-                    || tokenData.access_token
-                    || tokenData.accessToken;
-
-                if (!authToken) {
-                    throw new Error('Auth token not found in response: ' + JSON.stringify(tokenData));
-                }
-
-                console.log('✅ Auth token acquired:', authToken);
-
-                // ── Step 2: Service search ──
-                const serviceRes = await fetch(`/api/service-search/${msisdn}`, {
-                    method: 'GET',
-                    headers: { 'auth-token': authToken }
+                // ── Step 1: Service search (POST request to prevent URL logging of PII) ──
+                const serviceRes = await fetch('/api/service-search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ msisdn })
                 });
                 const serviceData = await serviceRes.json().catch(() => ({}));
                 console.log('✅ Service response:', serviceData);
@@ -301,18 +292,14 @@
                     throw new Error(serviceData.message || serviceData.error || 'Service request failed: ' + serviceRes.status);
                 }
 
-                // ── Step 3: Build & submit JazzCash DTC form ──
-                // Extract transId from service search response (try common field names)
-                const transId = (serviceData.result && (serviceData.result.transId || serviceData.result.requestId || serviceData.result.transaction_id))
-                    || serviceData.transId
-                    || serviceData.requestId
-                    || serviceData.transaction_id
-                    || '';
+                const paymentSessionToken = serviceData.paymentSessionToken;
+                if (!paymentSessionToken) {
+                    throw new Error('Verification session token missing from service response');
+                }
 
-                console.log('transId:', transId);
-
-                // Get form fields + server-computed HMAC hash
-                const formRes = await fetch(`/api/jazzcash-form?msisdn=${encodeURIComponent(msisdn)}&transId=${encodeURIComponent(transId)}`);
+                // ── Step 2: Build & submit JazzCash DTC form ──
+                // Get form fields using the verification session token
+                const formRes = await fetch(`/api/jazzcash-form?token=${encodeURIComponent(paymentSessionToken)}`);
                 const formData = await formRes.json();
                 console.log('✅ JazzCash form data:', formData);
 
@@ -338,9 +325,8 @@
                 });
 
                 document.body.appendChild(jcForm);
-                localStorage.setItem('jazzcash_source', 'index2.html');
+                sessionStorage.setItem('jazzcash_source', 'index2.html');
                 setTimeout(() => jcForm.submit(), 800); // small delay so toast is visible
-
 
             } catch (err) {
                 console.error('Activation error:', err);

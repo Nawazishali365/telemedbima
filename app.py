@@ -1,6 +1,10 @@
 import os
 import uuid
 import logging
+import base64
+import json
+import time
+from urllib.parse import urlparse
 from flask import Flask, request, jsonify, send_from_directory, redirect
 import requests
 import hmac
@@ -20,6 +24,123 @@ logger = logging.getLogger(__name__)
 # Initialize Flask application
 # Setting static_folder='.' and static_url_path='' allows serving index.html and assets directly from root
 app = Flask(__name__, static_folder='.', static_url_path='')
+
+# Disable framework fingerprinting header
+@app.after_request
+def remove_x_powered_by(response):
+    response.headers.pop('X-Powered-By', None)
+    return response
+
+# 1. Block direct access to sensitive files
+@app.before_request
+def block_sensitive_files():
+    blocked_files = [
+        '/package.json',
+        '/package-lock.json',
+        '/server.js',
+        '/app.py',
+        '/requirements.txt',
+        '/.env',
+        '/.env sample',
+        '/.git',
+        '/security-audit-report.html'
+    ]
+    path = request.path.lower()
+    if any(path == f or path.startswith(f + '/') for f in blocked_files):
+        return jsonify({"error": "Access denied"}), 403
+
+# 2. Strict CORS & Security Headers
+@app.after_request
+def set_security_headers(response):
+    origin = request.headers.get('Origin')
+    allowed_origins = [
+        'https://jzmhealth.milvikpakistan.com',
+        'https://milvikpakistan.com'
+    ]
+    
+    if origin:
+        try:
+            parsed_origin = urlparse(origin)
+            is_local = parsed_origin.hostname in ('localhost', '127.0.0.1')
+            is_allowed_milvik = parsed_origin.hostname == 'milvikpakistan.com' or \
+                                (parsed_origin.hostname and parsed_origin.hostname.endswith('.milvikpakistan.com'))
+            if origin in allowed_origins or is_local or is_allowed_milvik:
+                response.headers['Access-Control-Allow-Origin'] = origin
+        except Exception:
+            pass
+
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PUT, PATCH, DELETE'
+    response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With,Content-Type,auth-token,x-api-key'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    
+    # Strict Security Headers
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; connect-src 'self' https://bcare.milvikpakistan.com https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';"
+    response.headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers.pop('X-XSS-Protection', None)
+    
+    return response
+
+# 3. In-memory IP Rate Limiter
+ip_limits = {}
+def rate_limit(limit, window_seconds):
+    def decorator(f):
+        def wrapper(*args, **kwargs):
+            ip = request.headers.get('X-Forwarded-For', request.remote_addr or '')
+            if ',' in ip:
+                ip = ip.split(',')[0].strip()
+            now = time.time()
+            timestamps = ip_limits.get(ip, [])
+            timestamps = [t for t in timestamps if now - t < window_seconds]
+            if len(timestamps) >= limit:
+                return jsonify({"error": "Too many requests. Please try again later."}), 429
+            timestamps.append(now)
+            ip_limits[ip] = timestamps
+            return f(*args, **kwargs)
+        wrapper.__name__ = f.__name__
+        return wrapper
+    return decorator
+
+# 4. Cryptographic payment session tokens
+SESSION_SECRET = os.getenv('INTEGRITY_SALT') or 'fallback-session-secret'
+
+def generate_payment_token(msisdn, trans_id):
+    payload = json.dumps({
+        "msisdn": msisdn,
+        "transId": trans_id,
+        "exp": int(time.time()) + 300  # 5 minutes validity
+    })
+    base64_payload = base64.b64encode(payload.encode('utf-8')).decode('utf-8')
+    signature = hmac.new(
+        SESSION_SECRET.encode('utf-8'),
+        base64_payload.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    return f"{base64_payload}.{signature}"
+
+def verify_payment_token(token):
+    if not token:
+        return None
+    parts = token.split('.')
+    if len(parts) != 2:
+        return None
+    base64_payload, signature = parts
+    expected_signature = hmac.new(
+        SESSION_SECRET.encode('utf-8'),
+        base64_payload.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    if signature != expected_signature:
+        return None
+    try:
+        payload_str = base64.b64decode(base64_payload).decode('utf-8')
+        payload = json.loads(payload_str)
+        if time.time() > payload.get('exp', 0):
+            return None
+        return payload
+    except Exception:
+        return None
 
 @app.route('/')
 def index():
@@ -49,6 +170,16 @@ def bima_family_redirect_alt():
 
 @app.route('/api/token', methods=['POST'])
 def get_token():
+    return jsonify({"error": "Endpoint retired for security reasons."}), 403
+
+# BIMA API Token Cache & Helper
+bima_token_cache = None
+
+def get_bima_token(force_refresh=False):
+    global bima_token_cache
+    if bima_token_cache and not force_refresh:
+        return bima_token_cache
+
     username = os.getenv('BIMA_USERNAME')
     password = os.getenv('BIMA_PASSWORD')
     token_type = os.getenv('BIMA_TOKEN_TYPE')
@@ -56,75 +187,110 @@ def get_token():
     session_cookie = os.getenv('BIMA_SESSION_COOKIE')
 
     if not all([username, password, token_type, country_partner]):
-        logger.error("[/api/token] Error: Missing BIMA API credentials in environment variables.")
-        return jsonify({
-            "error": "Server configuration error: BIMA API credentials are missing in the server environment variables. Please ensure the .env file is present and the server has been restarted."
-        }), 500
+        raise Exception("BIMA API credentials are missing in the server environment variables.")
+
+    payload = {
+        "username": username,
+        "password": password,
+        "token_type": token_type,
+        "country_partner": country_partner
+    }
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+    if session_cookie:
+        headers["Cookie"] = session_cookie
+
+    logger.info("[Flask Backend] Refreshing BIMA API token...")
+    res = requests.post(
+        "https://bcare.milvikpakistan.com/authorize/tp/login",
+        json=payload,
+        headers=headers,
+        timeout=15
+    )
+
+    if res.status_code != 200:
+        raise Exception(f"BIMA login failed with status {res.status_code}")
 
     try:
-        payload = {
-            "username": username,
-            "password": password,
-            "token_type": token_type,
-            "country_partner": country_partner
-        }
+        body = res.json()
+    except ValueError:
+        raise Exception("BIMA login response is not valid JSON")
 
-        headers = {
-            "Content-Type": "application/json"
-        }
-        if session_cookie:
-            headers["Cookie"] = session_cookie
+    token = (body.get('result', {}) or {}).get('token') or body.get('token') or body.get('auth_token')
+    if not token:
+        raise Exception("No token found in BIMA login response")
 
-        logger.info("Calling BIMA login API...")
-        res = requests.post(
-            "https://bcare.milvikpakistan.com/authorize/tp/login",
-            json=payload,
-            headers=headers,
-            timeout=15
-        )
+    bima_token_cache = token
+    return bima_token_cache
 
-        try:
-            body = res.json()
-        except ValueError:
-            body = res.text
-
-        return jsonify(body), res.status_code
-    except Exception as e:
-        logger.error(f"[/api/token] Error: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/service-search/<msisdn>', methods=['GET'])
-def service_search(msisdn):
-    auth_token = request.headers.get('auth-token')
-    if not auth_token:
-        return jsonify({"error": "Missing auth-token header"}), 400
-
+@app.route('/api/service-search', methods=['POST'])
+@rate_limit(10, 60)
+def service_search():
     try:
+        data = request.get_json() or {}
+        msisdn = data.get('msisdn')
+        if not msisdn:
+            return jsonify({"error": "Phone number (msisdn) is required"}), 400
+
+        token = get_bima_token()
         url = f"https://bcare.milvikpakistan.com/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY"
         headers = {
-            "auth-token": auth_token
+            "auth-token": token
         }
 
         logger.info(f"Calling service search API for {msisdn}...")
         res = requests.get(url, headers=headers, timeout=15)
 
+        # Retry once if token expired
+        if res.status_code in (401, 403):
+            logger.info("[Flask Backend] Token unauthorized. Refreshing...")
+            token = get_bima_token(force_refresh=True)
+            headers["auth-token"] = token
+            res = requests.get(url, headers=headers, timeout=15)
+
+        if res.status_code != 200:
+            try:
+                body = res.json()
+            except ValueError:
+                body = res.text
+            return jsonify(body), res.status_code
+
         try:
             body = res.json()
         except ValueError:
-            body = res.text
+            return jsonify({"error": "Invalid response format from service provider"}), 502
 
-        return jsonify(body), res.status_code
+        trans_id = (body.get('result', {}) or {}).get('transId') or \
+                   (body.get('result', {}) or {}).get('requestId') or \
+                   (body.get('result', {}) or {}).get('transaction_id') or \
+                   body.get('transId') or body.get('requestId') or body.get('transaction_id') or ''
+
+        if not trans_id:
+            return jsonify({"error": "Transaction ID was not returned by service provider"}), 502
+
+        session_token = generate_payment_token(msisdn, trans_id)
+        body['paymentSessionToken'] = session_token
+        return jsonify(body)
+
     except Exception as e:
         logger.error(f"[/api/service-search] Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/jazzcash-form', methods=['GET'])
+@rate_limit(10, 60)
 def jazzcash_form():
-    msisdn = request.args.get('msisdn')
-    trans_id = request.args.get('transId')
+    token = request.args.get('token')
+    if not token:
+        return jsonify({"error": "Token is required"}), 400
 
-    if not msisdn or not trans_id:
-        return jsonify({"error": "msisdn and transId are required"}), 400
+    payload = verify_payment_token(token)
+    if not payload:
+        return jsonify({"error": "Invalid or expired payment session token"}), 403
+
+    msisdn = payload.get('msisdn')
+    trans_id = payload.get('transId')
 
     merchant_id = os.getenv('PP_MERCHANT_ID')
     password = os.getenv('PP_PASSWORD')
@@ -155,7 +321,6 @@ def jazzcash_form():
     return jsonify({
         "actionUrl": action_url,
         "pp_MerchantID": merchant_id,
-        "pp_Password": password,
         "pp_RequestID": trans_id,
         "pp_ReturnURL": return_url,
         "pp_MSISDN": msisdn,

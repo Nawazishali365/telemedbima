@@ -9,32 +9,129 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+app.disable('x-powered-by');
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname)));
 
-// CORS middleware to allow specific origins and any milvikpakistan.com subdomain
+// 1. Block direct access to sensitive files
+app.use((req, res, next) => {
+    const blockedFiles = [
+        '/package.json',
+        '/package-lock.json',
+        '/server.js',
+        '/app.py',
+        '/requirements.txt',
+        '/.env',
+        '/.env sample',
+        '/.git',
+        '/security-audit-report.html'
+    ];
+    const url = req.path.toLowerCase();
+    if (blockedFiles.some(file => url === file || url.startsWith(file + '/'))) {
+        return res.status(403).json({ error: 'Access denied' });
+    }
+    next();
+});
+
+// 2. Security headers & CORS middleware
 app.use((req, res, next) => {
     const origin = req.headers.origin;
+    const allowedOrigins = [
+        'https://jzmhealth.milvikpakistan.com',
+        'https://milvikpakistan.com'
+    ];
+    
     if (origin) {
         try {
             const url = new URL(origin);
-            if (url.hostname === 'milvikpakistan.com' || url.hostname.endsWith('.milvikpakistan.com')) {
+            const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+            const isAllowedMilvik = url.hostname === 'milvikpakistan.com' || url.hostname.endsWith('.milvikpakistan.com');
+            
+            if (allowedOrigins.includes(origin) || isLocal || isAllowedMilvik) {
                 res.setHeader('Access-Control-Allow-Origin', origin);
             }
         } catch (e) {
             console.error('Invalid origin header:', origin);
         }
     }
+    
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,auth-token,x-api-key');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     
+    // Strict Security Headers
+    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; connect-src 'self' https://bcare.milvikpakistan.com https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';");
+    res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.removeHeader("X-XSS-Protection");
+
     if (req.method === 'OPTIONS') {
         return res.sendStatus(200);
     }
     next();
 });
+
+app.use(express.static(path.join(__dirname)));
+
+// 3. In-memory IP Rate Limiter
+const ipLimits = new Map();
+function rateLimitMiddleware(limit, windowMs) {
+    return (req, res, next) => {
+        const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const now = Date.now();
+        if (!ipLimits.has(ip)) {
+            ipLimits.set(ip, []);
+        }
+        const timestamps = ipLimits.get(ip).filter(t => now - t < windowMs);
+        if (timestamps.length >= limit) {
+            return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+        }
+        timestamps.push(now);
+        ipLimits.set(ip, timestamps);
+        next();
+    };
+}
+
+// 4. Cryptographic payment session tokens (prevent arbitrary signature generation)
+const SESSION_SECRET = process.env.INTEGRITY_SALT || 'fallback-session-secret';
+
+function generatePaymentToken(msisdn, transId) {
+    const payload = JSON.stringify({
+        msisdn,
+        transId,
+        exp: Date.now() + 5 * 60 * 1000 // 5 minutes validity
+    });
+    const base64Payload = Buffer.from(payload).toString('base64');
+    const signature = crypto
+        .createHmac('sha256', SESSION_SECRET)
+        .update(base64Payload)
+        .digest('hex');
+    return `${base64Payload}.${signature}`;
+}
+
+function verifyPaymentToken(token) {
+    if (!token) return null;
+    const parts = token.split('.');
+    if (parts.length !== 2) return null;
+    const [base64Payload, signature] = parts;
+    const expectedSignature = crypto
+        .createHmac('sha256', SESSION_SECRET)
+        .update(base64Payload)
+        .digest('hex');
+    if (signature !== expectedSignature) return null;
+    
+    try {
+        const payload = JSON.parse(Buffer.from(base64Payload, 'base64').toString('utf8'));
+        if (Date.now() > payload.exp) {
+            return null; // Expired
+        }
+        return payload;
+    } catch (e) {
+        return null;
+    }
+}
 
 /* ── helper: HTTPS request → { status, body } ── */
 function httpsRequest(options, postBody) {
@@ -55,94 +152,144 @@ function httpsRequest(options, postBody) {
 }
 
 /* ──────────────────────────────────────────────────────────────────
-   PROXY 1: Token endpoint
-   POST /api/token  →  bcare.milvikpakistan.com/authorize/tp/login
+   PROXY 1: Token endpoint (RETIRED FOR SECURITY)
    ────────────────────────────────────────────────────────────────── */
-app.post('/api/token', async (req, res) => {
+app.post('/api/token', (req, res) => {
+    res.status(403).json({ error: 'Endpoint retired for security reasons.' });
+});
+
+/* ── BIMA API Token Cache & Helper ── */
+let bimaTokenCache = null;
+
+async function getBimaToken(forceRefresh = false) {
+    if (bimaTokenCache && !forceRefresh) {
+        return bimaTokenCache;
+    }
+
     const username = process.env.BIMA_USERNAME;
     const password = process.env.BIMA_PASSWORD;
     const tokenType = process.env.BIMA_TOKEN_TYPE;
     const countryPartner = process.env.BIMA_COUNTRY_PARTNER;
 
     if (!username || !password || !tokenType || !countryPartner) {
-        console.error('[/api/token] Error: Missing BIMA API credentials in environment variables.');
-        return res.status(500).json({
-            error: 'Server configuration error: BIMA API credentials are missing in the server environment variables. Please ensure the .env file is present and the server has been restarted.'
-        });
+        throw new Error('BIMA credentials missing from environment configuration');
     }
 
-    try {
-        const payload = JSON.stringify({
-            username:        username,
-            password:        password,
-            token_type:      tokenType,
-            country_partner: countryPartner
-        });
+    const payload = JSON.stringify({
+        username,
+        password,
+        token_type: tokenType,
+        country_partner: countryPartner
+    });
 
-        const headers = {
-            'Content-Type':   'application/json',
-            'Content-Length': Buffer.byteLength(payload)
-        };
-        if (process.env.BIMA_SESSION_COOKIE) {
-            headers['Cookie'] = process.env.BIMA_SESSION_COOKIE;
-        }
-
-        const { status, body } = await httpsRequest({
-            hostname: 'bcare.milvikpakistan.com',
-            path:     '/authorize/tp/login',
-            method:   'POST',
-            headers:  headers
-        }, payload);
-
-        res.status(status).json(body);
-    } catch (err) {
-        console.error('[/api/token]', err.message);
-        res.status(500).json({ error: err.message });
+    const headers = {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+    };
+    if (process.env.BIMA_SESSION_COOKIE) {
+        headers['Cookie'] = process.env.BIMA_SESSION_COOKIE;
     }
-});
+
+    console.log('[Node.js Backend] Refreshing BIMA API token...');
+    const { status, body } = await httpsRequest({
+        hostname: 'bcare.milvikpakistan.com',
+        path: '/authorize/tp/login',
+        method: 'POST',
+        headers: headers
+    }, payload);
+
+    if (status !== 200) {
+        throw new Error(`BIMA login failed with status ${status}: ${JSON.stringify(body)}`);
+    }
+
+    const token = (body.result && body.result.token) || body.token || body.auth_token;
+    if (!token) {
+        throw new Error('BIMA login response did not contain a valid token');
+    }
+
+    bimaTokenCache = token;
+    return bimaTokenCache;
+}
 
 /* ──────────────────────────────────────────────────────────────────
    PROXY 2: Service search
-   GET /api/service-search/:msisdn
-       →  bcare.milvikpakistan.com/tp/service/search/{msisdn}/...
+   POST /api/service-search
    ────────────────────────────────────────────────────────────────── */
-app.get('/api/service-search/:msisdn', async (req, res) => {
-    const { msisdn }  = req.params;
-    const authToken   = req.headers['auth-token'];
-
-    if (!authToken) {
-        return res.status(400).json({ error: 'Missing auth-token header' });
+app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res) => {
+    const { msisdn } = req.body;
+    if (!msisdn) {
+        return res.status(400).json({ error: 'Phone number (msisdn) is required' });
     }
 
     try {
-        const apiPath =
-            `/tp/service/search/${msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY`;
+        let token = await getBimaToken();
+        const apiPath = `/tp/service/search/${msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY`;
 
-        const { status, body } = await httpsRequest({
+        let result = await httpsRequest({
             hostname: 'bcare.milvikpakistan.com',
-            path:     apiPath,
-            method:   'GET',
-            headers:  { 'auth-token': authToken }
+            path: apiPath,
+            method: 'GET',
+            headers: { 'auth-token': token }
         });
 
-        res.status(status).json(body);
+        // If unauthorized, token might have expired. Refresh and retry.
+        if (result.status === 401 || result.status === 403) {
+            console.log('[Node.js Backend] Token unauthorized. Refreshing token...');
+            token = await getBimaToken(true);
+            result = await httpsRequest({
+                hostname: 'bcare.milvikpakistan.com',
+                path: apiPath,
+                method: 'GET',
+                headers: { 'auth-token': token }
+            });
+        }
+
+        if (result.status !== 200) {
+            return res.status(result.status).json(result.body);
+        }
+
+        const transId = (result.body.result && (result.body.result.transId || result.body.result.requestId || result.body.result.transaction_id))
+            || result.body.transId
+            || result.body.requestId
+            || result.body.transaction_id
+            || '';
+
+        if (!transId) {
+            return res.status(502).json({ error: 'Transaction ID was not returned by service provider' });
+        }
+
+        // Generate signed token to bind this session
+        const sessionToken = generatePaymentToken(msisdn, transId);
+
+        // We return the original result body, but also attach the sessionToken
+        return res.json({
+            ...result.body,
+            paymentSessionToken: sessionToken
+        });
+
     } catch (err) {
-        console.error('[/api/service-search]', err.message);
-        res.status(500).json({ error: err.message });
+        console.error('[/api/service-search] Error:', err.message);
+        return res.status(500).json({ error: err.message });
     }
 });
 
 /* ──────────────────────────────────────────────────────────────────
    JAZZCASH FORM DATA
-   GET /api/jazzcash-form?msisdn=0300...&transId=abc123
-   Returns all JazzCash form fields + SecureHash (computed server-side)
+   GET /api/jazzcash-form?token=<paymentSessionToken>
    ────────────────────────────────────────────────────────────────── */
-app.get('/api/jazzcash-form', (req, res) => {
-    const { msisdn, transId } = req.query;
+app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
+    const { token } = req.query;
 
-    if (!msisdn || !transId) {
-        return res.status(400).json({ error: 'msisdn and transId are required' });
+    if (!token) {
+        return res.status(400).json({ error: 'Token is required' });
     }
+
+    const payload = verifyPaymentToken(token);
+    if (!payload) {
+        return res.status(403).json({ error: 'Invalid or expired payment session token' });
+    }
+
+    const { msisdn, transId } = payload;
 
     const merchantId = process.env.PP_MERCHANT_ID;
     const password   = process.env.PP_PASSWORD;
@@ -164,13 +311,12 @@ app.get('/api/jazzcash-form', (req, res) => {
         .update(hashString)
         .digest('hex');
 
-    console.log('[/api/jazzcash-form] hashString:', hashString);
-    console.log('[/api/jazzcash-form] secureHash:', secureHash);
+    console.log('[/api/jazzcash-form] secureHash calculated successfully.');
 
+    // NEVER return pp_Password to the browser.
     res.json({
         actionUrl,
         pp_MerchantID: merchantId,
-        pp_Password:   password,
         pp_RequestID:  transId,
         pp_ReturnURL:  returnUrl,
         pp_MSISDN:     msisdn,

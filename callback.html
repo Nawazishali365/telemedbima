@@ -248,8 +248,8 @@
         const analytics = getAnalytics(app);
 
         // Parse URL parameters and display them
-        window.addEventListener('DOMContentLoaded', () => {
-            const source = localStorage.getItem('jazzcash_source') || 'index.html';
+        window.addEventListener('DOMContentLoaded', async () => {
+            const source = sessionStorage.getItem('jazzcash_source') || 'index.html';
             const isIndex2 = source === 'index2.html';
             const isBimaFamily = source.startsWith('BimaTelemedicine') || source === 'Bima Sehat/index.html';
             const isBimaVoucher = source.startsWith('BimaVoucher') || source === 'BimaVoucher/index.html';
@@ -292,6 +292,14 @@
             
             trxRefNoEl.textContent = trxRefNo;
 
+            // SHA-256 Hashing helper
+            async function sha256(msg) {
+                const msgBuffer = new TextEncoder().encode(msg);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+
             // Highlight border and text color for success
             if (status === '1' || status.toLowerCase().includes('success') || status === '000') {
                 statusEl.classList.add('status-success');
@@ -300,31 +308,34 @@
                 container.style.boxShadow = '0 8px 25px rgba(78, 204, 167, 0.25)';
 
                 // Trigger TikTok Subscribe/Purchase event on success
-                if (window.ttq) {
-                    if (isBimaVoucher) {
-                        const userPhone = localStorage.getItem('user_phone_e164');
-                        if (userPhone) {
+                if (window.ttq && isBimaVoucher) {
+                    const userPhone = sessionStorage.getItem('user_phone_e164');
+                    if (userPhone) {
+                        try {
+                            const hashedPhone = await sha256(userPhone);
                             window.ttq.identify({
-                                phone_number: userPhone
+                                phone_number: hashedPhone
                             });
+                        } catch (e) {
+                            console.error('Failed to hash phone number:', e);
                         }
-                        window.ttq.track('Purchase', {
-                            value: 300,
-                            currency: 'PKR',
-                            content_type: 'product',
-                            content_id: 'bima_voucher_food_campaign',
-                            content_ids: ['bima_voucher_food_campaign'],
-                            content_name: 'BIMA Voucher Food Campaign',
-                            description: 'BIMA Free Food Voucher Campaign Subscription',
-                            contents: [{
-                                content_id: 'bima_voucher_food_campaign',
-                                content_type: 'product',
-                                content_name: 'BIMA Voucher Food Campaign',
-                                quantity: 1,
-                                price: 300
-                            }]
-                        });
                     }
+                    window.ttq.track('Purchase', {
+                        value: 300,
+                        currency: 'PKR',
+                        content_type: 'product',
+                        content_id: 'bima_voucher_food_campaign',
+                        content_ids: ['bima_voucher_food_campaign'],
+                        content_name: 'BIMA Voucher Food Campaign',
+                        description: 'BIMA Free Food Voucher Campaign Subscription',
+                        contents: [{
+                            content_id: 'bima_voucher_food_campaign',
+                            content_type: 'product',
+                            content_name: 'BIMA Voucher Food Campaign',
+                            quantity: 1,
+                            price: 300
+                        }]
+                    });
                 }
 
                 if (isBimaVoucher && typeof gtag === 'function') {
@@ -348,29 +359,32 @@
                 statusEl.classList.add('status-error');
 
                 // Trigger TikTok failure event
-                if (window.ttq) {
-                    if (isBimaVoucher) {
-                        const userPhone = localStorage.getItem('user_phone_e164');
-                        if (userPhone) {
+                if (window.ttq && isBimaVoucher) {
+                    const userPhone = sessionStorage.getItem('user_phone_e164');
+                    if (userPhone) {
+                        try {
+                            const hashedPhone = await sha256(userPhone);
                             window.ttq.identify({
-                                phone_number: userPhone
+                                phone_number: hashedPhone
                             });
+                        } catch (e) {
+                            console.error('Failed to hash phone number:', e);
                         }
-                        window.ttq.track('Purchase Failed', {
-                            content_type: 'product',
-                            content_id: 'bima_voucher_food_campaign',
-                            content_ids: ['bima_voucher_food_campaign'],
-                            content_name: 'BIMA Voucher Food Campaign',
-                            description: 'BIMA Free Food Voucher Campaign Subscription Failed',
-                            contents: [{
-                                content_id: 'bima_voucher_food_campaign',
-                                content_type: 'product',
-                                content_name: 'BIMA Voucher Food Campaign',
-                                quantity: 1,
-                                price: 300
-                            }]
-                        });
                     }
+                    window.ttq.track('Purchase Failed', {
+                        content_type: 'product',
+                        content_id: 'bima_voucher_food_campaign',
+                        content_ids: ['bima_voucher_food_campaign'],
+                        content_name: 'BIMA Voucher Food Campaign',
+                        description: 'BIMA Free Food Voucher Campaign Subscription Failed',
+                        contents: [{
+                            content_id: 'bima_voucher_food_campaign',
+                            content_type: 'product',
+                            content_name: 'BIMA Voucher Food Campaign',
+                            quantity: 1,
+                            price: 300
+                        }]
+                    });
                 }
 
                 if (isBimaVoucher && typeof gtag === 'function') {
