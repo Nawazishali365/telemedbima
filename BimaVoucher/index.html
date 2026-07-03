@@ -409,10 +409,14 @@
             <div class="price-info">Only Rs. 10/Day – Full family covered</div>
 
             <!-- Consent Row (combining visible styled checkbox and text in a single container for perfect layout) -->
-            <div class="consent-container" style="display: flex; align-items: flex-start; gap: 8px; margin: 12px auto; max-width: 320px; text-align: left; background: rgba(0, 0, 0, 0.4); padding: 8px 12px; border-radius: 8px;">
-                <input type="checkbox" id="consentCheckbox" style="margin-top: 3px; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0;" required>
-                <label for="consentCheckbox" style="font-size: 11px; color: #ffffff; line-height: 1.4; cursor: pointer; user-select: none;">
-                    I agree to the recurring charges of Rs. 10/day and accept the <a href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions" target="_blank" style="color: #bfdbfe; text-decoration: underline;">Terms & Conditions and Privacy Policy</a>
+            <div class="consent-container">
+                <label class="consent-label" for="consentCheckbox">
+                    <input type="checkbox" id="consentCheckbox" style="margin-top: 2px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0;" required>
+                    <span class="consent-text">
+                        I agree to recurring charges of Rs. 10/day and accept the <a
+                            href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions"
+                            target="_blank">Terms & Conditions and Privacy Policy</a>
+                    </span>
                 </label>
             </div>
         </form>
