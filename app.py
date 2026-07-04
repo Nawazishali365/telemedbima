@@ -321,6 +321,7 @@ def jazzcash_form():
     return jsonify({
         "actionUrl": action_url,
         "pp_MerchantID": merchant_id,
+        "pp_Password": password,
         "pp_RequestID": trans_id,
         "pp_ReturnURL": return_url,
         "pp_MSISDN": msisdn,

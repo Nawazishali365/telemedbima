@@ -313,10 +313,11 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
 
     console.log('[/api/jazzcash-form] secureHash calculated successfully.');
 
-    // NEVER return pp_Password to the browser.
+    // Note: JazzCash DTC API requires pp_Password in the HTML POST body sent from the user's browser.
     res.json({
         actionUrl,
         pp_MerchantID: merchantId,
+        pp_Password:   password,
         pp_RequestID:  transId,
         pp_ReturnURL:  returnUrl,
         pp_MSISDN:     msisdn,
