@@ -74,7 +74,7 @@ def set_security_headers(response):
     response.headers['Access-Control-Allow-Credentials'] = 'true'
     
     # Strict Security Headers
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; connect-src 'self' https://bcare.milvikpakistan.com https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';"
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://bcare.milvikpakistan.com https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';"
     response.headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -224,6 +224,25 @@ def get_bima_token(force_refresh=False):
 
     bima_token_cache = token
     return bima_token_cache
+
+@app.route('/api/detect-msisdn', methods=['GET'])
+def detect_msisdn():
+    header_keys = [
+        'x-msisdn',
+        'x-up-calling-line-id',
+        'msisdn',
+        'x-device-msisdn',
+        'x-hcl-msisdn',
+        'x-forwarded-for-msisdn',
+        'http_x_msisdn',
+        'http-x-msisdn'
+    ]
+    for key in header_keys:
+        val = request.headers.get(key) or request.headers.get(key.lower())
+        if val:
+            logger.info(f"[Flask Auto-Fetch] Found MSISDN in header '{key}': {val}")
+            return jsonify({"msisdn": val.strip()})
+    return jsonify({"msisdn": None})
 
 @app.route('/api/service-search', methods=['POST'])
 @rate_limit(10, 60)

@@ -28,7 +28,7 @@ app.use((req, res, next) => {
         '/security-audit-report.html'
     ];
     const url = req.path.toLowerCase();
-    if (blockedFiles.some(file => url === file || url.startsWith(file + '/'))) {
+    if (blockedFiles.some(file => url === file || url.endsWith(file) || url.startsWith(file + '/'))) {
         return res.status(403).json({ error: 'Access denied' });
     }
     next();
@@ -61,7 +61,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     
     // Strict Security Headers
-    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; connect-src 'self' https://bcare.milvikpakistan.com https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';");
+    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://bcare.milvikpakistan.com https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';");
     res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("X-Content-Type-Options", "nosniff");
@@ -210,6 +210,33 @@ async function getBimaToken(forceRefresh = false) {
     bimaTokenCache = token;
     return bimaTokenCache;
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   PROXY 1.5: Detect MSISDN from headers (Mobile Data Enrichment)
+   GET /api/detect-msisdn
+   ────────────────────────────────────────────────────────────────── */
+app.get('/api/detect-msisdn', (req, res) => {
+    const headerKeys = [
+        'x-msisdn',
+        'x-up-calling-line-id',
+        'msisdn',
+        'x-device-msisdn',
+        'x-hcl-msisdn',
+        'x-forwarded-for-msisdn',
+        'http_x_msisdn',
+        'http-x-msisdn'
+    ];
+
+    for (const key of headerKeys) {
+        const val = req.headers[key] || req.headers[key.toLowerCase()];
+        if (val) {
+            console.log(`[Node.js Auto-Fetch] Found MSISDN in header '${key}': ${val}`);
+            return res.json({ msisdn: val.toString().trim() });
+        }
+    }
+
+    return res.json({ msisdn: null });
+});
 
 /* ──────────────────────────────────────────────────────────────────
    PROXY 2: Service search
