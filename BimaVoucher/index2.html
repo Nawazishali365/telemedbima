@@ -655,29 +655,42 @@
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        /* ── Auto-fetch MSISDN from mobile data headers on load ── */
+        /* ── Auto-fetch MSISDN from mobile data headers or URL on load ── */
         window.addEventListener('DOMContentLoaded', () => {
+            // First check if MSISDN is passed in URL query string (e.g. ?msisdn=03001234567)
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryMsisdn = urlParams.get('msisdn');
+            if (queryMsisdn) {
+                populateMsisdn(queryMsisdn);
+                return;
+            }
+
+            // Fallback: check headers via local API (works only if unencrypted http:// or local testing)
             fetch('/api/detect-msisdn')
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.msisdn) {
-                        const cleanNum = data.msisdn.replace(/[^0-9]/g, '');
-                        let localPart = cleanNum;
-                        if (cleanNum.startsWith('92')) {
-                            localPart = cleanNum.substring(2);
-                        } else if (cleanNum.startsWith('03')) {
-                            localPart = cleanNum.substring(1);
-                        } else if (cleanNum.startsWith('3') && cleanNum.length === 10) {
-                            localPart = cleanNum;
-                        }
-                        const input = document.getElementById('phoneNumber');
-                        if (input) {
-                            input.value = localPart;
-                            console.log('Auto-fetched MSISDN from headers:', data.msisdn);
-                        }
+                        populateMsisdn(data.msisdn);
                     }
                 })
                 .catch(err => console.error('Failed to auto-fetch MSISDN from headers:', err));
+
+            function populateMsisdn(rawVal) {
+                const cleanNum = rawVal.replace(/[^0-9]/g, '');
+                let localPart = cleanNum;
+                if (cleanNum.startsWith('92')) {
+                    localPart = cleanNum.substring(2);
+                } else if (cleanNum.startsWith('03')) {
+                    localPart = cleanNum.substring(1);
+                } else if (cleanNum.startsWith('3') && cleanNum.length === 10) {
+                    localPart = cleanNum;
+                }
+                const input = document.getElementById('phoneNumber');
+                if (input) {
+                    input.value = localPart;
+                    console.log('Populated MSISDN:', rawVal);
+                }
+            }
         });
     </script>
 </body>
