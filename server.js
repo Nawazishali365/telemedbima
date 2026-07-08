@@ -224,7 +224,11 @@ app.get('/api/detect-msisdn', (req, res) => {
         'x-hcl-msisdn',
         'x-forwarded-for-msisdn',
         'http_x_msisdn',
-        'http-x-msisdn'
+        'http-x-msisdn',
+        'http_msisdn',
+        'http-msisdn',
+        'http_x_up_calling_line_id',
+        'http-x-up-calling-line-id'
     ];
 
     for (const key of headerKeys) {

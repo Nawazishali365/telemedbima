@@ -235,7 +235,11 @@ def detect_msisdn():
         'x-hcl-msisdn',
         'x-forwarded-for-msisdn',
         'http_x_msisdn',
-        'http-x-msisdn'
+        'http-x-msisdn',
+        'http_msisdn',
+        'http-msisdn',
+        'http_x_up_calling_line_id',
+        'http-x-up-calling-line-id'
     ]
     for key in header_keys:
         val = request.headers.get(key) or request.headers.get(key.lower())
