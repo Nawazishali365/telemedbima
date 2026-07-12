@@ -446,7 +446,7 @@ app.post('/api/grant-access', async (req, res) => {
         // ── Step 1: Check Eligibility ──
         console.log(`[Node.js Proxy] Calling Eligibility API for ${msisdn}...`);
         const eligResult = await httpsRequest({
-            hostname: 'dtc.milvik.io',
+            hostname: 'pkcm.milvik.io',
             path: `/tp/service/api/v1/check_consultation_eligibility?msisdn=${msisdn}`,
             method: 'GET',
             headers: {

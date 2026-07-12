@@ -423,7 +423,7 @@ def grant_access():
             }), 500
 
         # ── Step 1: Check consultation eligibility ──
-        eligibility_url = f"https://dtc.milvik.io/tp/service/api/v1/check_consultation_eligibility?msisdn={msisdn}"
+        eligibility_url = f"https://pkcm.milvik.io/tp/service/api/v1/check_consultation_eligibility?msisdn={msisdn}"
         eligibility_headers = {
             "x-api-key": eligibility_api_key
         }
