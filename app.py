@@ -80,7 +80,7 @@ def set_security_headers(response):
     response.headers['Access-Control-Allow-Credentials'] = 'true'
     
     # Strict Security Headers
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://bcare.milvikpakistan.com https://bcare.milvik.io https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';"
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://pkcm.milvik.io https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';"
     response.headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -210,7 +210,7 @@ def get_bima_token(force_refresh=False):
 
     logger.info("[Flask Backend] Refreshing BIMA API token...")
     res = requests.post(
-        "https://bcare.milvikpakistan.com/authorize/tp/login",
+        "https://pkcm.milvik.io/authorize/tp/login",
         json=payload,
         headers=headers,
         timeout=15,
@@ -265,7 +265,7 @@ def service_search():
             return jsonify({"error": "Phone number (msisdn) is required"}), 400
 
         token = get_bima_token()
-        url = f"https://bcare.milvikpakistan.com/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY"
+        url = f"https://pkcm.milvik.io/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY"
         headers = {
             "auth-token": token
         }
