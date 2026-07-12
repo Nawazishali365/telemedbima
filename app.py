@@ -210,7 +210,7 @@ def get_bima_token(force_refresh=False):
 
     logger.info("[Flask Backend] Refreshing BIMA API token...")
     res = requests.post(
-        "https://bcare.milvik.io/authorize/tp/login",
+        "https://bcare.milvikpakistan.com/authorize/tp/login",
         json=payload,
         headers=headers,
         timeout=15,
@@ -265,7 +265,7 @@ def service_search():
             return jsonify({"error": "Phone number (msisdn) is required"}), 400
 
         token = get_bima_token()
-        url = f"https://bcare.milvik.io/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY"
+        url = f"https://bcare.milvikpakistan.com/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY"
         headers = {
             "auth-token": token
         }

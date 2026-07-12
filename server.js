@@ -199,7 +199,7 @@ async function getBimaToken(forceRefresh = false) {
 
     console.log('[Node.js Backend] Refreshing BIMA API token...');
     const { status, body } = await httpsRequest({
-        hostname: 'bcare.milvik.io',
+        hostname: 'bcare.milvikpakistan.com',
         path: '/authorize/tp/login',
         method: 'POST',
         headers: headers
@@ -264,7 +264,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
         const apiPath = `/tp/service/search/${msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY`;
 
         let result = await httpsRequest({
-            hostname: 'bcare.milvik.io',
+            hostname: 'bcare.milvikpakistan.com',
             path: apiPath,
             method: 'GET',
             headers: { 'auth-token': token }
@@ -275,7 +275,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
             console.log('[Node.js Backend] Token unauthorized. Refreshing token...');
             token = await getBimaToken(true);
             result = await httpsRequest({
-                hostname: 'bcare.milvik.io',
+                hostname: 'bcare.milvikpakistan.com',
                 path: apiPath,
                 method: 'GET',
                 headers: { 'auth-token': token }
