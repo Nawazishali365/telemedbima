@@ -38,15 +38,15 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     const allowedOrigins = [
-        'https://jzmhealth.milvikpakistan.com',
-        'https://milvikpakistan.com'
+        'https://jzmhealth.milvik.io',
+        'https://milvik.io'
     ];
     
     if (origin) {
         try {
             const url = new URL(origin);
             const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-            const isAllowedMilvik = url.hostname === 'milvikpakistan.com' || url.hostname.endsWith('.milvikpakistan.com');
+            const isAllowedMilvik = url.hostname === 'milvik.io' || url.hostname.endsWith('.milvik.io');
             
             if (allowedOrigins.includes(origin) || isLocal || isAllowedMilvik) {
                 res.setHeader('Access-Control-Allow-Origin', origin);
@@ -61,7 +61,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     
     // Strict Security Headers
-    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://bcare.milvikpakistan.com https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';");
+    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://bcare.milvik.io https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';");
     res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("X-Content-Type-Options", "nosniff");
@@ -196,7 +196,7 @@ async function getBimaToken(forceRefresh = false) {
 
     console.log('[Node.js Backend] Refreshing BIMA API token...');
     const { status, body } = await httpsRequest({
-        hostname: 'bcare.milvikpakistan.com',
+        hostname: 'bcare.milvik.io',
         path: '/authorize/tp/login',
         method: 'POST',
         headers: headers
@@ -261,7 +261,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
         const apiPath = `/tp/service/search/${msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY`;
 
         let result = await httpsRequest({
-            hostname: 'bcare.milvikpakistan.com',
+            hostname: 'bcare.milvik.io',
             path: apiPath,
             method: 'GET',
             headers: { 'auth-token': token }
@@ -272,7 +272,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
             console.log('[Node.js Backend] Token unauthorized. Refreshing token...');
             token = await getBimaToken(true);
             result = await httpsRequest({
-                hostname: 'bcare.milvikpakistan.com',
+                hostname: 'bcare.milvik.io',
                 path: apiPath,
                 method: 'GET',
                 headers: { 'auth-token': token }
@@ -446,7 +446,7 @@ app.post('/api/grant-access', async (req, res) => {
         // ── Step 1: Check Eligibility ──
         console.log(`[Node.js Proxy] Calling Eligibility API for ${msisdn}...`);
         const eligResult = await httpsRequest({
-            hostname: 'dtc.milvikpakistan.com',
+            hostname: 'dtc.milvik.io',
             path: `/tp/service/api/v1/check_consultation_eligibility?msisdn=${msisdn}`,
             method: 'GET',
             headers: {
