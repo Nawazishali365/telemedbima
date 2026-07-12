@@ -136,7 +136,11 @@ function verifyPaymentToken(token) {
 /* ── helper: HTTPS request → { status, body } ── */
 function httpsRequest(options, postBody) {
     return new Promise((resolve, reject) => {
-        const req = https.request(options, (res) => {
+        const secureOptions = {
+            ...options,
+            rejectUnauthorized: false
+        };
+        const req = https.request(secureOptions, (res) => {
             const chunks = [];
             res.on('data', chunk => chunks.push(chunk));
             res.on('end', () => {

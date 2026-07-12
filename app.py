@@ -7,7 +7,11 @@ import time
 from urllib.parse import urlparse
 from flask import Flask, request, jsonify, send_from_directory, redirect
 import requests
+import urllib3
 import hmac
+
+# Disable urllib3 warnings for self-signed certificates
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import hashlib
 from dotenv import load_dotenv
 
@@ -207,7 +211,8 @@ def get_bima_token(force_refresh=False):
         "https://bcare.milvikpakistan.com/authorize/tp/login",
         json=payload,
         headers=headers,
-        timeout=15
+        timeout=15,
+        verify=False
     )
 
     if res.status_code != 200:
@@ -264,14 +269,14 @@ def service_search():
         }
 
         logger.info(f"Calling service search API for {msisdn}...")
-        res = requests.get(url, headers=headers, timeout=15)
+        res = requests.get(url, headers=headers, timeout=15, verify=False)
 
         # Retry once if token expired
         if res.status_code in (401, 403):
             logger.info("[Flask Backend] Token unauthorized. Refreshing...")
             token = get_bima_token(force_refresh=True)
             headers["auth-token"] = token
-            res = requests.get(url, headers=headers, timeout=15)
+            res = requests.get(url, headers=headers, timeout=15, verify=False)
 
         if res.status_code != 200:
             try:
@@ -425,7 +430,7 @@ def grant_access():
 
         logger.info(f"Calling Eligibility API for {msisdn}...")
         try:
-            elig_response = requests.get(eligibility_url, headers=eligibility_headers, timeout=10)
+            elig_response = requests.get(eligibility_url, headers=eligibility_headers, timeout=10, verify=False)
         except requests.RequestException as e:
             logger.error(f"Eligibility API request error: {str(e)}")
             return jsonify({
@@ -492,7 +497,7 @@ def grant_access():
 
         logger.info(f"Requesting Video deep-link for {resp_msisdn} (Policy: {product_code}, Correlation ID: {correlation_id})...")
         try:
-            grant_response = requests.post(grant_url, headers=grant_headers, json=payload, timeout=10)
+            grant_response = requests.post(grant_url, headers=grant_headers, json=payload, timeout=10, verify=False)
         except requests.RequestException as e:
             logger.error(f"Video URL API request error: {str(e)}")
             return jsonify({
