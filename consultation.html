@@ -27,8 +27,7 @@
                     ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
             };
 
-            ttq.load('D8EMLTRC77U0TBB14HKG');
-            ttq.page();
+            ttq.load('D8EMLTRC77U0TBB14HKG', { autoConfig: false });
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
@@ -516,15 +515,15 @@
             setLoading(true);
 
             // Track button click / attempt to consult
-            console.log('Tracking Event: form_submit');
+            console.log('Tracking Event: form_submit_d');
             if (window.gtag) {
-                gtag('event', 'form_submit');
+                gtag('event', 'form_submit_d');
             }
             if (window.fbq) {
-                fbq('track', 'form_submit');
+                fbq('track', 'form_submit_d');
             }
             if (window.ttq) {
-                ttq.track('form_submit');
+                ttq.track('form_submit_d');
             }
 
             try {
@@ -589,20 +588,56 @@
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
+        /* ── Auto-fetch MSISDN from mobile data headers or URL on load ── */
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryMsisdn = urlParams.get('msisdn');
+            if (queryMsisdn) {
+                populateMsisdn(queryMsisdn);
+                return;
+            }
+
+            fetch('/api/detect-msisdn')
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.msisdn) {
+                        populateMsisdn(data.msisdn);
+                    }
+                })
+                .catch(err => console.error('Failed to auto-fetch MSISDN from headers:', err));
+
+            function populateMsisdn(rawVal) {
+                const cleanNum = rawVal.replace(/[^0-9]/g, '');
+                let localPart = cleanNum;
+                if (cleanNum.startsWith('92')) {
+                    localPart = cleanNum.substring(2);
+                } else if (cleanNum.startsWith('03')) {
+                    localPart = cleanNum.substring(1);
+                } else if (cleanNum.startsWith('3') && cleanNum.length === 10) {
+                    localPart = cleanNum;
+                }
+                const input = document.getElementById('phoneNumber');
+                if (input) {
+                    input.value = localPart;
+                    console.log('Populated MSISDN:', rawVal);
+                }
+            }
+        });
+
         /* ── Event tracking helper: msisdn enter ── */
         let msisdnTracked = false;
         function trackMsisdnEnter() {
             if (msisdnTracked) return;
             msisdnTracked = true;
-            console.log('Tracking Event: select_content');
+            console.log('Tracking Event: select_content_d');
             if (window.gtag) {
-                gtag('event', 'select_content');
+                gtag('event', 'select_content_d');
             }
             if (window.fbq) {
-                fbq('track', 'select_content');
+                fbq('track', 'select_content_d');
             }
             if (window.ttq) {
-                ttq.track('select_content');
+                ttq.track('select_content_d');
             }
         }
 

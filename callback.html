@@ -21,7 +21,7 @@
                     ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
             };
 
-            ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: true });
+            ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: false });
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
@@ -320,7 +320,7 @@
                             console.error('Failed to hash phone number:', e);
                         }
                     }
-                    window.ttq.track('Purchase', {
+                    window.ttq.track('Purchase_d', {
                         value: 300,
                         currency: 'PKR',
                         content_type: 'product',
@@ -339,7 +339,7 @@
                 }
 
                 if (isBimaVoucher && typeof gtag === 'function') {
-                    gtag('event', 'Purchase', {
+                    gtag('event', 'Purchase_d', {
                         value: 300,
                         currency: 'PKR',
                         transaction_id: trxRefNo
@@ -347,7 +347,7 @@
                 }
                 
                 // Trigger Firebase Subscribe/Purchase event on success
-                logEvent(analytics, isBimaVoucher ? 'Purchase' : (isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe')), {
+                logEvent(analytics, isBimaVoucher ? 'Purchase_d' : (isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe')), {
                     value: 300,
                     currency: 'PKR',
                     content_type: 'insurance',
@@ -371,7 +371,7 @@
                             console.error('Failed to hash phone number:', e);
                         }
                     }
-                    window.ttq.track('Purchase Failed', {
+                    window.ttq.track('Purchase Failed_d', {
                         content_type: 'product',
                         content_id: 'bima_voucher_food_campaign',
                         content_ids: ['bima_voucher_food_campaign'],
@@ -388,11 +388,11 @@
                 }
 
                 if (isBimaVoucher && typeof gtag === 'function') {
-                    gtag('event', 'Purchase Failed');
+                    gtag('event', 'Purchase Failed_d');
                 }
                 
                 // Trigger Firebase Subscribe_Failed event on failure
-                logEvent(analytics, isBimaVoucher ? 'Purchase Failed' : (isBimaFamily ? 'Subscribe_Failed_BimaFamily' : (isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed')), {
+                logEvent(analytics, isBimaVoucher ? 'Purchase Failed_d' : (isBimaFamily ? 'Subscribe_Failed_BimaFamily' : (isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed')), {
                     content_type: 'insurance',
                     content_name: isBimaVoucher ? 'BIMA Voucher Food Campaign' : (isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance'),
                     description: isBimaVoucher ? 'BIMA Free Food Voucher Campaign Subscription Failed' : (isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription Failed' : 'Monthly Insurance Subscription Failed'),
