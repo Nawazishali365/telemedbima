@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIMA Health - Verifying Connection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            max-width: 400px;
+            width: 100%;
+            margin: 20px;
+        }
+        .logo-img {
+            height: 50px;
+            width: auto;
+            margin-bottom: 30px;
+        }
+        .spinner {
+            width: 45px;
+            height: 45px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #0056b3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+        .status-text {
+            font-size: 18px;
+            color: #334155;
+            font-weight: 500;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="bima_logo.jpg" alt="BIMA" class="logo-img">
+        <div class="spinner"></div>
+        <p class="status-text">Verifying...</p>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const target = urlParams.get('target') || 'BimaVoucher/index2.html';
+            const host = window.location.host;
+
+            // Local development safeguard
+            if (host.includes('localhost') || host.includes('127.0.0.1')) {
+                window.location.href = `http://${host}/${target}?he_skip=1`;
+                return;
+            }
+
+            // If page is loaded on HTTPS, we must hop to HTTP to allow header injection
+            if (window.location.protocol === 'https:') {
+                if (urlParams.get('he_hop') === '1') {
+                    // Cloudflare/Nginx forced HTTPS redirect loop protection. Bypass to target.
+                    window.location.href = `https://${host}/${target}?he_fail=1`;
+                    return;
+                }
+                const sep = window.location.search ? '&' : '?';
+                window.location.href = window.location.href.replace('https:', 'http:') + sep + 'he_hop=1';
+                return;
+            }
+
+            // We are on HTTP. Make background fetch request to detect MSISDN from carrier headers.
+            fetch('/api/detect-msisdn')
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.msisdn) {
+                        window.location.href = `https://${host}/${target}?msisdn=${encodeURIComponent(data.msisdn)}`;
+                    } else {
+                        window.location.href = `https://${host}/${target}?he_fail=1`;
+                    }
+                })
+                .catch(err => {
+                    console.error('Connection verification failed:', err);
+                    window.location.href = `https://${host}/${target}?he_fail=1`;
+                });
+        });
+    </script>
+</body>
+</html>

@@ -548,68 +548,8 @@ def grant_access():
 
 @app.route('/landingpage', methods=['GET'])
 def landing_page_he():
-    host = request.headers.get('Host', 'jzmhealth.milvik.io')
-    target = request.args.get('target', 'BimaVoucher/index2.html')
-    
-    # Skip if local
-    if 'localhost' in host or '127.0.0.1' in host:
-        return redirect(f"http://{host}/{target}?he_skip=1")
-
-    # Skip if he_fail or he_skip is already present in query params
-    if request.args.get('he_fail') or request.args.get('he_skip'):
-        return redirect(f"https://{host}/{target}?he_fail=1")
-
-    # Determine protocol (taking trust proxies / Cloudflare headers into account)
-    proto = request.headers.get('X-Forwarded-Proto', 'https')
-    if request.is_secure:
-        proto = 'https'
-
-    if proto == 'https':
-        if request.args.get('he_hop') == '1':
-            # We already tried to redirect to HTTP, but it came back as HTTPS.
-            # This means Cloudflare/Nginx is forcing HTTPS, preventing HTTP header enrichment.
-            logger.info("[LandingPage HE] HTTPS redirection detected (Cloudflare/Nginx forced). Bypassing to target.")
-            return redirect(f"https://{host}/{target}?he_fail=1")
-        
-        # Redirection to HTTP (Ad Network Hop)
-        sep = '&' if '?' in request.url else '?'
-        http_url = request.url.replace('https://', 'http://') + sep + 'he_hop=1'
-        logger.info(f"[LandingPage HE] HTTPS request detected. Hopping to HTTP to capture headers: {http_url}")
-        return redirect(http_url)
-    else:
-        # We are on HTTP. Look for MSISDN headers.
-        header_keys = [
-            'x-msisdn',
-            'x-up-calling-line-id',
-            'msisdn',
-            'x-device-msisdn',
-            'x-hcl-msisdn',
-            'x-forwarded-for-msisdn',
-            'http_x_msisdn',
-            'http-x-msisdn',
-            'http_msisdn',
-            'http-msisdn',
-            'http_x_up_calling_line_id',
-            'http-x-up-calling-line-id'
-        ]
-        
-        detected_msisdn = None
-        for key in header_keys:
-            val = request.headers.get(key) or request.headers.get(key.lower())
-            if val:
-                detected_msisdn = val.strip()
-                break
-
-        if detected_msisdn:
-            # Found MSISDN. Redirect to HTTPS with the msisdn parameter
-            https_url = f"https://{host}/{target}?msisdn={detected_msisdn}"
-            logger.info(f"[LandingPage HE] MSISDN detected in HTTP headers. Redirecting to HTTPS: {https_url}")
-            return redirect(https_url)
-        else:
-            # No MSISDN headers found. Redirect to HTTPS with he_fail=1 to prevent loop
-            https_url = f"https://{host}/{target}?he_fail=1"
-            logger.info(f"[LandingPage HE] No MSISDN headers found in HTTP request. Redirecting to HTTPS: {https_url}")
-            return redirect(https_url)
+    query_str = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
+    return redirect('/landingpage.html' + query_str)
 
 if __name__ == '__main__':
     # Load port from .env or default to 3000

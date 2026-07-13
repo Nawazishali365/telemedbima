@@ -76,72 +76,10 @@ app.use((req, res, next) => {
     next();
 });
 
-// 2b. LandingPage Route for Carrier Header Enrichment
+// 2b. LandingPage Route (Redirects to static landingpage.html)
 app.get('/landingpage', (req, res) => {
-    const host = req.headers.host || 'jzmhealth.milvik.io';
-    const target = req.query.target || 'BimaVoucher/index2.html';
-    
-    // Skip if local
-    if (host.includes('localhost') || host.includes('127.0.0.1')) {
-        return res.redirect(`http://${host}/${target}?he_skip=1`);
-    }
-
-    // Skip redirect if he_fail or he_skip is already present in query params
-    if (req.query.he_fail || req.query.he_skip) {
-        return res.redirect(`https://${host}/${target}?he_fail=1`);
-    }
-
-    const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
-    
-    if (proto === 'https') {
-        if (req.query.he_hop === '1') {
-            // We already tried to redirect to HTTP, but it came back as HTTPS.
-            // This means Cloudflare/Nginx is forcing HTTPS, preventing HTTP header enrichment.
-            console.log(`[LandingPage HE] HTTPS redirection detected (Cloudflare/Nginx forced). Bypassing to target.`);
-            return res.redirect(`https://${host}/${target}?he_fail=1`);
-        }
-        // Redirection to HTTP (Ad Network Hop)
-        const httpUrl = `http://${host}${req.originalUrl}${req.originalUrl.includes('?') ? '&' : '?'}he_hop=1`;
-        console.log(`[LandingPage HE] HTTPS request detected. Hopping to HTTP to capture headers: ${httpUrl}`);
-        return res.redirect(httpUrl);
-    } else {
-        // We are on HTTP. Look for MSISDN headers.
-        const headerKeys = [
-            'x-msisdn',
-            'x-up-calling-line-id',
-            'msisdn',
-            'x-device-msisdn',
-            'x-hcl-msisdn',
-            'x-forwarded-for-msisdn',
-            'http_x_msisdn',
-            'http-x-msisdn',
-            'http_msisdn',
-            'http-msisdn',
-            'http_x_up_calling_line_id',
-            'http-x-up-calling-line-id'
-        ];
-        
-        let detectedMsisdn = null;
-        for (const key of headerKeys) {
-            const val = req.headers[key] || req.headers[key.toLowerCase()];
-            if (val) {
-                detectedMsisdn = val.toString().trim();
-                break;
-            }
-        }
-
-        if (detectedMsisdn) {
-            // Found MSISDN. Redirect to HTTPS with the msisdn parameter
-            const httpsUrl = `https://${host}/${target}?msisdn=${encodeURIComponent(detectedMsisdn)}`;
-            console.log(`[LandingPage HE] MSISDN detected in HTTP headers. Redirecting to HTTPS: ${httpsUrl}`);
-            return res.redirect(httpsUrl);
-        } else {
-            // No MSISDN headers found. Redirect to HTTPS with he_fail=1 to prevent loop
-            const httpsUrl = `https://${host}/${target}?he_fail=1`;
-            console.log(`[LandingPage HE] No MSISDN headers found in HTTP request. Redirecting to HTTPS: ${httpsUrl}`);
-            return res.redirect(httpsUrl);
-        }
-    }
+    const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+    res.redirect('/landingpage.html' + query);
 });
 
 app.use(express.static(path.join(__dirname)));
