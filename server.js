@@ -76,10 +76,10 @@ app.use((req, res, next) => {
     next();
 });
 
-// 2b. LandingPage Route (Redirects to static landingpage.html inside BimaVoucher)
+// 2b. LandingPage Route (Redirects to static landingpage.html)
 app.get('/landingpage', (req, res) => {
     const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
-    res.redirect('/BimaVoucher/landingpage.html' + query);
+    res.redirect('/landingpage.html' + query);
 });
 
 app.use(express.static(path.join(__dirname)));

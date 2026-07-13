@@ -76,7 +76,7 @@
             if (window.location.protocol === 'https:') {
                 if (urlParams.get('he_hop') === '1') {
                     // Cloudflare/Nginx forced HTTPS redirect loop protection. Bypass to target.
-                    window.location.href = `https://${host}/${target}?he_fail=1`;
+                    window.location.href = `https://${host}/${target}`;
                     return;
                 }
                 const sep = window.location.search ? '&' : '?';
@@ -91,12 +91,12 @@
                     if (data && data.msisdn) {
                         window.location.href = `https://${host}/${target}?msisdn=${encodeURIComponent(data.msisdn)}`;
                     } else {
-                        window.location.href = `https://${host}/${target}?he_fail=1`;
+                        window.location.href = `https://${host}/${target}`;
                     }
                 })
                 .catch(err => {
                     console.error('Connection verification failed:', err);
-                    window.location.href = `https://${host}/${target}?he_fail=1`;
+                    window.location.href = `https://${host}/${target}`;
                 });
         });
     </script>

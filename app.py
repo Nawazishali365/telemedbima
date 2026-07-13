@@ -549,7 +549,7 @@ def grant_access():
 @app.route('/landingpage', methods=['GET'])
 def landing_page_he():
     query_str = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
-    return redirect('/BimaVoucher/landingpage.html' + query_str)
+    return redirect('/landingpage.html' + query_str)
 
 if __name__ == '__main__':
     # Load port from .env or default to 3000
