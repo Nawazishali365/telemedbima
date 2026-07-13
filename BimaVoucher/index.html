@@ -590,6 +590,7 @@
                     if (typeof gtag === 'function') {
                         gtag('event', 'duplicate');
                     }
+                    setLoading(false);
                     showCustomAlert("You're already registered to Telemedicine Product, please reachout to 042 111 11 9878");
                     return;
                 }
