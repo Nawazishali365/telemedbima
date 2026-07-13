@@ -82,15 +82,25 @@
             fetch('/api/detect-msisdn')
                 .then(res => res.json())
                 .then(data => {
+                    const statusText = document.querySelector('.status-text');
+                    const spinner = document.querySelector('.spinner');
+                    if (spinner) spinner.style.display = 'none';
+
                     if (data && data.msisdn) {
-                        window.location.href = `https://${host}/${target}?msisdn=${encodeURIComponent(data.msisdn)}`;
+                        statusText.textContent = `MSISDN: ${data.msisdn}`;
+                        statusText.style.color = '#10b981';
                     } else {
-                        window.location.href = `https://${host}/${target}`;
+                        statusText.textContent = "no msisdn fetched";
+                        statusText.style.color = '#ef4444';
                     }
                 })
                 .catch(err => {
                     console.error('Connection verification failed:', err);
-                    window.location.href = `https://${host}/${target}`;
+                    const statusText = document.querySelector('.status-text');
+                    const spinner = document.querySelector('.spinner');
+                    if (spinner) spinner.style.display = 'none';
+                    statusText.textContent = "no msisdn fetched";
+                    statusText.style.color = '#ef4444';
                 });
         });
     </script>
