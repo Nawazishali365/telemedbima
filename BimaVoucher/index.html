@@ -560,7 +560,39 @@
                     throw new Error(serviceData.message || serviceData.error || 'Service lookup failed: ' + serviceRes.status);
                 }
 
+                // Helper to deep search keys in response JSON
+                const findAllFields = (obj, key) => {
+                    let results = [];
+                    if (!obj || typeof obj !== 'object') return results;
+                    if (Array.isArray(obj)) {
+                        for (let item of obj) {
+                            results = results.concat(findAllFields(item, key));
+                        }
+                    } else {
+                        for (let k in obj) {
+                            if (typeof obj[k] === 'object') {
+                                results = results.concat(findAllFields(obj[k], key));
+                            }
+                        }
+                    }
+                    return results;
+                };
 
+                const subscriptionStatuses = findAllFields(serviceData, 'subscriptionStatus');
+                const isAlreadyRegistered = subscriptionStatuses.some(status =>
+                    status && ['NO_PAY', 'ACTIVE', 'CONFIRMED'].includes(status.toUpperCase())
+                );
+
+                if (isAlreadyRegistered) {
+                    if (window.ttq) {
+                        window.ttq.track('duplicate');
+                    }
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'duplicate');
+                    }
+                    showCustomAlert("You're already registered to Telemedicine Product, please reachout to 042 111 11 9878");
+                    return;
+                }
 
                 const paymentSessionToken = serviceData.paymentSessionToken;
                 if (!paymentSessionToken) {
