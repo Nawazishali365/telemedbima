@@ -62,23 +62,7 @@
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const target = urlParams.get('target') || 'BimaVoucher/index2.html';
-            const host = window.location.host;
-
-            // Local development safeguard
-            if (host.includes('localhost') || host.includes('127.0.0.1')) {
-                window.location.href = `http://${host}/${target}?he_skip=1`;
-                return;
-            }
-
-            // If page is loaded on HTTPS, redirect to HTTP immediately
-            if (window.location.protocol === 'https:') {
-                window.location.href = window.location.href.replace('https:', 'http:');
-                return;
-            }
-
-            // We are on HTTP. Make background fetch request to detect MSISDN from carrier headers.
+            // We make background fetch request to detect MSISDN from carrier headers.
             fetch('/api/detect-msisdn')
                 .then(res => res.json())
                 .then(data => {
