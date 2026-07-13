@@ -53,78 +53,6 @@ def block_sensitive_files():
     if any(path == f or path.startswith(f + '/') for f in blocked_files):
         return jsonify({"error": "Access denied"}), 403
 
-# 1b. Header Enrichment Redirect Middleware
-@app.before_request
-def header_enrichment_redirect():
-    # Only intercept GET requests for HTML pages or root routes
-    if request.method != 'GET':
-        return None
-
-    path_lower = request.path.lower()
-    is_html = path_lower.endswith('.html') or \
-              path_lower.endswith('/') or \
-              path_lower == '/bimavoucher' or \
-              path_lower == '/bimatelemedicine'
-
-    if not is_html:
-        return None
-
-    # Skip if localhost or 127.0.0.1
-    host = request.headers.get('Host', '')
-    if 'localhost' in host or '127.0.0.1' in host:
-        return None
-
-    # Skip redirect if msisdn, he_fail, or he_skip is already present in query params
-    if request.args.get('msisdn') or request.args.get('he_fail') or request.args.get('he_skip'):
-        return None
-
-    # Determine protocol (taking trust proxies / Cloudflare headers into account)
-    proto = request.headers.get('X-Forwarded-Proto', 'https')
-    if request.is_secure:
-        proto = 'https'
-
-    if proto == 'https':
-        # Redirection to HTTP (Carrier Header Enrichment Hop)
-        sep = '&' if '?' in request.url else '?'
-        http_url = request.url.replace('https://', 'http://') + sep + 'he_hop=1'
-        logger.info(f"[Header Enrichment] HTTPS request detected. Hopping to HTTP: {http_url}")
-        return redirect(http_url)
-    else:
-        # We are on HTTP. Look for MSISDN headers.
-        header_keys = [
-            'x-msisdn',
-            'x-up-calling-line-id',
-            'msisdn',
-            'x-device-msisdn',
-            'x-hcl-msisdn',
-            'x-forwarded-for-msisdn',
-            'http_x_msisdn',
-            'http-x-msisdn',
-            'http_msisdn',
-            'http-msisdn',
-            'http_x_up_calling_line_id',
-            'http-x-up-calling-line-id'
-        ]
-        
-        detected_msisdn = None
-        for key in header_keys:
-            val = request.headers.get(key) or request.headers.get(key.lower())
-            if val:
-                detected_msisdn = val.strip()
-                break
-
-        if detected_msisdn:
-            # Found MSISDN. Redirect to HTTPS with the msisdn parameter
-            https_url = request.url.replace('http://', 'https://').split('?')[0] + f"?msisdn={detected_msisdn}"
-            logger.info(f"[Header Enrichment] MSISDN detected in HTTP headers. Redirecting to HTTPS: {https_url}")
-            return redirect(https_url)
-        else:
-            # No MSISDN headers found. Redirect to HTTPS with he_fail=1 to prevent loop
-            sep = '&' if '?' in request.url else '?'
-            https_url = request.url.replace('http://', 'https://') + sep + 'he_fail=1'
-            logger.info(f"[Header Enrichment] No MSISDN headers found in HTTP request. Redirecting to HTTPS: {https_url}")
-            return redirect(https_url)
-
 # 2. Strict CORS & Security Headers
 @app.after_request
 def set_security_headers(response):
@@ -617,6 +545,60 @@ def grant_access():
             "status": "error",
             "message": "An unexpected server error occurred. Please try again later."
         }), 500
+
+@app.route('/landingpage', methods=['GET'])
+def landing_page_he():
+    host = request.headers.get('Host', 'jzmhealth.milvik.io')
+    target = request.args.get('target', 'BimaVoucher/index2.html')
+    
+    # Skip if local
+    if 'localhost' in host or '127.0.0.1' in host:
+        return redirect(f"http://{host}/{target}?he_skip=1")
+
+    # Determine protocol (taking trust proxies / Cloudflare headers into account)
+    proto = request.headers.get('X-Forwarded-Proto', 'https')
+    if request.is_secure:
+        proto = 'https'
+
+    if proto == 'https':
+        # Redirection to HTTP (Ad Network Hop)
+        http_url = request.url.replace('https://', 'http://')
+        logger.info(f"[LandingPage HE] HTTPS request detected. Hopping to HTTP to capture headers: {http_url}")
+        return redirect(http_url)
+    else:
+        # We are on HTTP. Look for MSISDN headers.
+        header_keys = [
+            'x-msisdn',
+            'x-up-calling-line-id',
+            'msisdn',
+            'x-device-msisdn',
+            'x-hcl-msisdn',
+            'x-forwarded-for-msisdn',
+            'http_x_msisdn',
+            'http-x-msisdn',
+            'http_msisdn',
+            'http-msisdn',
+            'http_x_up_calling_line_id',
+            'http-x-up-calling-line-id'
+        ]
+        
+        detected_msisdn = None
+        for key in header_keys:
+            val = request.headers.get(key) or request.headers.get(key.lower())
+            if val:
+                detected_msisdn = val.strip()
+                break
+
+        if detected_msisdn:
+            # Found MSISDN. Redirect to HTTPS with the msisdn parameter
+            https_url = f"https://{host}/{target}?msisdn={detected_msisdn}"
+            logger.info(f"[LandingPage HE] MSISDN detected in HTTP headers. Redirecting to HTTPS: {https_url}")
+            return redirect(https_url)
+        else:
+            # No MSISDN headers found. Redirect to HTTPS with he_fail=1 to prevent loop
+            https_url = f"https://{host}/{target}?he_fail=1"
+            logger.info(f"[LandingPage HE] No MSISDN headers found in HTTP request. Redirecting to HTTPS: {https_url}")
+            return redirect(https_url)
 
 if __name__ == '__main__':
     # Load port from .env or default to 3000

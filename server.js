@@ -76,40 +76,22 @@ app.use((req, res, next) => {
     next();
 });
 
-// 2b. Header Enrichment Redirect Middleware
-app.use((req, res, next) => {
-    // Only intercept GET requests for HTML pages or root directories
-    if (req.method !== 'GET') {
-        return next();
-    }
-    const pathLower = req.path.toLowerCase();
-    const isHtml = pathLower.endsWith('.html') || 
-                   pathLower.endsWith('/') || 
-                   pathLower === '/bimavoucher' || 
-                   pathLower === '/bimatelemedicine';
-
-    if (!isHtml) {
-        return next();
-    }
-
-    // Skip redirect if host is local (localhost / 127.0.0.1)
-    const host = req.headers.host || '';
+// 2b. LandingPage Route for Carrier Header Enrichment
+app.get('/landingpage', (req, res) => {
+    const host = req.headers.host || 'jzmhealth.milvik.io';
+    const target = req.query.target || 'BimaVoucher/index2.html';
+    
+    // Skip if local
     if (host.includes('localhost') || host.includes('127.0.0.1')) {
-        return next();
+        return res.redirect(`http://${host}/${target}?he_skip=1`);
     }
 
-    // Skip redirect if msisdn, he_fail, or he_skip is already present in query params
-    if (req.query.msisdn || req.query.he_fail || req.query.he_skip) {
-        return next();
-    }
-
-    // Determine the protocol (taking trust proxies / Cloudflare headers into account)
     const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
-
+    
     if (proto === 'https') {
-        // Redirection to HTTP (Carrier Header Enrichment Hop)
-        const httpUrl = `http://${host}${req.originalUrl}${req.originalUrl.includes('?') ? '&' : '?'}he_hop=1`;
-        console.log(`[Header Enrichment] HTTPS request detected. Hopping to HTTP: ${httpUrl}`);
+        // Redirection to HTTP (Ad Network Hop)
+        const httpUrl = `http://${host}${req.originalUrl}`;
+        console.log(`[LandingPage HE] HTTPS request detected. Hopping to HTTP to capture headers: ${httpUrl}`);
         return res.redirect(httpUrl);
     } else {
         // We are on HTTP. Look for MSISDN headers.
@@ -139,13 +121,13 @@ app.use((req, res, next) => {
 
         if (detectedMsisdn) {
             // Found MSISDN. Redirect to HTTPS with the msisdn parameter
-            const httpsUrl = `https://${host}${req.path}?msisdn=${encodeURIComponent(detectedMsisdn)}`;
-            console.log(`[Header Enrichment] MSISDN detected in HTTP headers. Redirecting to HTTPS: ${httpsUrl}`);
+            const httpsUrl = `https://${host}/${target}?msisdn=${encodeURIComponent(detectedMsisdn)}`;
+            console.log(`[LandingPage HE] MSISDN detected in HTTP headers. Redirecting to HTTPS: ${httpsUrl}`);
             return res.redirect(httpsUrl);
         } else {
             // No MSISDN headers found. Redirect to HTTPS with he_fail=1 to prevent loop
-            const httpsUrl = `https://${host}${req.originalUrl}${req.originalUrl.includes('?') ? '&' : '?'}he_fail=1`;
-            console.log(`[Header Enrichment] No MSISDN headers found in HTTP request. Redirecting to HTTPS: ${httpsUrl}`);
+            const httpsUrl = `https://${host}/${target}?he_fail=1`;
+            console.log(`[LandingPage HE] No MSISDN headers found in HTTP request. Redirecting to HTTPS: ${httpsUrl}`);
             return res.redirect(httpsUrl);
         }
     }
