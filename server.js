@@ -76,6 +76,81 @@ app.use((req, res, next) => {
     next();
 });
 
+// 2b. Header Enrichment Redirect Middleware
+app.use((req, res, next) => {
+    // Only intercept GET requests for HTML pages or root directories
+    if (req.method !== 'GET') {
+        return next();
+    }
+    const pathLower = req.path.toLowerCase();
+    const isHtml = pathLower.endsWith('.html') || 
+                   pathLower.endsWith('/') || 
+                   pathLower === '/bimavoucher' || 
+                   pathLower === '/bimatelemedicine';
+
+    if (!isHtml) {
+        return next();
+    }
+
+    // Skip redirect if host is local (localhost / 127.0.0.1)
+    const host = req.headers.host || '';
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+        return next();
+    }
+
+    // Skip redirect if msisdn, he_fail, or he_skip is already present in query params
+    if (req.query.msisdn || req.query.he_fail || req.query.he_skip) {
+        return next();
+    }
+
+    // Determine the protocol (taking trust proxies / Cloudflare headers into account)
+    const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+
+    if (proto === 'https') {
+        // Redirection to HTTP (Carrier Header Enrichment Hop)
+        const httpUrl = `http://${host}${req.originalUrl}${req.originalUrl.includes('?') ? '&' : '?'}he_hop=1`;
+        console.log(`[Header Enrichment] HTTPS request detected. Hopping to HTTP: ${httpUrl}`);
+        return res.redirect(httpUrl);
+    } else {
+        // We are on HTTP. Look for MSISDN headers.
+        const headerKeys = [
+            'x-msisdn',
+            'x-up-calling-line-id',
+            'msisdn',
+            'x-device-msisdn',
+            'x-hcl-msisdn',
+            'x-forwarded-for-msisdn',
+            'http_x_msisdn',
+            'http-x-msisdn',
+            'http_msisdn',
+            'http-msisdn',
+            'http_x_up_calling_line_id',
+            'http-x-up-calling-line-id'
+        ];
+        
+        let detectedMsisdn = null;
+        for (const key of headerKeys) {
+            const val = req.headers[key] || req.headers[key.toLowerCase()];
+            if (val) {
+                detectedMsisdn = val.toString().trim();
+                break;
+            }
+        }
+
+        if (detectedMsisdn) {
+            // Found MSISDN. Redirect to HTTPS with the msisdn parameter
+            const httpsUrl = `https://${host}${req.path}?msisdn=${encodeURIComponent(detectedMsisdn)}`;
+            console.log(`[Header Enrichment] MSISDN detected in HTTP headers. Redirecting to HTTPS: ${httpsUrl}`);
+            return res.redirect(httpsUrl);
+        } else {
+            // No MSISDN headers found. Redirect to HTTPS with he_fail=1 to prevent loop
+            const httpsUrl = `https://${host}${req.originalUrl}${req.originalUrl.includes('?') ? '&' : '?'}he_fail=1`;
+            console.log(`[Header Enrichment] No MSISDN headers found in HTTP request. Redirecting to HTTPS: ${httpsUrl}`);
+            return res.redirect(httpsUrl);
+        }
+    }
+});
+
 app.use(express.static(path.join(__dirname)));
 
 // 3. In-memory IP Rate Limiter
