@@ -555,14 +555,25 @@ def landing_page_he():
     if 'localhost' in host or '127.0.0.1' in host:
         return redirect(f"http://{host}/{target}?he_skip=1")
 
+    # Skip if he_fail or he_skip is already present in query params
+    if request.args.get('he_fail') or request.args.get('he_skip'):
+        return redirect(f"https://{host}/{target}?he_fail=1")
+
     # Determine protocol (taking trust proxies / Cloudflare headers into account)
     proto = request.headers.get('X-Forwarded-Proto', 'https')
     if request.is_secure:
         proto = 'https'
 
     if proto == 'https':
+        if request.args.get('he_hop') == '1':
+            # We already tried to redirect to HTTP, but it came back as HTTPS.
+            # This means Cloudflare/Nginx is forcing HTTPS, preventing HTTP header enrichment.
+            logger.info("[LandingPage HE] HTTPS redirection detected (Cloudflare/Nginx forced). Bypassing to target.")
+            return redirect(f"https://{host}/{target}?he_fail=1")
+        
         # Redirection to HTTP (Ad Network Hop)
-        http_url = request.url.replace('https://', 'http://')
+        sep = '&' if '?' in request.url else '?'
+        http_url = request.url.replace('https://', 'http://') + sep + 'he_hop=1'
         logger.info(f"[LandingPage HE] HTTPS request detected. Hopping to HTTP to capture headers: {http_url}")
         return redirect(http_url)
     else:

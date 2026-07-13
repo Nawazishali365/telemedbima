@@ -86,11 +86,22 @@ app.get('/landingpage', (req, res) => {
         return res.redirect(`http://${host}/${target}?he_skip=1`);
     }
 
+    // Skip redirect if he_fail or he_skip is already present in query params
+    if (req.query.he_fail || req.query.he_skip) {
+        return res.redirect(`https://${host}/${target}?he_fail=1`);
+    }
+
     const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
     
     if (proto === 'https') {
+        if (req.query.he_hop === '1') {
+            // We already tried to redirect to HTTP, but it came back as HTTPS.
+            // This means Cloudflare/Nginx is forcing HTTPS, preventing HTTP header enrichment.
+            console.log(`[LandingPage HE] HTTPS redirection detected (Cloudflare/Nginx forced). Bypassing to target.`);
+            return res.redirect(`https://${host}/${target}?he_fail=1`);
+        }
         // Redirection to HTTP (Ad Network Hop)
-        const httpUrl = `http://${host}${req.originalUrl}`;
+        const httpUrl = `http://${host}${req.originalUrl}${req.originalUrl.includes('?') ? '&' : '?'}he_hop=1`;
         console.log(`[LandingPage HE] HTTPS request detected. Hopping to HTTP to capture headers: ${httpUrl}`);
         return res.redirect(httpUrl);
     } else {
