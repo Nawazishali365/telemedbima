@@ -6,7 +6,7 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-FLKEQYY9E9"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
         gtag('config', 'G-FLKEQYY9E9', { send_page_view: false });
     </script>
@@ -50,7 +50,8 @@
             background: white;
             border-radius: 0;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-            max-width: 430px; /* Optimal for iPhone Pro Max */
+            max-width: 430px;
+            /* Optimal for iPhone Pro Max */
             width: 100%;
             min-height: 100vh;
             padding: 30px 20px;
@@ -65,6 +66,7 @@
             body {
                 padding: 20px;
             }
+
             .container {
                 min-height: auto;
                 height: auto;
@@ -191,11 +193,25 @@
         }
 
         @media (max-width: 480px) {
-            body { padding: 5px; }
-            .container { padding: 15px 12px; }
-            .logo-img { height: 40px; }
-            .heading h1 { font-size: 24px; }
-            .result-container { padding: 15px; }
+            body {
+                padding: 5px;
+            }
+
+            .container {
+                padding: 15px 12px;
+            }
+
+            .logo-img {
+                height: 40px;
+            }
+
+            .heading h1 {
+                font-size: 24px;
+            }
+
+            .result-container {
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -253,7 +269,7 @@
             const isIndex2 = source === 'index2.html';
             const isBimaFamily = source.startsWith('BimaTelemedicine') || source === 'Bima Sehat/index.html';
             const isBimaVoucher = source.startsWith('BimaVoucher') || source === 'BimaVoucher/index.html';
-            
+
             // Set home button destination dynamically
             const homeBtn = document.querySelector('.home-btn');
             if (homeBtn) {
@@ -289,7 +305,7 @@
 
             statusEl.textContent = displayStatus;
             messageEl.textContent = displayMessage;
-            
+
             trxRefNoEl.textContent = trxRefNo;
 
             // SHA-256 Hashing helper
@@ -320,7 +336,7 @@
                             console.error('Failed to hash phone number:', e);
                         }
                     }
-                    window.ttq.track('Purchase_d', {
+                    window.ttq.track('Purchase', {
                         value: 300,
                         currency: 'PKR',
                         content_type: 'product',
@@ -339,15 +355,15 @@
                 }
 
                 if (isBimaVoucher && typeof gtag === 'function') {
-                    gtag('event', 'Purchase_d', {
+                    gtag('event', 'Purchase', {
                         value: 300,
                         currency: 'PKR',
                         transaction_id: trxRefNo
                     });
                 }
-                
+
                 // Trigger Firebase Subscribe/Purchase event on success
-                logEvent(analytics, isBimaVoucher ? 'Purchase_d' : (isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe')), {
+                logEvent(analytics, isBimaVoucher ? 'Purchase' : (isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe')), {
                     value: 300,
                     currency: 'PKR',
                     content_type: 'insurance',
@@ -371,7 +387,7 @@
                             console.error('Failed to hash phone number:', e);
                         }
                     }
-                    window.ttq.track('Purchase Failed_d', {
+                    window.ttq.track('Purchase Failed', {
                         content_type: 'product',
                         content_id: 'bima_voucher_food_campaign',
                         content_ids: ['bima_voucher_food_campaign'],
@@ -388,11 +404,11 @@
                 }
 
                 if (isBimaVoucher && typeof gtag === 'function') {
-                    gtag('event', 'Purchase Failed_d');
+                    gtag('event', 'Purchase Failed');
                 }
-                
+
                 // Trigger Firebase Subscribe_Failed event on failure
-                logEvent(analytics, isBimaVoucher ? 'Purchase Failed_d' : (isBimaFamily ? 'Subscribe_Failed_BimaFamily' : (isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed')), {
+                logEvent(analytics, isBimaVoucher ? 'Purchase Failed' : (isBimaFamily ? 'Subscribe_Failed_BimaFamily' : (isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed')), {
                     content_type: 'insurance',
                     content_name: isBimaVoucher ? 'BIMA Voucher Food Campaign' : (isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance'),
                     description: isBimaVoucher ? 'BIMA Free Food Voucher Campaign Subscription Failed' : (isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription Failed' : 'Monthly Insurance Subscription Failed'),
@@ -402,4 +418,5 @@
         });
     </script>
 </body>
+
 </html>
