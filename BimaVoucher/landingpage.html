@@ -72,15 +72,9 @@
                 return;
             }
 
-            // If page is loaded on HTTPS, we must hop to HTTP to allow header injection
+            // If page is loaded on HTTPS, redirect to HTTP immediately
             if (window.location.protocol === 'https:') {
-                if (urlParams.get('he_hop') === '1') {
-                    // Cloudflare/Nginx forced HTTPS redirect loop protection. Bypass to target.
-                    window.location.href = `https://${host}/${target}`;
-                    return;
-                }
-                const sep = window.location.search ? '&' : '?';
-                window.location.href = window.location.href.replace('https:', 'http:') + sep + 'he_hop=1';
+                window.location.href = window.location.href.replace('https:', 'http:');
                 return;
             }
 
