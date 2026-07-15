@@ -65,10 +65,25 @@
             const urlParams = new URLSearchParams(window.location.search);
             const target = urlParams.get('target') || 'index2.html';
             const host = window.location.host;
+            const heSkip = urlParams.get('he_skip') || urlParams.get('skip_he');
+
+            // Explicit bypass parameter (e.g. ?he_skip=1)
+            if (heSkip === '1') {
+                window.location.href = `https://jzmhealth.milvik.io/BimaVoucher/${target}?he_skip=1`;
+                return;
+            }
 
             // Local development safeguard
             if (host.includes('localhost') || host.includes('127.0.0.1')) {
                 window.location.href = `http://${host}/BimaVoucher/${target}?he_skip=1`;
+                return;
+            }
+
+            // Only perform Header Enrichment redirection for mobile users
+            const isMobile = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+            if (!isMobile) {
+                console.log('[HE] Desktop user detected. Bypassing Header Enrichment.');
+                window.location.href = `https://jzmhealth.milvik.io/BimaVoucher/${target}`;
                 return;
             }
 
