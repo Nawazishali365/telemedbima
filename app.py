@@ -573,6 +573,16 @@ def landing_page_he():
     query_str = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
     return redirect('/BimaVoucher/landingpage.html' + query_str)
 
+@app.route('/BimaVoucher/<path:filename>')
+def serve_bima_voucher(filename):
+    return send_from_directory('BimaVoucher', filename)
+
+@app.route('/<path:filename>')
+def serve_root_files(filename):
+    if filename.endswith('.py') or filename.endswith('.env') or filename.startswith('.'):
+        return "Access denied", 403
+    return send_from_directory('.', filename)
+
 if __name__ == '__main__':
     # Load port from .env or default to 3000
     port = int(os.getenv('PORT', 3000))
