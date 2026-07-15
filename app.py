@@ -234,6 +234,28 @@ def get_bima_token(force_refresh=False):
 
 @app.route('/api/detect-msisdn', methods=['GET'])
 def detect_msisdn():
+    # 1. Forward request headers to external detector site
+    headers = {}
+    for key, val in request.headers.items():
+        if key.lower() != 'host':
+            headers[key] = val
+
+    try:
+        # 2. Make the HTTP request to the external site
+        res = requests.get('http://54.154.2.113:8000/', headers=headers, timeout=5)
+        if res.status_code == 200:
+            # 3. Search for id="msisdn-val">03...
+            import re
+            match = re.search(r'id=["\']msisdn-val["\'][^>]*>([^<]+)<', res.text)
+            if match:
+                detected_msisdn = match.group(1).strip()
+                logger.info(f"[Flask HE] External site detected MSISDN: {detected_msisdn}")
+                return jsonify({"msisdn": detected_msisdn})
+    except Exception as e:
+        logger.error(f"[Flask HE] Error fetching from external detector: {str(e)}")
+
+    # Fallback to local check
+    logger.info("[Flask HE] External check failed/returned no MSISDN. Falling back to local headers...")
     header_keys = [
         'x-msisdn',
         'x-up-calling-line-id',
@@ -251,8 +273,9 @@ def detect_msisdn():
     for key in header_keys:
         val = request.headers.get(key) or request.headers.get(key.lower())
         if val:
-            logger.info(f"[Flask Auto-Fetch] Found MSISDN in header '{key}': {val}")
+            logger.info(f"[Flask Auto-Fetch] Found MSISDN in local header '{key}': {val}")
             return jsonify({"msisdn": val.strip()})
+
     return jsonify({"msisdn": None})
 
 @app.route('/api/service-search', methods=['POST'])

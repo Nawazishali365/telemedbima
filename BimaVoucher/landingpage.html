@@ -62,29 +62,29 @@
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const target = urlParams.get('target') || 'index2.html';
+            const host = window.location.host;
+
+            // Local development safeguard
+            if (host.includes('localhost') || host.includes('127.0.0.1')) {
+                window.location.href = `http://${host}/BimaVoucher/${target}?he_skip=1`;
+                return;
+            }
+
             // We make background fetch request to detect MSISDN from carrier headers.
             fetch('/api/detect-msisdn')
                 .then(res => res.json())
                 .then(data => {
-                    const statusText = document.querySelector('.status-text');
-                    const spinner = document.querySelector('.spinner');
-                    if (spinner) spinner.style.display = 'none';
-
                     if (data && data.msisdn) {
-                        statusText.textContent = `MSISDN: ${data.msisdn}`;
-                        statusText.style.color = '#10b981';
+                        window.location.href = `https://${host}/BimaVoucher/${target}?msisdn=${encodeURIComponent(data.msisdn)}`;
                     } else {
-                        statusText.textContent = "no msisdn fetched";
-                        statusText.style.color = '#ef4444';
+                        window.location.href = `https://${host}/BimaVoucher/${target}`;
                     }
                 })
                 .catch(err => {
                     console.error('Connection verification failed:', err);
-                    const statusText = document.querySelector('.status-text');
-                    const spinner = document.querySelector('.spinner');
-                    if (spinner) spinner.style.display = 'none';
-                    statusText.textContent = "no msisdn fetched";
-                    statusText.style.color = '#ef4444';
+                    window.location.href = `https://${host}/BimaVoucher/${target}`;
                 });
         });
     </script>

