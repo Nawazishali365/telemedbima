@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIMA Health - Verifying Connection</title>
+    <title>BIMA Health - Connection Diagnostics</title>
     <style>
         * {
             margin: 0;
@@ -46,6 +46,7 @@
             font-size: 18px;
             color: #334155;
             font-weight: 500;
+            word-break: break-all;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -57,17 +58,51 @@
     <div class="container">
         <img src="bima_logo.jpg" alt="BIMA" class="logo-img">
         <div class="spinner"></div>
-        <p class="status-text">Verifying...</p>
+        <p class="status-text">Verifying connection...</p>
+        <div id="protocol-warning" style="display: none; margin-top: 25px; font-size: 13px; color: #64748b; line-height: 1.5; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+            ⚠️ You are accessing via HTTPS. Carrier Header Enrichment only works over HTTP. Please visit:
+            <br>
+            <a id="http-link" href="#" style="color: #0056b3; text-decoration: underline; font-weight: 500; display: inline-block; margin-top: 5px; word-break: break-all;"></a>
+        </div>
     </div>
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const target = urlParams.get('target') || 'index2.html';
-            const query = window.location.search;
+            const statusText = document.querySelector('.status-text');
+            const spinner = document.querySelector('.spinner');
+            const warningDiv = document.getElementById('protocol-warning');
+            const httpLink = document.getElementById('http-link');
+            const host = window.location.host;
 
-            // Immediately redirect to the target page on the same domain
-            window.location.href = `/BimaVoucher/${target}${query}`;
+            if (window.location.protocol === 'https:') {
+                const httpUrl = window.location.href.replace('https:', 'http:');
+                httpLink.href = httpUrl;
+                httpLink.innerText = httpUrl;
+                warningDiv.style.display = 'block';
+            }
+
+            // Check headers via external detector directly if on HTTP (to trigger carrier injection)
+            const detectorUrl = window.location.protocol === 'https:' || host.includes('54.154.2.113')
+                ? '/api/detect-msisdn'
+                : 'http://54.154.2.113:8000/api/detect-msisdn';
+
+            statusText.innerText = 'Fetching MSISDN...';
+
+            fetch(detectorUrl)
+                .then(res => res.json())
+                .then(data => {
+                    spinner.style.display = 'none';
+                    if (data && data.msisdn) {
+                        statusText.innerHTML = `Fetched MSISDN:<br><strong style="color: #10b981; font-size: 24px; display: block; margin-top: 10px;">${data.msisdn}</strong>`;
+                    } else {
+                        statusText.innerHTML = `<span style="color: #ef4444; font-weight: 600;">No MSISDN fetched</span>`;
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    spinner.style.display = 'none';
+                    statusText.innerHTML = `<span style="color: #ef4444; font-weight: 600;">No MSISDN fetched</span>`;
+                });
         });
     </script>
 </body>
