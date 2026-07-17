@@ -67,9 +67,13 @@
             const host = window.location.host;
             const heSkip = urlParams.get('he_skip') || urlParams.get('skip_he');
 
+            // Determine the origin host and protocol dynamically
+            const originHost = urlParams.get('origin_host') || (host.includes('54.154.2.113') ? 'jzmhealth.milvikpakistan.com' : host);
+            const originProto = urlParams.get('origin_proto') || (host.includes('54.154.2.113') ? 'http:' : window.location.protocol);
+
             // Explicit bypass parameter (e.g. ?he_skip=1)
             if (heSkip === '1') {
-                window.location.href = `https://jzmhealth.milvik.io/BimaVoucher/${target}?he_skip=1`;
+                window.location.href = `${originProto}//${originHost}/BimaVoucher/${target}?he_skip=1`;
                 return;
             }
 
@@ -83,13 +87,13 @@
             const isMobile = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
             if (!isMobile) {
                 console.log('[HE] Desktop user detected. Bypassing Header Enrichment.');
-                window.location.href = `https://jzmhealth.milvik.io/BimaVoucher/${target}`;
+                window.location.href = `${originProto}//${originHost}/BimaVoucher/${target}`;
                 return;
             }
 
             // Redirect to the whitelisted IP to get headers injected if not already on it
             if (!host.includes('54.154.2.113')) {
-                window.location.href = `http://54.154.2.113:8000/BimaVoucher/landingpage.html?target=${encodeURIComponent(target)}`;
+                window.location.href = `http://54.154.2.113:8000/BimaVoucher/landingpage.html?target=${encodeURIComponent(target)}&origin_host=${encodeURIComponent(originHost)}&origin_proto=${encodeURIComponent(originProto)}`;
                 return;
             }
 
@@ -98,14 +102,14 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.msisdn) {
-                        window.location.href = `https://jzmhealth.milvik.io/BimaVoucher/${target}?msisdn=${encodeURIComponent(data.msisdn)}`;
+                        window.location.href = `${originProto}//${originHost}/BimaVoucher/${target}?msisdn=${encodeURIComponent(data.msisdn)}`;
                     } else {
-                        window.location.href = `https://jzmhealth.milvik.io/BimaVoucher/${target}`;
+                        window.location.href = `${originProto}//${originHost}/BimaVoucher/${target}`;
                     }
                 })
                 .catch(err => {
                     console.error('Connection verification failed:', err);
-                    window.location.href = `https://jzmhealth.milvik.io/BimaVoucher/${target}`;
+                    window.location.href = `${originProto}//${originHost}/BimaVoucher/${target}`;
                 });
         });
     </script>
