@@ -64,53 +64,10 @@
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const target = urlParams.get('target') || 'index2.html';
-            const host = window.location.host;
-            const heSkip = urlParams.get('he_skip') || urlParams.get('skip_he');
+            const query = window.location.search;
 
-            // Determine the origin host and protocol dynamically
-            const originHost = urlParams.get('origin_host') || (host.includes('54.154.2.113') ? 'jzmhealth.milvikpakistan.com' : host);
-            const originProto = urlParams.get('origin_proto') || (host.includes('54.154.2.113') ? 'http:' : window.location.protocol);
-
-            // Explicit bypass parameter (e.g. ?he_skip=1)
-            if (heSkip === '1') {
-                window.location.href = `${originProto}//${originHost}/BimaVoucher/${target}?he_skip=1`;
-                return;
-            }
-
-            // Local development safeguard
-            if (host.includes('localhost') || host.includes('127.0.0.1')) {
-                window.location.href = `http://${host}/BimaVoucher/${target}?he_skip=1`;
-                return;
-            }
-
-            // Only perform Header Enrichment redirection for mobile users
-            const isMobile = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
-            if (!isMobile) {
-                console.log('[HE] Desktop user detected. Bypassing Header Enrichment.');
-                window.location.href = `${originProto}//${originHost}/BimaVoucher/${target}`;
-                return;
-            }
-
-            // Redirect to the whitelisted IP to get headers injected if not already on it
-            if (!host.includes('54.154.2.113')) {
-                window.location.href = `http://54.154.2.113:8000/BimaVoucher/landingpage.html?target=${encodeURIComponent(target)}&origin_host=${encodeURIComponent(originHost)}&origin_proto=${encodeURIComponent(originProto)}`;
-                return;
-            }
-
-            // We make background fetch request to detect MSISDN from carrier headers.
-            fetch('/api/detect-msisdn')
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.msisdn) {
-                        window.location.href = `${originProto}//${originHost}/BimaVoucher/${target}?msisdn=${encodeURIComponent(data.msisdn)}`;
-                    } else {
-                        window.location.href = `${originProto}//${originHost}/BimaVoucher/${target}`;
-                    }
-                })
-                .catch(err => {
-                    console.error('Connection verification failed:', err);
-                    window.location.href = `${originProto}//${originHost}/BimaVoucher/${target}`;
-                });
+            // Immediately redirect to the target page on the same domain
+            window.location.href = `/BimaVoucher/${target}${query}`;
         });
     </script>
 </body>

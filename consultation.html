@@ -597,7 +597,12 @@
                 return;
             }
 
-            fetch('/api/detect-msisdn')
+            // Fallback: check headers via external detector directly if on HTTP (to trigger carrier injection)
+            const detectorUrl = window.location.protocol === 'https:'
+                ? '/api/detect-msisdn'
+                : 'http://54.154.2.113:8000/api/detect-msisdn';
+
+            fetch(detectorUrl)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.msisdn) {
