@@ -1,5 +1,6 @@
 const express = require('express');
 const path    = require('path');
+const fs      = require('fs');
 const https   = require('https');
 const http    = require('http');
 const crypto  = require('crypto');
@@ -89,13 +90,18 @@ app.get(['/BimaVoucher/fetch/index2.html', '/fetch/index2.html'], (req, res) => 
 
 app.post(['/BimaVoucher/index2.html', '/BimaVoucher/fetch/index2.html', '/index2.html', '/index2', '/fetch/index2.html'], (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
-    const targetPath = req.path || '/BimaVoucher/index2.html';
-    console.log(`[Node.js POST index2] Received POST payload for ${targetPath}:`, msisdn);
-    if (msisdn) {
-        return res.redirect(`${targetPath}?msisdn=${encodeURIComponent(msisdn)}`);
-    } else {
-        return res.redirect(targetPath);
-    }
+    console.log(`[Node.js POST index2] Received POST payload for ${req.path}:`, msisdn);
+    
+    const indexPath = path.join(__dirname, 'BimaVoucher', 'index2.html');
+    fs.readFile(indexPath, 'utf8', (err, html) => {
+        if (err) return res.status(500).send('Error loading page');
+        const injectedHtml = html.replace(
+            '<head>',
+            `<head><script>window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};</script>`
+        );
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.send(injectedHtml);
+    });
 });
 
 app.use(express.static(path.join(__dirname)));

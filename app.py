@@ -584,7 +584,7 @@ def serve_fetch_index2():
 @app.route('/index2', methods=['POST'])
 @app.route('/fetch/index2.html', methods=['POST'])
 def index2_post():
-    from urllib.parse import quote
+    import json
     msisdn = ''
     if request.is_json and request.json:
         msisdn = request.json.get('msisdn', '')
@@ -593,10 +593,18 @@ def index2_post():
     
     target_path = request.path
     logger.info(f"[Flask POST index2] Received POST MSISDN payload for {target_path}: {msisdn}")
-    if msisdn:
-        return redirect(f"{target_path}?msisdn={quote(str(msisdn))}")
-    else:
-        return redirect(target_path)
+    index_path = os.path.join(app.root_path, 'BimaVoucher', 'index2.html')
+    try:
+        with open(index_path, 'r', encoding='utf-8') as f:
+            html = f.read()
+        injected_html = html.replace(
+            '<head>',
+            f'<head><script>window.SERVER_DETECTED_MSISDN = {json.dumps(msisdn)};</script>'
+        )
+        return Response(injected_html, mimetype='text/html')
+    except Exception as e:
+        logger.error(f"Error reading index2.html: {e}")
+        return send_from_directory('BimaVoucher', 'index2.html')
 
 @app.route('/BimaVoucher/<path:filename>')
 def serve_bima_voucher(filename):
