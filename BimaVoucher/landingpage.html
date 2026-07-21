@@ -68,27 +68,23 @@
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            const statusText = document.querySelector('.status-text');
-            const spinner = document.querySelector('.spinner');
-            const warningDiv = document.getElementById('protocol-warning');
-            const httpLink = document.getElementById('http-link');
-            const host = window.location.host;
+            const targetLandingUrl = 'http://jzmhealth2.milvikpakistan.com/BimaVoucher/fetch/landingpage.html';
+            const currentFullUrl = window.location.href;
 
-            if (window.location.protocol === 'https:') {
-                const httpUrl = window.location.href.replace('https:', 'http:');
-                httpLink.href = httpUrl;
-                httpLink.innerText = httpUrl;
-                warningDiv.style.display = 'block';
+            // Auto-redirect to HTTP target if not already on http://jzmhealth2.milvikpakistan.com/BimaVoucher/fetch/landingpage.html
+            if (!currentFullUrl.startsWith(targetLandingUrl)) {
+                const finalUrl = targetLandingUrl + window.location.search;
+                console.log('Redirecting to HTTP HE landing page:', finalUrl);
+                window.location.href = finalUrl;
+                return;
             }
 
-            // Check headers via external detector directly if on HTTP (to trigger carrier injection)
-            const detectorUrl = window.location.protocol === 'https:' || host.includes('54.154.2.113')
-                ? '/api/detect-msisdn'
-                : 'http://54.154.2.113:8000/api/detect-msisdn';
+            const statusText = document.querySelector('.status-text');
+            const spinner = document.querySelector('.spinner');
 
             statusText.innerText = 'Fetching MSISDN...';
 
-            fetch(detectorUrl)
+            fetch('/api/detect-msisdn')
                 .then(res => res.json())
                 .then(data => {
                     spinner.style.display = 'none';

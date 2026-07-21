@@ -79,9 +79,8 @@ app.use((req, res, next) => {
 });
 
 // 2b. LandingPage & Index2 Routes
-app.get('/landingpage', (req, res) => {
-    const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
-    res.redirect('/BimaVoucher/landingpage.html' + query);
+app.get(/.*landingpage(\.html)?$/, (req, res) => {
+    res.sendFile(path.join(__dirname, 'BimaVoucher', 'landingpage.html'));
 });
 
 app.get(/.*index2(\.html)?$/, (req, res) => {

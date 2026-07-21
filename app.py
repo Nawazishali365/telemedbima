@@ -569,9 +569,10 @@ def grant_access():
         }), 500
 
 @app.route('/landingpage', methods=['GET'])
+@app.route('/BimaVoucher/fetch/landingpage.html', methods=['GET'])
+@app.route('/fetch/landingpage.html', methods=['GET'])
 def landing_page_he():
-    query_str = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
-    return redirect('/BimaVoucher/landingpage.html' + query_str)
+    return send_from_directory('BimaVoucher', 'landingpage.html')
 
 @app.route('/BimaVoucher/fetch/index2.html', methods=['GET'])
 @app.route('/fetch/index2.html', methods=['GET'])
