@@ -573,6 +573,23 @@ def landing_page_he():
     query_str = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
     return redirect('/BimaVoucher/landingpage.html' + query_str)
 
+@app.route('/BimaVoucher/index2.html', methods=['POST'])
+@app.route('/index2.html', methods=['POST'])
+@app.route('/index2', methods=['POST'])
+def index2_post():
+    from urllib.parse import quote
+    msisdn = ''
+    if request.is_json and request.json:
+        msisdn = request.json.get('msisdn', '')
+    if not msisdn:
+        msisdn = request.form.get('msisdn', '') or request.values.get('msisdn', '')
+    
+    logger.info(f"[Flask POST index2] Received POST MSISDN payload: {msisdn}")
+    if msisdn:
+        return redirect('/BimaVoucher/index2.html?msisdn=' + quote(str(msisdn)))
+    else:
+        return redirect('/BimaVoucher/index2.html')
+
 @app.route('/BimaVoucher/<path:filename>')
 def serve_bima_voucher(filename):
     return send_from_directory('BimaVoucher', filename)

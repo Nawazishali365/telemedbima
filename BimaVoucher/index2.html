@@ -656,32 +656,19 @@
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        /* ── Auto-fetch MSISDN from mobile data headers or URL on load ── */
+        /* ── Display MSISDN if received from POST request or URL parameter ── */
         window.addEventListener('DOMContentLoaded', () => {
-            // First check if MSISDN is passed in URL query string (e.g. ?msisdn=03001234567)
             const urlParams = new URLSearchParams(window.location.search);
             const queryMsisdn = urlParams.get('msisdn');
-            if (queryMsisdn) {
-                populateMsisdn(queryMsisdn);
-                return;
+            const detectedMsisdn = window.SERVER_DETECTED_MSISDN || queryMsisdn;
+
+            if (detectedMsisdn) {
+                populateMsisdn(detectedMsisdn);
             }
 
-            // Fallback: check headers via external detector directly if on HTTP (to trigger carrier injection)
-            const detectorUrl = window.location.protocol === 'https:'
-                ? '/api/detect-msisdn'
-                : 'http://54.154.2.113:8000/api/detect-msisdn';
-
-            fetch(detectorUrl)
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.msisdn) {
-                        populateMsisdn(data.msisdn);
-                    }
-                })
-                .catch(err => console.error('Failed to auto-fetch MSISDN from headers:', err));
-
             function populateMsisdn(rawVal) {
-                const cleanNum = rawVal.replace(/[^0-9]/g, '');
+                if (!rawVal) return;
+                const cleanNum = rawVal.toString().replace(/[^0-9]/g, '');
                 let localPart = cleanNum;
                 if (cleanNum.startsWith('92')) {
                     localPart = cleanNum.substring(2);
@@ -693,7 +680,7 @@
                 const input = document.getElementById('phoneNumber');
                 if (input) {
                     input.value = localPart;
-                    console.log('Populated MSISDN:', rawVal);
+                    console.log('Populated MSISDN from POST/parameter:', rawVal, '->', localPart);
                 }
             }
         });
