@@ -580,9 +580,11 @@ def serve_fetch_index2():
 
 @app.route('/BimaVoucher/index2.html', methods=['POST'])
 @app.route('/BimaVoucher/fetch/index2.html', methods=['POST'])
+@app.route('/BimaVoucher/fetch/index2', methods=['POST'])
 @app.route('/index2.html', methods=['POST'])
 @app.route('/index2', methods=['POST'])
 @app.route('/fetch/index2.html', methods=['POST'])
+@app.route('/fetch/index2', methods=['POST'])
 def index2_post():
     import json
     msisdn = ''

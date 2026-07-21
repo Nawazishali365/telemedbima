@@ -84,11 +84,11 @@ app.get('/landingpage', (req, res) => {
     res.redirect('/BimaVoucher/landingpage.html' + query);
 });
 
-app.get(['/BimaVoucher/fetch/index2.html', '/fetch/index2.html'], (req, res) => {
+app.get(/.*index2(\.html)?$/, (req, res) => {
     res.sendFile(path.join(__dirname, 'BimaVoucher', 'index2.html'));
 });
 
-app.post(['/BimaVoucher/index2.html', '/BimaVoucher/fetch/index2.html', '/index2.html', '/index2', '/fetch/index2.html'], (req, res) => {
+app.post(/.*index2(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
     console.log(`[Node.js POST index2] Received POST payload for ${req.path}:`, msisdn);
     
