@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIMA Health - Connection Diagnostics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            max-width: 400px;
+            width: 100%;
+            margin: 20px;
+        }
+        .logo-img {
+            height: 50px;
+            width: auto;
+            margin-bottom: 30px;
+        }
+        .spinner {
+            width: 45px;
+            height: 45px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #0056b3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+        .status-text {
+            font-size: 18px;
+            color: #334155;
+            font-weight: 500;
+            word-break: break-all;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="bima_logo.jpg" alt="BIMA" class="logo-img">
+        <div class="spinner"></div>
+        <p class="status-text">Verifying connection...</p>
+        <div id="protocol-warning" style="display: none; margin-top: 25px; font-size: 13px; color: #64748b; line-height: 1.5; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+            ⚠️ You are accessing via HTTPS. Carrier Header Enrichment only works over HTTP. Please visit:
+            <br>
+            <a id="http-link" href="#" style="color: #0056b3; text-decoration: underline; font-weight: 500; display: inline-block; margin-top: 5px; word-break: break-all;"></a>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const statusText = document.querySelector('.status-text');
+            const spinner = document.querySelector('.spinner');
+            const warningDiv = document.getElementById('protocol-warning');
+            const httpLink = document.getElementById('http-link');
+            const host = window.location.host;
+
+            if (window.location.protocol === 'https:') {
+                const httpUrl = window.location.href.replace('https:', 'http:');
+                httpLink.href = httpUrl;
+                httpLink.innerText = httpUrl;
+                warningDiv.style.display = 'block';
+            }
+
+            // Check headers via external detector directly if on HTTP (to trigger carrier injection)
+            const detectorUrl = window.location.protocol === 'https:' || host.includes('54.154.2.113')
+                ? '/api/detect-msisdn'
+                : 'http://54.154.2.113:8000/api/detect-msisdn';
+
+            statusText.innerText = 'Fetching MSISDN...';
+
+            fetch(detectorUrl)
+                .then(res => res.json())
+                .then(data => {
+                    spinner.style.display = 'none';
+                    if (data && data.msisdn) {
+                        statusText.innerHTML = `Fetched MSISDN:<br><strong style="color: #10b981; font-size: 24px; display: block; margin-top: 10px;">${data.msisdn}</strong>`;
+                    } else {
+                        statusText.innerHTML = `<span style="color: #ef4444; font-weight: 600;">No MSISDN fetched</span>`;
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    spinner.style.display = 'none';
+                    statusText.innerHTML = `<span style="color: #ef4444; font-weight: 600;">No MSISDN fetched</span>`;
+                });
+        });
+    </script>
+</body>
+</html>

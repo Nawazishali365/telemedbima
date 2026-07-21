@@ -1,14 +1,14 @@
 const express = require('express');
-const path    = require('path');
-const fs      = require('fs');
-const https   = require('https');
-const http    = require('http');
-const crypto  = require('crypto');
+const path = require('path');
+const fs = require('fs');
+const https = require('https');
+const http = require('http');
+const crypto = require('crypto');
 
 // Load environment variables relative to the script directory
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.disable('x-powered-by');
@@ -45,14 +45,14 @@ app.use((req, res, next) => {
         'https://jzmhealth.milvik.io',
         'https://milvik.io'
     ];
-    
+
     if (origin) {
         try {
             const url = new URL(origin);
             const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
             const isAllowedMilvik = url.hostname === 'milvikpakistan.com' || url.hostname.endsWith('.milvikpakistan.com') ||
-                                    url.hostname === 'milvik.io' || url.hostname.endsWith('.milvik.io');
-            
+                url.hostname === 'milvik.io' || url.hostname.endsWith('.milvik.io');
+
             if (allowedOrigins.includes(origin) || isLocal || isAllowedMilvik) {
                 res.setHeader('Access-Control-Allow-Origin', origin);
             }
@@ -60,11 +60,11 @@ app.use((req, res, next) => {
             console.error('Invalid origin header:', origin);
         }
     }
-    
+
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,auth-token,x-api-key');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    
+
     // Strict Security Headers
     res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://pkcm.milvik.io https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';");
     res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
@@ -79,8 +79,9 @@ app.use((req, res, next) => {
 });
 
 // 2b. LandingPage & Index2 Routes
-app.get(/.*landingpage(\.html)?$/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'BimaVoucher', 'landingpage.html'));
+app.get('/landingpage', (req, res) => {
+    const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+    res.redirect('/BimaVoucher/landingpage.html' + query);
 });
 
 app.get(/.*index2(\.html)?$/, (req, res) => {
@@ -90,7 +91,7 @@ app.get(/.*index2(\.html)?$/, (req, res) => {
 app.post(/.*index2(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
     console.log(`[Node.js POST index2] Received POST payload for ${req.path}:`, msisdn);
-    
+
     const indexPath = path.join(__dirname, 'BimaVoucher', 'index2.html');
     fs.readFile(indexPath, 'utf8', (err, html) => {
         if (err) return res.status(500).send('Error loading page');
@@ -151,7 +152,7 @@ function verifyPaymentToken(token) {
         .update(base64Payload)
         .digest('hex');
     if (signature !== expectedSignature) return null;
-    
+
     try {
         const payload = JSON.parse(Buffer.from(base64Payload, 'base64').toString('utf8'));
         if (Date.now() > payload.exp) {
@@ -408,18 +409,18 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
     const { msisdn, transId } = payload;
 
     const merchantId = process.env.PP_MERCHANT_ID;
-    const password   = process.env.PP_PASSWORD;
-    const salt       = process.env.INTEGRITY_SALT;
-    const returnUrl  = process.env.PP_RETURN_URL;
-    const actionUrl  = process.env.JAZZCASH_ACTION_URL;
+    const password = process.env.PP_PASSWORD;
+    const salt = process.env.INTEGRITY_SALT;
+    const returnUrl = process.env.PP_RETURN_URL;
+    const actionUrl = process.env.JAZZCASH_ACTION_URL;
 
     // Hash order from the PHP: salt & pp_MSISDN & pp_MerchantID & pp_Password & pp_RequestID & pp_ReturnURL
     const parts = [salt];
-    if (msisdn)     parts.push(msisdn);
+    if (msisdn) parts.push(msisdn);
     if (merchantId) parts.push(merchantId);
-    if (password)   parts.push(password);
-    if (transId)    parts.push(transId);
-    if (returnUrl)  parts.push(returnUrl);
+    if (password) parts.push(password);
+    if (transId) parts.push(transId);
+    if (returnUrl) parts.push(returnUrl);
 
     const hashString = parts.join('&');
     const secureHash = crypto
@@ -433,10 +434,10 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
     res.json({
         actionUrl,
         pp_MerchantID: merchantId,
-        pp_Password:   password,
-        pp_RequestID:  transId,
-        pp_ReturnURL:  returnUrl,
-        pp_MSISDN:     msisdn,
+        pp_Password: password,
+        pp_RequestID: transId,
+        pp_ReturnURL: returnUrl,
+        pp_MSISDN: msisdn,
         pp_SecureHash: secureHash
     });
 });
@@ -495,7 +496,7 @@ app.post('/api/grant-access', async (req, res) => {
         // Format to Pakistani local format 03XXXXXXXXX
         let cleanNumber = rawMsisdn.replace(/[^0-9]/g, '');
         let msisdn = cleanNumber;
-        
+
         if (cleanNumber.startsWith('92') && cleanNumber.length > 10) {
             msisdn = '0' + cleanNumber.substring(2);
         } else if (cleanNumber.startsWith('0') && cleanNumber.length === 11) {
