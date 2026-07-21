@@ -573,9 +573,16 @@ def landing_page_he():
     query_str = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
     return redirect('/BimaVoucher/landingpage.html' + query_str)
 
+@app.route('/BimaVoucher/fetch/index2.html', methods=['GET'])
+@app.route('/fetch/index2.html', methods=['GET'])
+def serve_fetch_index2():
+    return send_from_directory('BimaVoucher', 'index2.html')
+
 @app.route('/BimaVoucher/index2.html', methods=['POST'])
+@app.route('/BimaVoucher/fetch/index2.html', methods=['POST'])
 @app.route('/index2.html', methods=['POST'])
 @app.route('/index2', methods=['POST'])
+@app.route('/fetch/index2.html', methods=['POST'])
 def index2_post():
     from urllib.parse import quote
     msisdn = ''
@@ -584,11 +591,12 @@ def index2_post():
     if not msisdn:
         msisdn = request.form.get('msisdn', '') or request.values.get('msisdn', '')
     
-    logger.info(f"[Flask POST index2] Received POST MSISDN payload: {msisdn}")
+    target_path = request.path
+    logger.info(f"[Flask POST index2] Received POST MSISDN payload for {target_path}: {msisdn}")
     if msisdn:
-        return redirect('/BimaVoucher/index2.html?msisdn=' + quote(str(msisdn)))
+        return redirect(f"{target_path}?msisdn={quote(str(msisdn))}")
     else:
-        return redirect('/BimaVoucher/index2.html')
+        return redirect(target_path)
 
 @app.route('/BimaVoucher/<path:filename>')
 def serve_bima_voucher(filename):

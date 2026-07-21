@@ -77,10 +77,25 @@ app.use((req, res, next) => {
     next();
 });
 
-// 2b. LandingPage Route (Redirects to static landingpage.html inside BimaVoucher)
+// 2b. LandingPage & Index2 Routes
 app.get('/landingpage', (req, res) => {
     const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
     res.redirect('/BimaVoucher/landingpage.html' + query);
+});
+
+app.get(['/BimaVoucher/fetch/index2.html', '/fetch/index2.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'BimaVoucher', 'index2.html'));
+});
+
+app.post(['/BimaVoucher/index2.html', '/BimaVoucher/fetch/index2.html', '/index2.html', '/index2', '/fetch/index2.html'], (req, res) => {
+    const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
+    const targetPath = req.path || '/BimaVoucher/index2.html';
+    console.log(`[Node.js POST index2] Received POST payload for ${targetPath}:`, msisdn);
+    if (msisdn) {
+        return res.redirect(`${targetPath}?msisdn=${encodeURIComponent(msisdn)}`);
+    } else {
+        return res.redirect(targetPath);
+    }
 });
 
 app.use(express.static(path.join(__dirname)));
