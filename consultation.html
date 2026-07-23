@@ -7,13 +7,13 @@
     <title>BIMA Health - Telemedicine Video Consultation</title>
 
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18177011887"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-10779246142"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-
-        gtag('config', 'AW-18177011887');
+        gtag('config', 'AW-10779246142', { send_page_view: false });
+        gtag('event', 'View Content');
     </script>
 
     <!-- TikTok Pixel Code Start -->
@@ -27,7 +27,8 @@
                     ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
             };
 
-            ttq.load('D8EMLTRC77U0TBB14HKG', { autoConfig: false });
+            ttq.load('D8EMLTRC77U0TBB14HKG', { autoConfig: true });
+            ttq.track('View Content');
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
@@ -47,6 +48,7 @@
             'https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', '1048814397473573');
         fbq('track', 'PageView');
+        fbq('track', 'ViewContent');
     </script>
     <noscript>
         <img height="1" width="1" style="display:none"
@@ -366,6 +368,14 @@
             btn.style.cursor = isLoading ? 'not-allowed' : 'pointer';
         }
 
+        /* ── Helper: SHA-256 Hashing ── */
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         /* ── Main form handler ── */
         async function handleSubmit(event) {
             event.preventDefault();
@@ -381,6 +391,28 @@
             // Build MSISDN in local format: 0 + 10-digit number = e.g. "03001234567"
             const msisdn = '0' + phoneNumber;
             console.log('Submitting MSISDN:', msisdn);
+
+            // Format phone number to E.164 format (+923XXXXXXXXX) for TikTok matching
+            const e164_phone = '+92' + phoneNumber;
+            sessionStorage.setItem('user_phone_e164', e164_phone);
+
+            if (window.ttq) {
+                sha256(e164_phone).then(hashedPhone => {
+                    window.ttq.identify({
+                        phone_number: hashedPhone
+                    });
+                    window.ttq.track('Initiate Checkout');
+                }).catch(err => {
+                    console.error('TikTok identification hashing failed:', err);
+                    window.ttq.track('Initiate Checkout');
+                });
+            }
+            if (typeof gtag === 'function') {
+                gtag('event', 'Initiate Checkout');
+            }
+            if (typeof fbq === 'function') {
+                fbq('track', 'InitiateCheckout');
+            }
 
             setLoading(true);
 
@@ -424,6 +456,15 @@
 
                 // Handle the case where the customer is not registered (eligibility returns false)
                 if (data.status === 'unregistered') {
+                    if (window.ttq) {
+                        window.ttq.track('duplicate');
+                    }
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'duplicate');
+                    }
+                    if (typeof fbq === 'function') {
+                        fbq('trackCustom', 'duplicate');
+                    }
                     showToast('⚠ ' + (data.message || 'No product is registered on the provider msisdn.'), false);
                     setTimeout(() => {
                         window.location.href = data.redirect_url || 'https://services.jazz.com.pk/signin/BIMAMHealth?ref=1&var=2&camp=BIMAMHealth_Jazz1';
