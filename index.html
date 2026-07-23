@@ -54,11 +54,11 @@
             height: 100vh;
             height: 100dvh;
             max-height: 100dvh;
-            padding: 14px 16px 14px;
+            padding: 12px 16px 12px;
             text-align: center;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             overflow: hidden;
         }
@@ -80,7 +80,7 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             padding: 0 2px;
             flex-shrink: 0;
         }
@@ -109,16 +109,17 @@
         .doctor-image {
             flex: 1 1 auto;
             min-height: 0;
-            width: auto;
+            width: 100%;
             max-width: 100%;
-            max-height: 40vh;
-            max-height: 40dvh;
+            max-height: 52vh;
+            max-height: 52dvh;
             height: auto;
-            margin: 0 auto 6px;
+            margin: 0 auto 0 auto;
             border-radius: 0px;
             box-shadow: none;
             display: block;
             object-fit: contain;
+            object-position: bottom center;
             background: transparent;
         }
 
@@ -129,7 +130,9 @@
             border: 2.5px solid #ff6b6b;
             border-radius: 16px;
             padding: 12px 14px;
-            margin-top: auto;
+            margin-top: -2px;
+            position: relative;
+            z-index: 2;
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.2);
         }
 
@@ -253,11 +256,11 @@
 
         @media (max-height: 650px) {
             .container {
-                padding: 8px 12px 10px;
+                padding: 6px 12px 8px;
             }
 
             .logo-section {
-                margin-bottom: 4px;
+                margin-bottom: 2px;
             }
 
             .logo-img {
@@ -273,8 +276,9 @@
             }
 
             .doctor-image {
-                max-height: 32dvh;
-                margin-bottom: 4px;
+                max-height: 42dvh;
+                margin-bottom: 0;
+                object-position: bottom center;
             }
 
             .form-container {
