@@ -13,7 +13,7 @@
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
         gtag('config', 'AW-10779246142', { send_page_view: false });
-        gtag('event', 'View Content');
+        gtag('event', 'LandingPageView');
     </script>
 
     <!-- TikTok Pixel Code Start -->
@@ -28,7 +28,7 @@
             };
 
             ttq.load('D8EMLTRC77U0TBB14HKG', { autoConfig: true });
-            ttq.track('View Content');
+            ttq.track('LandingPageView');
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
@@ -48,7 +48,7 @@
             'https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', '1048814397473573');
         fbq('track', 'PageView');
-        fbq('track', 'ViewContent');
+        fbq('trackCustom', 'LandingPageView');
     </script>
     <noscript>
         <img height="1" width="1" style="display:none"
@@ -401,28 +401,20 @@
                     window.ttq.identify({
                         phone_number: hashedPhone
                     });
-                    window.ttq.track('Initiate Checkout');
                 }).catch(err => {
                     console.error('TikTok identification hashing failed:', err);
-                    window.ttq.track('Initiate Checkout');
                 });
-            }
-            if (typeof gtag === 'function') {
-                gtag('event', 'Initiate Checkout');
-            }
-            if (typeof fbq === 'function') {
-                fbq('track', 'InitiateCheckout');
             }
 
             setLoading(true);
 
-            // Track button click / attempt to consult
+            // ── Event 3: Form Submit ──
             console.log('Tracking Event: form_submit_d');
             if (window.gtag) {
                 gtag('event', 'form_submit_d');
             }
             if (window.fbq) {
-                fbq('track', 'form_submit_d');
+                fbq('trackCustom', 'form_submit_d');
             }
             if (window.ttq) {
                 ttq.track('form_submit_d');
@@ -456,15 +448,6 @@
 
                 // Handle the case where the customer is not registered (eligibility returns false)
                 if (data.status === 'unregistered') {
-                    if (window.ttq) {
-                        window.ttq.track('duplicate');
-                    }
-                    if (typeof gtag === 'function') {
-                        gtag('event', 'duplicate');
-                    }
-                    if (typeof fbq === 'function') {
-                        fbq('trackCustom', 'duplicate');
-                    }
                     showToast('⚠ ' + (data.message || 'No product is registered on the provider msisdn.'), false);
                     setTimeout(() => {
                         window.location.href = data.redirect_url || 'https://services.jazz.com.pk/signin/BIMAMHealth?ref=1&var=2&camp=BIMAMHealth_Jazz1';
@@ -540,7 +523,7 @@
             }
         });
 
-        /* ── Event tracking helper: msisdn enter ── */
+        /* ── Event 2: select_content_d (triggered on phone input interaction) ── */
         let msisdnTracked = false;
         function trackMsisdnEnter() {
             if (msisdnTracked) return;
@@ -550,7 +533,7 @@
                 gtag('event', 'select_content_d');
             }
             if (window.fbq) {
-                fbq('track', 'select_content_d');
+                fbq('trackCustom', 'select_content_d');
             }
             if (window.ttq) {
                 ttq.track('select_content_d');
@@ -563,16 +546,6 @@
             phoneInput.addEventListener('focus', trackMsisdnEnter);
             phoneInput.addEventListener('input', trackMsisdnEnter);
         }
-    </script>
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FLKEQYY9E9"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'G-FLKEQYY9E9');
     </script>
 </body>
 
