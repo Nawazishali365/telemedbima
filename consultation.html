@@ -12,8 +12,7 @@
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-        gtag('config', 'AW-10779246142', { send_page_view: false });
-        gtag('event', 'landingpage_view');
+        gtag('config', 'AW-10779246142');
     </script>
 
     <!-- TikTok Pixel Code Start -->
@@ -28,26 +27,23 @@
             };
 
             ttq.load('D8EMLTRC77U0TBB14HKG', { autoConfig: false });
-            ttq.track('landingpage_view');
+            ttq.page();
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
 
     <!-- Meta Pixel Code -->
     <script>
-        !function (f, b, e, v, n, t, s) {
-            if (f.fbq) return; n = f.fbq = function () {
-                n.callMethod ?
-                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-            };
-            if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
-            n.queue = []; t = b.createElement(e); t.async = !0;
-            t.src = v; s = b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t, s)
-        }(window, document, 'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', '1048814397473573');
-        fbq('trackCustom', 'landingpage_view');
+        fbq('track', 'PageView');
     </script>
     <noscript>
         <img height="1" width="1" style="display:none"
@@ -408,15 +404,15 @@
             setLoading(true);
 
             // ── Event 3: Form Submit ──
-            console.log('Tracking Event: form_submit_d');
+            console.log('Tracking Event: SubmitForm');
             if (window.gtag) {
-                gtag('event', 'form_submit_d');
+                gtag('event', 'form_submit');
             }
             if (window.fbq) {
-                fbq('trackCustom', 'form_submit_d');
+                fbq('track', 'Lead');
             }
             if (window.ttq) {
-                ttq.track('form_submit_d');
+                ttq.track('SubmitForm');
             }
 
             try {
@@ -522,20 +518,20 @@
             }
         });
 
-        /* ── Event 2: select_content_d (triggered on phone input interaction) ── */
+        /* ── Event 2: Click Button / Select Content (triggered on phone input interaction) ── */
         let msisdnTracked = false;
         function trackMsisdnEnter() {
             if (msisdnTracked) return;
             msisdnTracked = true;
-            console.log('Tracking Event: select_content_d');
+            console.log('Tracking Event: ClickButton / SelectContent');
             if (window.gtag) {
-                gtag('event', 'select_content_d');
+                gtag('event', 'select_content');
             }
             if (window.fbq) {
-                fbq('trackCustom', 'select_content_d');
+                fbq('track', 'ViewContent');
             }
             if (window.ttq) {
-                ttq.track('select_content_d');
+                ttq.track('ClickButton');
             }
         }
 

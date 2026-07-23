@@ -341,7 +341,7 @@
 
     <!-- Top Action Bar -->
     <div class="controls-container">
-        <a href="index.html" class="btn" id="backToHomeBtn">
+        <a href="index2.html" class="btn" id="backToHomeBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                 stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -536,6 +536,49 @@
         </footer>
     </article>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const backBtn = document.getElementById('backToHomeBtn');
+            
+            // 1. Check URL query parameters first (e.g. ?returnUrl=index2.html or ?from=index2.html)
+            const urlParams = new URLSearchParams(window.location.search);
+            let returnUrl = urlParams.get('returnUrl') || urlParams.get('from');
+
+            // 2. Check sessionStorage fallback
+            if (!returnUrl) {
+                returnUrl = sessionStorage.getItem('tc_return_url');
+            }
+
+            // 3. Check document.referrer fallback if from same origin
+            if (!returnUrl && document.referrer) {
+                try {
+                    const refUrl = new URL(document.referrer);
+                    if (refUrl.origin === window.location.origin) {
+                        returnUrl = document.referrer;
+                    }
+                } catch (e) {}
+            }
+
+            // 4. Default fallback
+            if (!returnUrl) {
+                returnUrl = 'index2.html';
+            }
+
+            console.log('T&C Back Button destination resolved to:', returnUrl);
+            backBtn.href = returnUrl;
+
+            backBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (returnUrl) {
+                    window.location.href = returnUrl;
+                } else if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = 'index2.html';
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

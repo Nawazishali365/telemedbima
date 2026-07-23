@@ -27,6 +27,27 @@
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
+    <!-- Meta Pixel Code -->
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return; n = f.fbq = function () {
+                n.callMethod ?
+                n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+            n.queue = []; t = b.createElement(e); t.async = !0;
+            t.src = v; s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '1048814397473573');
+        fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=1048814397473573&ev=PageView&noscript=1" />
+    </noscript>
+    <!-- End Meta Pixel Code -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIMA Health - Free Food Voucher Campaign</title>
@@ -75,7 +96,7 @@
             max-width: 56.25vh;
             /* 9/16 ratio of viewport height */
             max-width: 56.25dvh;
-            background-image: url('landing_page.png?v=5');
+            background-image: url('campaign2 artwork.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -102,47 +123,39 @@
 
         /* 
            Input Box Overlay 
-           Position: y=1403 to 1520, x=149 to 902 in 1080x1920
-           Left: 13.80%, Top: 73.07%, Width: 69.72%, Height: 6.09%
+           Position: y=1156 to 1260, x=124 to 753 in 900x1600 campaign2 artwork
+           Left: 13.78%, Top: 72.25%, Width: 70.00%, Height: 6.56%
         */
         .input-box-overlay {
             position: absolute;
-            left: 13.80%;
-            top: 73.07%;
-            width: 69.72%;
-            height: 6.09%;
+            left: 13.78%;
+            top: 72.25%;
+            width: 70.00%;
+            height: 6.56%;
             display: flex;
             align-items: center;
+            z-index: 10;
         }
 
         /* 
-           Input field covering only the placeholder text area to the right of the JazzCash logo / divider
-           Logo/Divider area takes about 19.5% of the width
+           Input field covering the text area to the right of the artwork's printed JazzCash logo & divider.
+           Using transparent background so it seamlessly blends with the artwork's printed white pill box!
         */
         .phone-input {
             position: absolute;
-            left: 19.5%;
+            left: 20.5%;
             top: 0;
-            width: 80.5%;
+            width: 79.5%;
             height: 100%;
             border: none;
             outline: none;
-            background-color: #ffffff;
-            /* White background to cover the printed placeholder text */
+            background: transparent;
             color: #1e293b;
             font-family: 'Outfit', sans-serif;
             font-size: 16px;
+            font-size: clamp(13px, 3.6cqw, 18px);
             font-weight: 500;
             padding: 0 12px;
-            border-radius: 0 16px 16px 0;
-            /* Match rounded corner of image box */
-        }
-
-        /* Responsive font sizing for input text */
-        @media (max-height: 700px) {
-            .phone-input {
-                font-size: 14px;
-            }
         }
 
         .phone-input::placeholder {
@@ -150,64 +163,81 @@
             font-weight: 400;
         }
 
+        .phone-input:-webkit-autofill,
+        .phone-input:-webkit-autofill:hover, 
+        .phone-input:-webkit-autofill:focus {
+            -webkit-text-fill-color: #1e293b;
+            -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
+            box-shadow: 0 0 0px 1000px #ffffff inset;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
         /* 
            Subscribe Button Overlay
-           Position: y=1560 to 1684, x=149 to 902 in 1080x1920
-           Left: 13.80%, Top: 81.25%, Width: 69.72%, Height: 6.46%
+           Position: y=1298 to 1404, x=123 to 754 in 900x1600 campaign2 artwork
+           Left: 13.67%, Top: 81.125%, Width: 70.22%, Height: 6.68%
+           Using transparent background to overlay directly over the artwork's printed white button!
         */
         .subscribe-btn-overlay {
             position: absolute;
-            left: 13.80%;
-            top: 81.25%;
-            width: 69.72%;
-            height: 6.46%;
-            background-color: #ffffff;
-            /* Covers image button */
+            left: 13.67%;
+            top: 81.125%;
+            width: 70.22%;
+            height: 6.68%;
+            background: transparent;
             color: #16497B;
             border: none;
-            border-radius: 20px;
+            border-radius: 9999px;
             font-family: 'Outfit', sans-serif;
             font-size: 19px;
+            font-size: clamp(15px, 4.2cqw, 21px);
             font-weight: 700;
+            letter-spacing: 0.2px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            transition: all 0.2s ease;
-        }
-
-        @media (max-height: 700px) {
-            .subscribe-btn-overlay {
-                font-size: 16px;
-            }
+            box-shadow: none;
+            transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
         }
 
         .subscribe-btn-overlay:hover {
-            background-color: #f8fafc;
-            transform: scale(1.01);
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.015);
         }
 
         .subscribe-btn-overlay:active {
-            transform: scale(0.99);
+            transform: scale(0.985);
         }
 
         .subscribe-btn-overlay:disabled {
-            background-color: #cbd5e1;
-            color: #64748b;
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+        }
+
+        /* White text price info centered under the Subscribe button */
+        .price-info {
+            position: absolute;
+            left: 0;
+            top: 88.4%;
+            width: 100%;
+            text-align: center;
+            font-size: 14.5px;
+            font-size: clamp(10.5px, 2.8cqw, 14.5px);
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 0.3px;
         }
 
         /* Consent Container (perfectly centered flex container to align checkbox and text) */
         .consent-container {
             position: absolute;
-            left: 13.8%;
-            width: 72.4%;
-            /* Align with input and button bounds */
-            top: 90.3%;
+            left: 13.67%;
+            width: 70.22%;
+            top: 90.8%;
             display: flex;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: flex-start;
             z-index: 10;
         }
@@ -217,21 +247,6 @@
             align-items: flex-start;
             cursor: pointer;
             user-select: none;
-            width: 100%;
-        }
-
-        /* White text price info */
-        .price-info {
-            position: absolute;
-            left: 0;
-            top: 88.0%;
-            width: 100%;
-            text-align: center;
-            font-size: 14.5px;
-            font-size: clamp(10.5px, 2.8cqw, 14.5px);
-            font-weight: 500;
-            color: #ffffff;
-            letter-spacing: 0.3px;
         }
 
         /* White text consent overlay with active hyperlink */
@@ -417,12 +432,11 @@
             <div class="consent-container">
                 <label class="consent-label" for="consentCheckbox">
                     <input type="checkbox" id="consentCheckbox"
-                        style="margin-top: 2px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0;"
+                        style="margin-top: 2px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0; accent-color: #FFE100;"
                         checked required>
                     <span class="consent-text">
-                        By clicking Subscribe, you accept the <a
-                            href="terms_and_conditions_bima.html"
-                            target="_blank">Terms & Conditions</a>
+                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.html?returnUrl=index2.html"
+                            target="_blank" onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms & Conditions</a>
                     </span>
                 </label>
             </div>

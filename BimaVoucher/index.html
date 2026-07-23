@@ -420,9 +420,8 @@
                         style="margin-top: 2px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0;"
                         checked required>
                     <span class="consent-text">
-                        By clicking Subscribe, you accept the <a
-                            href="terms_and_conditions_bima.html"
-                            target="_blank">Terms & Conditions</a>
+                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.html?returnUrl=index.html"
+                            target="_blank" onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms & Conditions</a>
                     </span>
                 </label>
             </div>
