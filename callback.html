@@ -371,7 +371,15 @@
 
                 console.log('✅ Payment Successful! Triggering conversion & purchase events...');
 
-                // 1. TikTok Purchase & CompletePayment events
+                // Deduplication guard: ensure purchase events fire exactly ONCE per transaction
+                const guardKey = 'purchase_event_fired_' + (trxRefNo || 'default');
+                if (sessionStorage.getItem(guardKey)) {
+                    console.log('ℹ Conversion events already recorded for transaction:', trxRefNo);
+                    return;
+                }
+                sessionStorage.setItem(guardKey, 'true');
+
+                // 1. TikTok CompletePayment event (Official TikTok Standard Purchase Event)
                 const purchaseParams = {
                     content_id: 'bima_telemed_voucher',
                     content_type: 'product',
@@ -398,14 +406,11 @@
                             window.ttq.identify({
                                 phone_number: hashedPhone
                             });
-                            window.ttq.track('Purchase', purchaseParams);
                             window.ttq.track('CompletePayment', purchaseParams);
                         }).catch(e => {
-                            window.ttq.track('Purchase', purchaseParams);
                             window.ttq.track('CompletePayment', purchaseParams);
                         });
                     } else {
-                        window.ttq.track('Purchase', purchaseParams);
                         window.ttq.track('CompletePayment', purchaseParams);
                     }
                 }
