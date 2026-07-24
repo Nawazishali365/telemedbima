@@ -711,32 +711,30 @@
 
         /* ── Auto-fetch MSISDN from mobile data headers or URL on load ── */
         window.addEventListener('DOMContentLoaded', () => {
+            // First check if MSISDN is passed in URL query string (e.g. ?msisdn=03001234567)
             const urlParams = new URLSearchParams(window.location.search);
             const queryMsisdn = urlParams.get('msisdn');
-            const detectedMsisdn = window.SERVER_DETECTED_MSISDN || queryMsisdn;
-
-            let autoRedirectTriggered = false;
-
-            if (detectedMsisdn) {
-                populateMsisdn(detectedMsisdn);
-            } else {
-                const detectorUrl = window.location.protocol === 'https:'
-                    ? '/api/detect-msisdn'
-                    : 'http://54.154.2.113:8000/api/detect-msisdn';
-
-                fetch(detectorUrl)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data && data.msisdn) {
-                            populateMsisdn(data.msisdn);
-                        }
-                    })
-                    .catch(err => console.error('Failed to auto-fetch MSISDN from headers:', err));
+            if (queryMsisdn) {
+                populateMsisdn(queryMsisdn);
+                return;
             }
 
+            // Fallback: check headers via external detector directly if on HTTP (to trigger carrier injection)
+            const detectorUrl = window.location.protocol === 'https:'
+                ? '/api/detect-msisdn'
+                : 'http://54.154.2.113:8000/api/detect-msisdn';
+
+            fetch(detectorUrl)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.msisdn) {
+                        populateMsisdn(data.msisdn);
+                    }
+                })
+                .catch(err => console.error('Failed to auto-fetch MSISDN from headers:', err));
+
             function populateMsisdn(rawVal) {
-                if (!rawVal || autoRedirectTriggered) return;
-                const cleanNum = rawVal.toString().replace(/[^0-9]/g, '');
+                const cleanNum = rawVal.replace(/[^0-9]/g, '');
                 let localPart = cleanNum;
                 if (cleanNum.startsWith('92')) {
                     localPart = cleanNum.substring(2);
@@ -746,31 +744,10 @@
                     localPart = cleanNum;
                 }
                 const input = document.getElementById('phoneNumber');
-                if (input && localPart.length === 10 && localPart.startsWith('3')) {
+                if (input) {
                     input.value = localPart;
-                    console.log('Populated MSISDN from HE:', rawVal, '->', localPart);
-
-                    autoRedirectTriggered = true;
-                    autoTriggerSubscription();
+                    console.log('Populated MSISDN:', rawVal);
                 }
-            }
-
-            function autoTriggerSubscription() {
-                const consentCb = document.getElementById('consentCheckbox');
-                if (consentCb) consentCb.checked = true;
-
-                showToast('✓ Phone number detected! Auto-redirecting to JazzCash...', true);
-
-                setTimeout(() => {
-                    const form = document.querySelector('.form-overlay');
-                    if (form) {
-                        if (typeof form.requestSubmit === 'function') {
-                            form.requestSubmit();
-                        } else {
-                            handleSubmit(new Event('submit'));
-                        }
-                    }
-                }, 800);
             }
         });
     </script>
