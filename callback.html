@@ -371,39 +371,43 @@
 
                 console.log('✅ Payment Successful! Triggering conversion & purchase events...');
 
-                // 1. TikTok Purchase event
+                // 1. TikTok Purchase & CompletePayment events
+                const purchaseParams = {
+                    content_id: 'bima_telemed_voucher',
+                    content_type: 'product',
+                    content_name: 'BIMA Telemedicine Voucher',
+                    content_category: 'Healthcare',
+                    price: 300,
+                    value: 300,
+                    currency: 'PKR',
+                    quantity: 1,
+                    contents: [{
+                        content_id: 'bima_telemed_voucher',
+                        content_name: 'BIMA Telemedicine Voucher',
+                        content_category: 'Healthcare',
+                        price: 300,
+                        quantity: 1
+                    }]
+                };
+
+                const userPhone = sessionStorage.getItem('user_phone_e164');
+
                 if (window.ttq) {
-                    const userPhone = sessionStorage.getItem('user_phone_e164');
                     if (userPhone) {
-                        try {
-                            const hashedPhone = await sha256(userPhone);
+                        sha256(userPhone).then(hashedPhone => {
                             window.ttq.identify({
                                 phone_number: hashedPhone
                             });
-                        } catch (e) {
-                            console.error('Failed to hash phone number:', e);
-                        }
+                            window.ttq.track('Purchase', purchaseParams);
+                            window.ttq.track('CompletePayment', purchaseParams);
+                        }).catch(e => {
+                            window.ttq.track('Purchase', purchaseParams);
+                            window.ttq.track('CompletePayment', purchaseParams);
+                        });
+                    } else {
+                        window.ttq.track('Purchase', purchaseParams);
+                        window.ttq.track('CompletePayment', purchaseParams);
                     }
-                    window.ttq.track('Purchase', {
-                        value: 300,
-                        currency: 'PKR',
-                        content_type: 'product',
-                        content_id: 'bima_voucher_food_campaign',
-                        content_ids: ['bima_voucher_food_campaign'],
-                        content_name: 'BIMA Voucher Food Campaign',
-                        description: 'BIMA Free Food Voucher Campaign Subscription',
-                        contents: [{
-                            content_id: 'bima_voucher_food_campaign',
-                            content_type: 'product',
-                            content_name: 'BIMA Voucher Food Campaign',
-                            quantity: 1,
-                            price: 300
-                        }]
-                    });
-                    window.ttq.track('CompletePayment', {
-                        value: 300,
-                        currency: 'PKR'
-                    });
                 }
 
                 // 2. Google Analytics & Ads Conversion events
@@ -411,7 +415,14 @@
                     gtag('event', 'purchase', {
                         value: 300,
                         currency: 'PKR',
-                        transaction_id: trxRefNo
+                        transaction_id: trxRefNo,
+                        items: [{
+                            id: 'bima_telemed_voucher',
+                            name: 'BIMA Telemedicine Voucher',
+                            category: 'Healthcare',
+                            price: 300,
+                            quantity: 1
+                        }]
                     });
                     gtag('event', 'Purchase', {
                         value: 300,
@@ -426,14 +437,36 @@
                     });
                 }
 
-                // 3. Meta (Facebook) Pixel Purchase event
+                // 3. Meta (Facebook) Pixel Purchase event with Advanced Matching
                 if (typeof fbq === 'function') {
-                    fbq('track', 'Purchase', {
-                        value: 300,
-                        currency: 'PKR',
-                        content_name: 'BIMA Voucher Food Campaign',
-                        content_type: 'product'
-                    });
+                    if (userPhone) {
+                        sha256(userPhone).then(hashedPhone => {
+                            fbq('init', '1048814397473573', { ph: hashedPhone });
+                            fbq('track', 'Purchase', {
+                                value: 300,
+                                currency: 'PKR',
+                                content_ids: ['bima_telemed_voucher'],
+                                content_type: 'product',
+                                content_name: 'BIMA Telemedicine Voucher'
+                            });
+                        }).catch(() => {
+                            fbq('track', 'Purchase', {
+                                value: 300,
+                                currency: 'PKR',
+                                content_ids: ['bima_telemed_voucher'],
+                                content_type: 'product',
+                                content_name: 'BIMA Telemedicine Voucher'
+                            });
+                        });
+                    } else {
+                        fbq('track', 'Purchase', {
+                            value: 300,
+                            currency: 'PKR',
+                            content_ids: ['bima_telemed_voucher'],
+                            content_type: 'product',
+                            content_name: 'BIMA Telemedicine Voucher'
+                        });
+                    }
                 }
 
                 // 4. Firebase Analytics Purchase event

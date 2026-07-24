@@ -23,7 +23,23 @@
             };
 
             ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: false });
-            ttq.track('View Content_d');
+            ttq.track('View Content_d', {
+                content_id: 'bima_telemed_voucher',
+                content_type: 'product',
+                content_name: 'BIMA Telemedicine Voucher',
+                content_category: 'Healthcare',
+                price: 300,
+                value: 300,
+                currency: 'PKR',
+                quantity: 1,
+                contents: [{
+                    content_id: 'bima_telemed_voucher',
+                    content_name: 'BIMA Telemedicine Voucher',
+                    content_category: 'Healthcare',
+                    price: 300,
+                    quantity: 1
+                }]
+            });
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
@@ -552,19 +568,57 @@
             const e164_phone = '+92' + rawNum;
             sessionStorage.setItem('user_phone_e164', e164_phone);
 
+            const eventParams = {
+                content_id: 'bima_telemed_voucher',
+                content_type: 'product',
+                content_name: 'BIMA Telemedicine Voucher',
+                content_category: 'Healthcare',
+                price: 300,
+                value: 300,
+                currency: 'PKR',
+                quantity: 1,
+                contents: [{
+                    content_id: 'bima_telemed_voucher',
+                    content_name: 'BIMA Telemedicine Voucher',
+                    content_category: 'Healthcare',
+                    price: 300,
+                    quantity: 1
+                }]
+            };
+
             if (window.ttq) {
                 sha256(e164_phone).then(hashedPhone => {
                     window.ttq.identify({
                         phone_number: hashedPhone
                     });
-                    window.ttq.track('Initiate Checkout_d');
+                    window.ttq.track('Initiate Checkout_d', eventParams);
                 }).catch(err => {
                     console.error('TikTok identification hashing failed:', err);
-                    window.ttq.track('Initiate Checkout_d');
+                    window.ttq.track('Initiate Checkout_d', eventParams);
+                });
+            }
+            if (typeof fbq === 'function') {
+                sha256(e164_phone).then(hashedPhone => {
+                    fbq('init', '1048814397473573', { ph: hashedPhone });
+                    fbq('track', 'InitiateCheckout', {
+                        content_ids: ['bima_telemed_voucher'],
+                        content_type: 'product',
+                        content_name: 'BIMA Telemedicine Voucher',
+                        value: 300,
+                        currency: 'PKR'
+                    });
+                }).catch(() => {
+                    fbq('track', 'InitiateCheckout', {
+                        content_ids: ['bima_telemed_voucher'],
+                        content_type: 'product',
+                        content_name: 'BIMA Telemedicine Voucher',
+                        value: 300,
+                        currency: 'PKR'
+                    });
                 });
             }
             if (typeof gtag === 'function') {
-                gtag('event', 'Initiate Checkout_d');
+                gtag('event', 'Initiate Checkout_d', eventParams);
             }
 
             setLoading(true);
