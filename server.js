@@ -444,18 +444,27 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
 
 /* ──────────────────────────────────────────────────────────────────
    CALLBACK ENDPOINT
-   POST /jcms/callback
+   POST & GET /jcms/callback
    ────────────────────────────────────────────────────────────────── */
-app.post('/jcms/callback', (req, res) => {
-    // Extract parameters from body (POST) or query (GET)
-    const status = req.body.status || req.query.status || '';
-    const message = req.body.message || req.query.message || '';
-    const trxRefNo = req.body.trxRefNo || req.query.trxRefNo || '';
+const handleJcmsCallback = (req, res) => {
+    const data = { ...req.query, ...req.body };
+    console.log('[Node.js /jcms/callback] Received callback payload:', data);
 
-    // Pass them to the frontend HTML page via query parameters
-    const query = new URLSearchParams({ status, message, trxRefNo }).toString();
+    const status = data.status || data.pp_ResponseCode || data.pp_TxnResponseCode || '';
+    const message = data.message || data.pp_ResponseMessage || data.pp_TxnResponseMessage || '';
+    const trxRefNo = data.trxRefNo || data.pp_TxnRefNo || data.pp_RetrievalReferenceNo || data.pp_RefNo || '';
+    const source = data.source || data.ppmp_1 || '';
+
+    const queryParams = { status, message, trxRefNo };
+    if (source) queryParams.source = source;
+
+    const query = new URLSearchParams(queryParams).toString();
+    console.log(`[Node.js /jcms/callback] Redirecting to /callback.html?${query}`);
     res.redirect(`/callback.html?${query}`);
-});
+};
+
+app.post('/jcms/callback', handleJcmsCallback);
+app.get('/jcms/callback', handleJcmsCallback);
 
 /* ──────────────────────────────────────────────────────────────────
    TELEMEDICINE REDIRECT & SECURE PROXY ROUTE
