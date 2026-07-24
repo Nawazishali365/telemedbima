@@ -132,7 +132,25 @@ This file serves as a comprehensive system memory and architecture reference for
 
 ---
 
-## 7. Key Files Index
+## 7. Media & Design Assets Inventory
+
+| Asset Relative Path | Dimensions | File Size | Primary Purpose & Usage |
+| :--- | :--- | :--- | :--- |
+| **`BimaVoucher/campaign2 artwork.jpg`** | 900 x 1600 (9:16) | 139.9 KB | Primary background artwork image for Campaign 2 landing page ([BimaVoucher/index2.html](file:///c:/Users/Nawazish%20Ali/Downloads/telemedBima/BimaVoucher/index2.html)). |
+| **`BimaVoucher/landing_page.png`** | 1080 x 1920 (9:16) | 725.9 KB | Primary background artwork image for Campaign 1 landing page ([BimaVoucher/index.html](file:///c:/Users/Nawazish%20Ali/Downloads/telemedBima/BimaVoucher/index.html)). |
+| **`BimaVoucher/bima_logo.jpg`** | 1600 x 545 | 82.2 KB | BIMA Health brand header logo used in [terms_and_conditions_bima.html](file:///c:/Users/Nawazish%20Ali/Downloads/telemedBima/BimaVoucher/terms_and_conditions_bima.html). |
+| **`bima_logo.jpg`** | 1600 x 545 | 82.2 KB | Root-level brand logo image displayed in [callback.html](file:///c:/Users/Nawazish%20Ali/Downloads/telemedBima/callback.html). |
+| **`doctor.webp`** | 480 x 600 | 73.0 KB | Specialist doctor hero graphic displayed on transaction result cards in [callback.html](file:///c:/Users/Nawazish%20Ali/Downloads/telemedBima/callback.html). |
+| **`logo.png`** | 458 x 91 | 5.3 KB | BIMA app logo icon used in header sections across consultation landing pages. |
+| **`BimaTelemedicine/family_protection.png`** | 1024 x 1024 | 721.4 KB | Background graphics for BIMA Family Telemedicine campaign landing page. |
+| **`BimaTelemedicine/bima_logo.jpg`** | 1600 x 545 | 82.2 KB | Brand logo asset inside `BimaTelemedicine/` module. |
+| **`Bima Artwork.png`** | 514 x 800 | 305.6 KB | Source design artwork asset for BIMA health campaign graphics. |
+| **`Landing page BIMA voucher.png`** | 1080 x 1920 | 820.6 KB | Raw design composition / mockup for BIMA voucher campaign landing page. |
+| **`Landing page final.png`** | 1080 x 1920 | 3.23 MB | High-resolution master design reference composition for BIMA landing page. |
+
+---
+
+## 8. Key Files Index
 
 - [server.js](file:///c:/Users/Nawazish%20Ali/Downloads/telemedBima/server.js): Primary Express backend server & proxy API gateway.
 - [BimaVoucher/index2.html](file:///c:/Users/Nawazish%20Ali/Downloads/telemedBima/BimaVoucher/index2.html): Campaign 2 responsive landing page & payment trigger.
