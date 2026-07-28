@@ -1,0 +1,58 @@
+{
+  "fb1": {
+    "campaignCode": "fb1",
+    "campaignPlatform": "meta",
+    "pixelId": "1048814397473573",
+    "productCode": "bima_voucher_food_campaign",
+    "price": 300,
+    "currency": "PKR",
+    "events": {
+      "page_view": "PageView",
+      "initiate_checkout": "InitiateCheckout",
+      "purchase": "Purchase",
+      "purchase_failed": "Purchase Failed"
+    }
+  },
+  "tt1": {
+    "campaignCode": "tt1",
+    "campaignPlatform": "tiktok",
+    "pixelId": "D8J9AARC77UAEKHUNU60",
+    "productCode": "bima_voucher_food_campaign",
+    "price": 300,
+    "currency": "PKR",
+    "events": {
+      "page_view": "PageView",
+      "initiate_checkout": "InitiateCheckout",
+      "purchase": "CompletePayment",
+      "purchase_failed": "Purchase Failed"
+    }
+  },
+  "google1": {
+    "campaignCode": "google1",
+    "campaignPlatform": "google",
+    "pixelId": "AW-10779246142",
+    "productCode": "bima_voucher_food_campaign",
+    "price": 300,
+    "currency": "PKR",
+    "events": {
+      "page_view": "page_view",
+      "initiate_checkout": "begin_checkout",
+      "purchase": "purchase",
+      "purchase_failed": "Purchase Failed"
+    }
+  },
+  "default": {
+    "campaignCode": "default",
+    "campaignPlatform": "meta",
+    "pixelId": "1048814397473573",
+    "productCode": "bima_telemed_voucher",
+    "price": 300,
+    "currency": "PKR",
+    "events": {
+      "page_view": "PageView",
+      "initiate_checkout": "InitiateCheckout",
+      "purchase": "Purchase",
+      "purchase_failed": "Purchase Failed"
+    }
+  }
+}

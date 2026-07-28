@@ -27,13 +27,40 @@ app.use((req, res, next) => {
         '/.env',
         '/.env sample',
         '/.git',
-        '/security-audit-report.html'
+        '/security-audit-report.html',
+        '/campaigns.json'
     ];
     const url = req.path.toLowerCase();
     if (blockedFiles.some(file => url === file || url.endsWith(file) || url.startsWith(file + '/'))) {
         return res.status(403).json({ error: 'Access denied' });
     }
     next();
+});
+
+// 2b. Campaign API Endpoint
+app.get('/api/campaign/:code', (req, res) => {
+    try {
+        const campaignsPath = path.join(__dirname, 'campaigns.json');
+        if (!fs.existsSync(campaignsPath)) {
+            return res.status(404).json({ success: false, message: 'Campaign configuration not found' });
+        }
+        const campaigns = JSON.parse(fs.readFileSync(campaignsPath, 'utf8'));
+        const code = (req.params.code || '').toLowerCase().trim();
+        const campaignData = campaigns[code] || campaigns['default'] || null;
+
+        if (!campaignData) {
+            return res.status(404).json({ success: false, message: 'Campaign not found' });
+        }
+
+        return res.json({
+            success: true,
+            campaignCode: campaignData.campaignCode || code,
+            config: campaignData
+        });
+    } catch (err) {
+        console.error('Error fetching campaign config:', err);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
 });
 
 // 2. Security headers & CORS middleware
@@ -454,8 +481,9 @@ const handleJcmsCallback = (req, res) => {
     const message = data.message || data.pp_ResponseMessage || data.pp_TxnResponseMessage || '';
     const trxRefNo = data.trxRefNo || data.pp_TxnRefNo || data.pp_RetrievalReferenceNo || data.pp_RefNo || '';
     const source = data.source || data.ppmp_1 || '';
+    const campaignCode = data.campaignCode || data.campaign || data.ppmp_2 || '';
 
-    const queryParams = { status, message, trxRefNo };
+    const queryParams = { status, message, trxRefNo, campaignCode };
     if (source) queryParams.source = source;
 
     const query = new URLSearchParams(queryParams).toString();

@@ -287,7 +287,7 @@ def service_search():
             return jsonify({"error": "Phone number (msisdn) is required"}), 400
 
         token = get_bima_token()
-        url = f"https://pkcm.milvik.io/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY"
+        url = f"https://pkcm.milvik.io/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY&campaignCode=HEALTH_FB1"
         headers = {
             "auth-token": token
         }
@@ -396,6 +396,31 @@ def jcms_callback():
         "campaignCode": campaignCode
     })
     return redirect(f"/callback.html?{query}")
+
+@app.route('/api/campaign/<code>', methods=['GET'])
+def get_campaign_config(code):
+    try:
+        campaigns_path = os.path.join(app.root_path, 'campaigns.json')
+        if not os.path.exists(campaigns_path):
+            return jsonify({"success": False, "message": "Campaign configuration file missing"}), 404
+        
+        with open(campaigns_path, 'r', encoding='utf-8') as f:
+            campaigns = json.load(f)
+        
+        clean_code = (code or '').strip().lower()
+        campaign_data = campaigns.get(clean_code) or campaigns.get('default')
+
+        if not campaign_data:
+            return jsonify({"success": False, "message": "Campaign not found"}), 404
+
+        return jsonify({
+            "success": True,
+            "campaignCode": campaign_data.get("campaignCode", clean_code),
+            "config": campaign_data
+        })
+    except Exception as e:
+        logger.error(f"Error fetching campaign config: {e}")
+        return jsonify({"success": False, "message": "Internal server error"}), 500
 
 @app.route('/api/grant-access', methods=['POST'])
 def grant_access():
