@@ -387,11 +387,13 @@ def jcms_callback():
     status = request.values.get('status', '')
     message = request.values.get('message', '')
     trx_ref_no = request.values.get('trxRefNo', '')
+    campaignCode = request.values.get('campaignCode', '')
 
     query = urlencode({
         "status": status,
         "message": message,
-        "trxRefNo": trx_ref_no
+        "trxRefNo": trx_ref_no,
+        "campaignCode": campaignCode
     })
     return redirect(f"/callback.html?{query}")
 
