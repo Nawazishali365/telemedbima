@@ -593,8 +593,8 @@ const handleJcmsCallback = (req, res) => {
     if (source) queryParams.source = source;
 
     const query = new URLSearchParams(queryParams).toString();
-    console.log(`[Node.js /jcms/callback] Redirecting to /callback.html?${query}`);
-    res.redirect(`/callback.html?${query}`);
+    console.log(`[Node.js /jcms/callback] Redirecting to /callback dynamic.html?${query}`);
+    res.redirect(`/callback dynamic.html?${query}`);
 };
 
 app.post('/jcms/callback', handleJcmsCallback);

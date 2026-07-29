@@ -476,7 +476,7 @@ def jcms_callback():
         "trxRefNo": trx_ref_no,
         "campaignCode": campaignCode
     })
-    return redirect(f"/callback.html?{query}")
+    return redirect(f"/callback dynamic.html?{query}")
 
 @app.route('/api/campaign/<code>', methods=['GET'])
 def get_campaign_config(code):
