@@ -464,6 +464,7 @@ def jazzcash_form():
 from urllib.parse import urlencode
 
 @app.route('/jcms/callback', methods=['GET', 'POST'])
+@app.route('/jcm/callback', methods=['GET', 'POST'])
 def jcms_callback():
     status = request.values.get('status', '')
     message = request.values.get('message', '')
@@ -485,6 +486,8 @@ def jcms_callback():
 
 @app.route('/jcms/callback-dynamic', methods=['GET', 'POST'])
 @app.route('/jcms/callback_dynamic', methods=['GET', 'POST'])
+@app.route('/jcm/callback-dynamic', methods=['GET', 'POST'])
+@app.route('/jcm/callback_dynamic', methods=['GET', 'POST'])
 def jcms_callback_dynamic():
     status = request.values.get('status', '')
     message = request.values.get('message', '')
@@ -502,7 +505,7 @@ def jcms_callback_dynamic():
         query_params["source"] = source
 
     query = urlencode(query_params)
-    return redirect(f"/callback dynamic.html?{query}")
+    return redirect(f"/callback_dynamic.html?{query}")
 
 @app.route('/api/campaign/<code>', methods=['GET'])
 def get_campaign_config(code):

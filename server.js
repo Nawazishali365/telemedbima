@@ -577,8 +577,8 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
 
 /* ──────────────────────────────────────────────────────────────────
    CALLBACK ENDPOINTS
-   Standard Callback: GET & POST /jcms/callback -> /callback.html
-   Dynamic Callback:  GET & POST /jcms/callback-dynamic & /jcms/callback_dynamic -> /callback dynamic.html
+   Standard Callback: GET & POST /jcms/callback & /jcm/callback -> /callback.html
+   Dynamic Callback:  GET & POST /jcms/callback_dynamic, /jcm/callback_dynamic, /jcms/callback-dynamic, /jcm/callback-dynamic -> /callback_dynamic.html
    ────────────────────────────────────────────────────────────────── */
 const handleJcmsCallback = (req, res) => {
     const data = { ...req.query, ...req.body };
@@ -596,20 +596,34 @@ const handleJcmsCallback = (req, res) => {
     const query = new URLSearchParams(queryParams).toString();
 
     // Determine target page based on endpoint path
-    const targetPage = req.path.includes('dynamic') ? '/callback dynamic.html' : '/callback.html';
+    const targetPage = req.path.includes('dynamic') ? '/callback_dynamic.html' : '/callback.html';
     console.log(`[Node.js ${req.path}] Redirecting to ${targetPage}?${query}`);
     res.redirect(`${targetPage}?${query}`);
 };
 
-// Standard Callback Routes
+// Standard Callback Routes (supports /jcms/callback and /jcm/callback)
 app.post('/jcms/callback', handleJcmsCallback);
 app.get('/jcms/callback', handleJcmsCallback);
+app.post('/jcm/callback', handleJcmsCallback);
+app.get('/jcm/callback', handleJcmsCallback);
 
-// Dynamic Callback Routes
+// Dynamic Callback Routes (supports /jcms/ and /jcm/ with underscore and hyphen)
 app.post('/jcms/callback-dynamic', handleJcmsCallback);
 app.get('/jcms/callback-dynamic', handleJcmsCallback);
 app.post('/jcms/callback_dynamic', handleJcmsCallback);
 app.get('/jcms/callback_dynamic', handleJcmsCallback);
+app.post('/jcm/callback-dynamic', handleJcmsCallback);
+app.get('/jcm/callback-dynamic', handleJcmsCallback);
+app.post('/jcm/callback_dynamic', handleJcmsCallback);
+app.get('/jcm/callback_dynamic', handleJcmsCallback);
+
+// Direct alias routes for callback_dynamic.html
+app.get('/callback_dynamic', (req, res) => {
+    res.sendFile(path.join(__dirname, 'callback_dynamic.html'));
+});
+app.get('/callback dynamic.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'callback_dynamic.html'));
+});
 
 /* ──────────────────────────────────────────────────────────────────
    TELEMEDICINE REDIRECT & SECURE PROXY ROUTE
