@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Callback Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .btn {
+            background: #4ecca7;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #3aab8e;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Callback Test</h2>
+        <form id="callbackForm" method="POST" action="/jcm/callback_dynamic">
+            <input type="hidden" name="apiKey" value="api-key">
+            <input type="hidden" name="status" value="1">
+            <input type="hidden" name="message" value="success">
+            <input type="hidden" name="trxRefNo" value="BINJZDTC1785249884899">
+            <input type="hidden" name="campaignCode" value="tiktok_300">
+            <button type="submit" class="btn">Submit Callback Form</button>
+        </form>
+    </div>
+
+    <script>
+        // Auto-submit form if autoSubmit=true query parameter is present
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('autoSubmit') === 'true') {
+            document.getElementById('callbackForm').submit();
+        }
+    </script>
+
+</body>
+</html>
