@@ -804,6 +804,13 @@
                 document.body.style.backgroundColor = backgroundColor;
             }
 
+            // Dynamically update daily price text (e.g. 300/30 = 10, 600/30 = 20)
+            const priceInfoEl = document.getElementById('priceInfoEl');
+            if (priceInfoEl) {
+                const dailyAmount = Math.round(price / 30);
+                priceInfoEl.textContent = `Only Rs. ${dailyAmount}/Day – Full family covered`;
+            }
+
             // Dynamically update container artwork background image
             const containerEl = document.querySelector('.container');
             if (containerEl && artworkImage) {
