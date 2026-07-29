@@ -330,6 +330,87 @@ def service_search():
         logger.error(f"[/api/service-search] Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/campaign-service-search', methods=['POST'])
+@rate_limit(10, 60)
+def campaign_service_search():
+    try:
+        data = request.get_json() or {}
+        msisdn = data.get('msisdn')
+        if not msisdn:
+            return jsonify({"error": "Phone number (msisdn) is required"}), 400
+
+        req_campaign_code = data.get('campaignCode', 'default')
+        req_product_code = data.get('productCode', '')
+
+        campaign_code = req_campaign_code
+        product_code = req_product_code
+        bima_campaign_code = ''
+        bima_product_code = ''
+
+        # Read campaigns.json to resolve campaign parameters
+        try:
+            campaigns_path = os.path.join(app.root_path, 'campaigns.json')
+            if os.path.exists(campaigns_path):
+                with open(campaigns_path, 'r', encoding='utf-8') as f:
+                    campaigns = json.load(f)
+                clean_code = (req_campaign_code or '').strip().lower()
+                config = campaigns.get(clean_code) or campaigns.get('default')
+                if config:
+                    if not product_code:
+                        product_code = config.get('productCode', '')
+                    campaign_code = config.get('campaignCode', campaign_code)
+                    bima_campaign_code = config.get('bimaCampaignCode', '')
+                    bima_product_code = config.get('bimaProductCode', '')
+        except Exception as e:
+            logger.warning(f"[campaign-service-search] Could not read campaigns.json: {e}")
+
+        target_product_code = bima_product_code or product_code or 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY'
+        target_campaign_code = bima_campaign_code or 'HEALTH_FB1'
+
+        token = get_bima_token()
+        url = f"https://pkcm.milvik.io/tp/service/search/{msisdn}/{target_product_code}?deductionFrequency=MONTHLY&campaignCode={target_campaign_code}"
+        headers = {
+            "auth-token": token
+        }
+
+        logger.info(f"Calling campaign service search API for {msisdn} with productCode={target_product_code}, campaignCode={target_campaign_code}...")
+        res = requests.get(url, headers=headers, timeout=15, verify=False)
+
+        # Retry once if token expired
+        if res.status_code in (401, 403):
+            logger.info("[Flask Backend] Token unauthorized. Refreshing...")
+            token = get_bima_token(force_refresh=True)
+            headers["auth-token"] = token
+            res = requests.get(url, headers=headers, timeout=15, verify=False)
+
+        if res.status_code != 200:
+            try:
+                body = res.json()
+            except ValueError:
+                body = res.text
+            return jsonify(body), res.status_code
+
+        try:
+            body = res.json()
+        except ValueError:
+            return jsonify({"error": "Invalid response format from service provider"}), 502
+
+        trans_id = (body.get('result', {}) or {}).get('transId') or \
+                   (body.get('result', {}) or {}).get('requestId') or \
+                   (body.get('result', {}) or {}).get('transaction_id') or \
+                   body.get('transId') or body.get('requestId') or body.get('transaction_id') or ''
+
+        if not trans_id:
+            return jsonify({"error": "Transaction ID was not returned by service provider"}), 502
+
+        session_token = generate_payment_token(msisdn, trans_id)
+        body['paymentSessionToken'] = session_token
+        return jsonify(body)
+
+    except Exception as e:
+        logger.error(f"[/api/campaign-service-search] Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/jazzcash-form', methods=['GET'])
 @rate_limit(10, 60)
 def jazzcash_form():

@@ -2,10 +2,13 @@
   "fb1": {
     "campaignCode": "fb1",
     "campaignPlatform": "meta",
-    "pixelId": "1048814397473573",
-    "productCode": "bima_voucher_food_campaign",
+    "pixelId": "999999999999999",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_PREMIUM",
     "price": 300,
     "currency": "PKR",
+    "artworkImage": "campaign2 artwork.jpeg",
+    "backgroundColor": "#0d2743",
+    "termsUrl": "terms_and_conditions_bima.html",
     "events": {
       "page_view": "PageView",
       "initiate_checkout": "InitiateCheckout",
@@ -16,10 +19,13 @@
   "tt1": {
     "campaignCode": "tt1",
     "campaignPlatform": "tiktok",
-    "pixelId": "D8J9AARC77UAEKHUNU60",
-    "productCode": "bima_voucher_food_campaign",
+    "pixelId": "CTESTPIXEL123456789",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_PLUS",
     "price": 300,
     "currency": "PKR",
+    "artworkImage": "campaign2 artwork.jpeg",
+    "backgroundColor": "#0d2743",
+    "termsUrl": "terms_and_conditions_bima.html",
     "events": {
       "page_view": "PageView",
       "initiate_checkout": "InitiateCheckout",
@@ -27,18 +33,89 @@
       "purchase_failed": "Purchase Failed"
     }
   },
-  "google1": {
-    "campaignCode": "google1",
+  "gg1": {
+    "campaignCode": "gg1",
     "campaignPlatform": "google",
-    "pixelId": "AW-10779246142",
-    "productCode": "bima_voucher_food_campaign",
+    "pixelId": "AW-9999999999",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
     "price": 300,
     "currency": "PKR",
+    "artworkImage": "campaign2 artwork.jpeg",
+    "backgroundColor": "#0d2743",
+    "termsUrl": "terms_and_conditions_bima.html",
     "events": {
       "page_view": "page_view",
       "initiate_checkout": "begin_checkout",
       "purchase": "purchase",
       "purchase_failed": "Purchase Failed"
+    }
+  },
+  "tiktok_300": {
+    "campaignCode": "tiktok_300",
+    "campaignPlatform": "tiktok",
+    "pixelId": "D8J9AARC77UAEKHUNU60",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
+    "price": 300,
+    "currency": "PKR",
+    "artworkImage": "campaign2 artwork.jpeg",
+    "backgroundColor": "#0d2743",
+    "termsUrl": "terms_and_conditions_bima.html",
+    "events": {
+      "page_view": "PageView_tiktok_300",
+      "initiate_checkout": "InitiateCheckout_tiktok_300",
+      "purchase": "Purchase_tiktok_300",
+      "purchase_failed": "PurchaseFailed_tiktok_300"
+    }
+  },
+  "tiktok_600": {
+    "campaignCode": "tiktok_600",
+    "campaignPlatform": "tiktok",
+    "pixelId": "D8J9AARC77UAEKHUNU60",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_HEALTH_COACH",
+    "price": 600,
+    "currency": "PKR",
+    "artworkImage": "campaign2 artwork_600.jpg",
+    "backgroundColor": "#111111",
+    "termsUrl": "terms_and_conditions_bima_600.html",
+    "events": {
+      "page_view": "PageView_tiktok_600",
+      "initiate_checkout": "InitiateCheckout_tiktok_600",
+      "purchase": "Purchase_tiktok_600",
+      "purchase_failed": "PurchaseFailed_tiktok_600"
+    }
+  },
+  "tiktok_800": {
+    "campaignCode": "tiktok_800",
+    "campaignPlatform": "tiktok",
+    "pixelId": "D8J9AARC77UAEKHUNU60",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_PLUS",
+    "price": 800,
+    "currency": "PKR",
+    "artworkImage": "campaign2 artwork.jpeg",
+    "backgroundColor": "#0d2743",
+    "termsUrl": "terms_and_conditions_bima.html",
+    "events": {
+      "page_view": "PageView_tiktok_800",
+      "initiate_checkout": "InitiateCheckout_tiktok_800",
+      "purchase": "Purchase_tiktok_800",
+      "purchase_failed": "PurchaseFailed_tiktok_800"
+    }
+  },
+  "tiktok_1000": {
+    "campaignCode": "tiktok_1000",
+    "campaignPlatform": "tiktok",
+    "pixelId": "D8J9AARC77UAEKHUNU60",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_PREMIUM",
+    "price": 1000,
+    "currency": "PKR",
+    "artworkImage": "campaign2 artwork.jpeg",
+    "backgroundColor": "#0d2743",
+    "termsUrl": "terms_and_conditions_bima.html",
+    "events": {
+      "page_view": "PageView_tiktok_1000",
+      "initiate_checkout": "InitiateCheckout_tiktok_1000",
+      "purchase": "Purchase_tiktok_1000",
+      "purchase_failed": "PurchaseFailed_tiktok_1000"
     }
   },
   "default": {
@@ -48,6 +125,9 @@
     "productCode": "bima_telemed_voucher",
     "price": 300,
     "currency": "PKR",
+    "artworkImage": "campaign2 artwork.jpeg",
+    "backgroundColor": "#0d2743",
+    "termsUrl": "terms_and_conditions_bima.html",
     "events": {
       "page_view": "PageView",
       "initiate_checkout": "InitiateCheckout",

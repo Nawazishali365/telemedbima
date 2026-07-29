@@ -131,6 +131,26 @@ app.post(/.*index2(\.html)?$/, (req, res) => {
     });
 });
 
+app.get(/.*index3(\.html)?$/, (req, res) => {
+    res.sendFile(path.join(__dirname, 'BimaVoucher', 'index3.html'));
+});
+
+app.post(/.*index3(\.html)?$/, (req, res) => {
+    const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
+    console.log(`[Node.js POST index3] Received POST payload for ${req.path}:`, msisdn);
+
+    const indexPath = path.join(__dirname, 'BimaVoucher', 'index3.html');
+    fs.readFile(indexPath, 'utf8', (err, html) => {
+        if (err) return res.status(500).send('Error loading page');
+        const injectedHtml = html.replace(
+            '<head>',
+            `<head><script>window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};</script>`
+        );
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.send(injectedHtml);
+    });
+});
+
 app.use(express.static(path.join(__dirname)));
 
 // 3. In-memory IP Rate Limiter
@@ -367,7 +387,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
 
     try {
         let token = await getBimaToken();
-        const apiPath = `/tp/service/search/${msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY`;
+        const apiPath = `/tp/service/search/${msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY&campaignCode=HEALTH_FB1`;
 
         let result = await httpsRequest({
             hostname: 'pkcm.milvik.io',
@@ -413,6 +433,92 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
 
     } catch (err) {
         console.error('[/api/service-search] Error:', err.message);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/* ──────────────────────────────────────────────────────────────────
+   PROXY 2b: Campaign Service search (supports dynamic productCode & campaignCode from campaigns.json)
+   POST /api/campaign-service-search
+   ────────────────────────────────────────────────────────────────── */
+app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (req, res) => {
+    const { msisdn, campaignCode: reqCampaignCode, productCode: reqProductCode } = req.body;
+    if (!msisdn) {
+        return res.status(400).json({ error: 'Phone number (msisdn) is required' });
+    }
+
+    try {
+        let campaignCode = reqCampaignCode || 'default';
+        let productCode = reqProductCode || '';
+        let bimaCampaignCode = '';
+        let bimaProductCode = '';
+
+        // Read campaigns.json to resolve campaign parameters
+        try {
+            const campaignsPath = path.join(__dirname, 'campaigns.json');
+            if (fs.existsSync(campaignsPath)) {
+                const campaigns = JSON.parse(fs.readFileSync(campaignsPath, 'utf8'));
+                const cleanCode = (campaignCode || '').toLowerCase().trim();
+                const config = campaigns[cleanCode] || campaigns['default'];
+                if (config) {
+                    if (!productCode) productCode = config.productCode;
+                    campaignCode = config.campaignCode || campaignCode;
+                    bimaCampaignCode = config.bimaCampaignCode || '';
+                    bimaProductCode = config.bimaProductCode || '';
+                }
+            }
+        } catch (e) {
+            console.warn('[campaign-service-search] Could not read campaigns.json:', e.message);
+        }
+
+        const targetProductCode = bimaProductCode || productCode || 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY';
+        const targetCampaignCode = bimaCampaignCode || 'HEALTH_FB1';
+        console.log(`[campaign-service-search] Querying BIMA API - MSISDN: ${msisdn}, Product: ${targetProductCode}, BIMA Campaign: ${targetCampaignCode}`);
+
+        const apiPath = `/tp/service/search/${msisdn}/${encodeURIComponent(targetProductCode)}?deductionFrequency=MONTHLY&campaignCode=${encodeURIComponent(targetCampaignCode)}`;
+
+        let token = await getBimaToken();
+        let result = await httpsRequest({
+            hostname: 'pkcm.milvik.io',
+            path: apiPath,
+            method: 'GET',
+            headers: { 'auth-token': token }
+        });
+
+        // Retry if token expired
+        if (result.status === 401 || result.status === 403) {
+            console.log('[Node.js Backend] Token unauthorized. Refreshing token...');
+            token = await getBimaToken(true);
+            result = await httpsRequest({
+                hostname: 'pkcm.milvik.io',
+                path: apiPath,
+                method: 'GET',
+                headers: { 'auth-token': token }
+            });
+        }
+
+        if (result.status !== 200) {
+            return res.status(result.status).json(result.body);
+        }
+
+        const transId = (result.body.result && (result.body.result.transId || result.body.result.requestId || result.body.result.transaction_id))
+            || result.body.transId
+            || result.body.requestId
+            || result.body.transaction_id
+            || '';
+
+        if (!transId) {
+            return res.status(502).json({ error: 'Transaction ID was not returned by service provider' });
+        }
+
+        const sessionToken = generatePaymentToken(msisdn, transId);
+        return res.json({
+            ...result.body,
+            paymentSessionToken: sessionToken
+        });
+
+    } catch (err) {
+        console.error('[/api/campaign-service-search] Error:', err.message);
         return res.status(500).json({ error: err.message });
     }
 });
