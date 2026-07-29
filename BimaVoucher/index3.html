@@ -796,6 +796,7 @@
             const currency = cVars.currency || 'PKR';
             const artworkImage = cVars.artworkImage || 'campaign2 artwork.jpeg';
             const backgroundColor = cVars.backgroundColor || '#0d2743';
+            const textColor = cVars.textColor || '#ffffff';
             const termsUrl = cVars.termsUrl || 'terms_and_conditions_bima.html';
             const events = cVars.events || {};
 
@@ -804,11 +805,22 @@
                 document.body.style.backgroundColor = backgroundColor;
             }
 
-            // Dynamically update daily price text (e.g. 300/30 = 10, 600/30 = 20)
+            // Dynamically update price text content and text color
             const priceInfoEl = document.getElementById('priceInfoEl');
             if (priceInfoEl) {
                 const dailyAmount = Math.round(price / 30);
                 priceInfoEl.textContent = `Only Rs. ${dailyAmount}/Day – Full family covered`;
+                if (textColor) {
+                    priceInfoEl.style.color = textColor;
+                }
+            }
+
+            // Dynamically update consent label and Terms link text color
+            if (textColor) {
+                const consentTextEl = document.querySelector('.consent-text');
+                if (consentTextEl) {
+                    consentTextEl.style.color = textColor;
+                }
             }
 
             // Dynamically update container artwork background image

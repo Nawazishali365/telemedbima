@@ -1,5 +1,4 @@
 {
-  // meta campaigns
   "meta_300": {
     "campaignCode": "meta_300",
     "campaignPlatform": "meta",
@@ -7,8 +6,9 @@
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
     "price": 300,
     "currency": "PKR",
-    "artworkImage": "campaign2 artwork.jpeg",
+    "artworkImage": "campaign_artwork_tiktok_300.jpeg",
     "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima.html",
     "events": {
       "page_view": "PageView_meta_300",
@@ -24,8 +24,9 @@
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_HEALTH_COACH",
     "price": 600,
     "currency": "PKR",
-    "artworkImage": "campaign2 artwork_600.jpg",
-    "backgroundColor": "#111111",
+    "artworkImage": "campaign_artwork_tiktok_600.png",
+    "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima_600.html",
     "events": {
       "page_view": "PageView_meta_600",
@@ -34,16 +35,16 @@
       "purchase_failed": "PurchaseFailed_meta_600"
     }
   },
-  // google campaigns
   "google_300": {
     "campaignCode": "google_300",
     "campaignPlatform": "google",
-    "pixelId": "AW-9999999999",
+    "pixelId": "AW-10779246142",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
     "price": 300,
     "currency": "PKR",
     "artworkImage": "campaign2 artwork.jpeg",
     "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima.html",
     "events": {
       "page_view": "PageView_google_300",
@@ -52,7 +53,6 @@
       "purchase_failed": "PurchaseFailed_google_300"
     }
   },
-  //tiktok campaigns 
   "tiktok_300": {
     "campaignCode": "tiktok_300",
     "campaignPlatform": "tiktok",
@@ -60,8 +60,9 @@
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
     "price": 300,
     "currency": "PKR",
-    "artworkImage": "campaign2 artwork.jpeg",
+    "artworkImage": "campaign_artwork_tiktok_300.jpeg",
     "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima.html",
     "events": {
       "page_view": "PageView_tiktok_300",
@@ -78,7 +79,8 @@
     "price": 600,
     "currency": "PKR",
     "artworkImage": "campaign_artwork_tiktok_600.png",
-    "backgroundColor": "#111111",
+    "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima_600.html",
     "events": {
       "page_view": "PageView_tiktok_600",
@@ -96,6 +98,7 @@
     "currency": "PKR",
     "artworkImage": "campaign2 artwork.jpeg",
     "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima.html",
     "events": {
       "page_view": "PageView_tiktok_800",
@@ -113,6 +116,7 @@
     "currency": "PKR",
     "artworkImage": "campaign2 artwork.jpeg",
     "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima.html",
     "events": {
       "page_view": "PageView_tiktok_1000",
@@ -128,8 +132,9 @@
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
     "price": 300,
     "currency": "PKR",
-    "artworkImage": "campaign2 artwork.jpeg",
+    "artworkImage": "campaign_artwork_tiktok_300.jpeg",
     "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima.html",
     "events": {
       "page_view": "PageView_tiktok_300",
