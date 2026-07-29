@@ -469,13 +469,39 @@ def jcms_callback():
     message = request.values.get('message', '')
     trx_ref_no = request.values.get('trxRefNo', '')
     campaignCode = request.values.get('campaignCode', '')
+    source = request.values.get('source', '')
 
-    query = urlencode({
+    query_params = {
         "status": status,
         "message": message,
         "trxRefNo": trx_ref_no,
         "campaignCode": campaignCode
-    })
+    }
+    if source:
+        query_params["source"] = source
+
+    query = urlencode(query_params)
+    return redirect(f"/callback.html?{query}")
+
+@app.route('/jcms/callback-dynamic', methods=['GET', 'POST'])
+@app.route('/jcms/callback_dynamic', methods=['GET', 'POST'])
+def jcms_callback_dynamic():
+    status = request.values.get('status', '')
+    message = request.values.get('message', '')
+    trx_ref_no = request.values.get('trxRefNo', '')
+    campaignCode = request.values.get('campaignCode', '')
+    source = request.values.get('source', '')
+
+    query_params = {
+        "status": status,
+        "message": message,
+        "trxRefNo": trx_ref_no,
+        "campaignCode": campaignCode
+    }
+    if source:
+        query_params["source"] = source
+
+    query = urlencode(query_params)
     return redirect(f"/callback dynamic.html?{query}")
 
 @app.route('/api/campaign/<code>', methods=['GET'])

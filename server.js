@@ -576,12 +576,13 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
 });
 
 /* ──────────────────────────────────────────────────────────────────
-   CALLBACK ENDPOINT
-   POST & GET /jcms/callback
+   CALLBACK ENDPOINTS
+   Standard Callback: GET & POST /jcms/callback -> /callback.html
+   Dynamic Callback:  GET & POST /jcms/callback-dynamic & /jcms/callback_dynamic -> /callback dynamic.html
    ────────────────────────────────────────────────────────────────── */
 const handleJcmsCallback = (req, res) => {
     const data = { ...req.query, ...req.body };
-    console.log('[Node.js /jcms/callback] Received callback payload:', data);
+    console.log(`[Node.js ${req.path}] Received callback payload:`, data);
 
     const status = data.status || data.pp_ResponseCode || data.pp_TxnResponseCode || '';
     const message = data.message || data.pp_ResponseMessage || data.pp_TxnResponseMessage || '';
@@ -593,12 +594,22 @@ const handleJcmsCallback = (req, res) => {
     if (source) queryParams.source = source;
 
     const query = new URLSearchParams(queryParams).toString();
-    console.log(`[Node.js /jcms/callback] Redirecting to /callback dynamic.html?${query}`);
-    res.redirect(`/callback dynamic.html?${query}`);
+
+    // Determine target page based on endpoint path
+    const targetPage = req.path.includes('dynamic') ? '/callback dynamic.html' : '/callback.html';
+    console.log(`[Node.js ${req.path}] Redirecting to ${targetPage}?${query}`);
+    res.redirect(`${targetPage}?${query}`);
 };
 
+// Standard Callback Routes
 app.post('/jcms/callback', handleJcmsCallback);
 app.get('/jcms/callback', handleJcmsCallback);
+
+// Dynamic Callback Routes
+app.post('/jcms/callback-dynamic', handleJcmsCallback);
+app.get('/jcms/callback-dynamic', handleJcmsCallback);
+app.post('/jcms/callback_dynamic', handleJcmsCallback);
+app.get('/jcms/callback_dynamic', handleJcmsCallback);
 
 /* ──────────────────────────────────────────────────────────────────
    TELEMEDICINE REDIRECT & SECURE PROXY ROUTE
