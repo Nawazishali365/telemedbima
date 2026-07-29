@@ -1,4 +1,5 @@
 {
+  // meta campaigns
   "meta_300": {
     "campaignCode": "meta_300",
     "campaignPlatform": "meta",
@@ -33,10 +34,11 @@
       "purchase_failed": "PurchaseFailed_meta_600"
     }
   },
+  // google campaigns
   "google_300": {
     "campaignCode": "google_300",
     "campaignPlatform": "google",
-    "pixelId": "AW-10779246142",
+    "pixelId": "AW-9999999999",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
     "price": 300,
     "currency": "PKR",
@@ -50,6 +52,7 @@
       "purchase_failed": "PurchaseFailed_google_300"
     }
   },
+  //tiktok campaigns 
   "tiktok_300": {
     "campaignCode": "tiktok_300",
     "campaignPlatform": "tiktok",

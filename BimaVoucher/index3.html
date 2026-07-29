@@ -575,18 +575,25 @@
                     pixel_id: pixelId
                 };
 
+                const fireMetaCheckout = () => {
+                    fbq('track', 'InitiateCheckout', metaParams);
+                    if (checkoutEvent !== 'InitiateCheckout') {
+                        fbq('trackCustom', checkoutEvent, metaParams);
+                    }
+                };
+
                 if (typeof fbq === 'function') {
                     if (e164_phone) {
                         sha256(e164_phone).then(hashedPhone => {
                             fbq('init', pixelId, { ph: hashedPhone });
-                            fbq('track', checkoutEvent, metaParams);
+                            fireMetaCheckout();
                         }).catch(() => {
                             fbq('init', pixelId);
-                            fbq('track', checkoutEvent, metaParams);
+                            fireMetaCheckout();
                         });
                     } else {
                         fbq('init', pixelId);
-                        fbq('track', checkoutEvent, metaParams);
+                        fireMetaCheckout();
                     }
                 }
             }
@@ -814,7 +821,10 @@
                 const pageViewEvent = events.page_view || 'PageView';
                 if (typeof fbq === 'function') {
                     fbq('init', pixelId);
-                    fbq('track', pageViewEvent);
+                    fbq('track', 'PageView');
+                    if (pageViewEvent !== 'PageView') {
+                        fbq('trackCustom', pageViewEvent, { campaign_code: campaignCode, pixel_id: pixelId });
+                    }
                 }
             }
             /* ── 2. TIKTOK PLATFORM PAGE VIEW BLOCK ── */

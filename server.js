@@ -44,7 +44,9 @@ app.get('/api/campaign/:code', (req, res) => {
         if (!fs.existsSync(campaignsPath)) {
             return res.status(404).json({ success: false, message: 'Campaign configuration not found' });
         }
-        const campaigns = JSON.parse(fs.readFileSync(campaignsPath, 'utf8'));
+        let fileContent = fs.readFileSync(campaignsPath, 'utf8');
+        fileContent = fileContent.replace(/\/\/.*$/gm, '');
+        const campaigns = JSON.parse(fileContent);
         const code = (req.params.code || '').toLowerCase().trim();
         const campaignData = campaigns[code] || campaigns['default'] || null;
 
@@ -457,7 +459,9 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
         try {
             const campaignsPath = path.join(__dirname, 'campaigns.json');
             if (fs.existsSync(campaignsPath)) {
-                const campaigns = JSON.parse(fs.readFileSync(campaignsPath, 'utf8'));
+                let fileContent = fs.readFileSync(campaignsPath, 'utf8');
+                fileContent = fileContent.replace(/\/\/.*$/gm, '');
+                const campaigns = JSON.parse(fileContent);
                 const cleanCode = (campaignCode || '').toLowerCase().trim();
                 const config = campaigns[cleanCode] || campaigns['default'];
                 if (config) {

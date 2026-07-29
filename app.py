@@ -352,7 +352,9 @@ def campaign_service_search():
             campaigns_path = os.path.join(app.root_path, 'campaigns.json')
             if os.path.exists(campaigns_path):
                 with open(campaigns_path, 'r', encoding='utf-8') as f:
-                    campaigns = json.load(f)
+                    file_content = f.read()
+                file_content = re.sub(r'//.*$', '', file_content, flags=re.MULTILINE)
+                campaigns = json.loads(file_content)
                 clean_code = (req_campaign_code or '').strip().lower()
                 config = campaigns.get(clean_code) or campaigns.get('default')
                 if config:
@@ -515,7 +517,9 @@ def get_campaign_config(code):
             return jsonify({"success": False, "message": "Campaign configuration file missing"}), 404
         
         with open(campaigns_path, 'r', encoding='utf-8') as f:
-            campaigns = json.load(f)
+            file_content = f.read()
+        file_content = re.sub(r'//.*$', '', file_content, flags=re.MULTILINE)
+        campaigns = json.loads(file_content)
         
         clean_code = (code or '').strip().lower()
         campaign_data = campaigns.get(clean_code) or campaigns.get('default')
