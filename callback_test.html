@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +15,7 @@
             height: 100vh;
             margin: 0;
         }
+
         .card {
             background: white;
             padding: 30px;
@@ -23,10 +25,12 @@
             max-width: 400px;
             width: 100%;
         }
+
         h2 {
             margin-bottom: 20px;
             color: #333;
         }
+
         .btn {
             background: #4ecca7;
             color: white;
@@ -38,18 +42,20 @@
             cursor: pointer;
             transition: background 0.3s;
         }
+
         .btn:hover {
             background: #3aab8e;
         }
     </style>
 </head>
+
 <body>
 
     <div class="card">
         <h2>Callback Test</h2>
         <form id="callbackForm" method="POST" action="/jcm/callback_dynamic">
             <input type="hidden" name="apiKey" value="api-key">
-            <input type="hidden" name="status" value="1">
+            <input type="hidden" name="status" value="0">
             <input type="hidden" name="message" value="success">
             <input type="hidden" name="trxRefNo" value="BINJZDTC1785249884899">
             <input type="hidden" name="campaignCode" value="tiktok_300">
@@ -66,4 +72,5 @@
     </script>
 
 </body>
+
 </html>
