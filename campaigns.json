@@ -80,7 +80,7 @@
     "currency": "PKR",
     "artworkImage": "campaign_artwork_tiktok_600.png",
     "backgroundColor": "#0d2743",
-    "textColor": "#ffffff",
+    "textColor": "#111111",
     "termsUrl": "terms_and_conditions_bima_600.html",
     "events": {
       "page_view": "PageView_tiktok_600",
