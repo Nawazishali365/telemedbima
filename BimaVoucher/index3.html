@@ -805,7 +805,7 @@
                 document.body.style.backgroundColor = backgroundColor;
             }
 
-            // Dynamically update price text content and text color
+            // Dynamically update price text content and text color for all text elements including Terms link
             const priceInfoEl = document.getElementById('priceInfoEl');
             if (priceInfoEl) {
                 const dailyAmount = Math.round(price / 30);
@@ -815,11 +815,19 @@
                 }
             }
 
-            // Dynamically update consent label and Terms link text color
+            // Dynamically update consent label, consent text, and Terms & Conditions link text color
             if (textColor) {
                 const consentTextEl = document.querySelector('.consent-text');
                 if (consentTextEl) {
                     consentTextEl.style.color = textColor;
+                }
+                const consentLabelEl = document.querySelector('.consent-label');
+                if (consentLabelEl) {
+                    consentLabelEl.style.color = textColor;
+                }
+                const termsLinkEl = document.getElementById('termsLink');
+                if (termsLinkEl) {
+                    termsLinkEl.style.color = textColor;
                 }
             }
 
