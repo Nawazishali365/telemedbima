@@ -17,6 +17,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 1. Block direct access to sensitive files
+function getCampaignsFilePath() {
+    const env = (process.env.APP_ENV || process.env.ENVIRONMENT || process.env.NODE_ENV || 'production').trim().toLowerCase();
+    if (['qa', 'staging', 'dev', 'development'].includes(env)) {
+        const qaPath = path.join(__dirname, 'campaigns_qa.json');
+        if (fs.existsSync(qaPath)) return { path: qaPath, env };
+    }
+    const prodPath = path.join(__dirname, 'campaigns_prod.json');
+    if (fs.existsSync(prodPath)) return { path: prodPath, env };
+    return { path: path.join(__dirname, 'campaigns.json'), env };
+}
+
 app.use((req, res, next) => {
     const blockedFiles = [
         '/package.json',
@@ -28,7 +39,9 @@ app.use((req, res, next) => {
         '/.env sample',
         '/.git',
         '/security-audit-report.html',
-        '/campaigns.json'
+        '/campaigns.json',
+        '/campaigns_qa.json',
+        '/campaigns_prod.json'
     ];
     const url = req.path.toLowerCase();
     if (blockedFiles.some(file => url === file || url.endsWith(file) || url.startsWith(file + '/'))) {
@@ -40,7 +53,7 @@ app.use((req, res, next) => {
 // 2b. Campaign API Endpoint
 app.get('/api/campaign/:code', (req, res) => {
     try {
-        const campaignsPath = path.join(__dirname, 'campaigns.json');
+        const { path: campaignsPath, env: currentEnv } = getCampaignsFilePath();
         if (!fs.existsSync(campaignsPath)) {
             return res.status(404).json({ success: false, message: 'Campaign configuration not found' });
         }
@@ -56,6 +69,7 @@ app.get('/api/campaign/:code', (req, res) => {
 
         return res.json({
             success: true,
+            environment: currentEnv,
             campaignCode: campaignData.campaignCode || code,
             config: campaignData
         });
@@ -455,9 +469,9 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
         let bimaCampaignCode = '';
         let bimaProductCode = '';
 
-        // Read campaigns.json to resolve campaign parameters
+        // Read campaigns configuration file based on environment (QA vs Prod)
         try {
-            const campaignsPath = path.join(__dirname, 'campaigns.json');
+            const { path: campaignsPath } = getCampaignsFilePath();
             if (fs.existsSync(campaignsPath)) {
                 let fileContent = fs.readFileSync(campaignsPath, 'utf8');
                 fileContent = fileContent.replace(/\/\/.*$/gm, '');
@@ -472,7 +486,7 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
                 }
             }
         } catch (e) {
-            console.warn('[campaign-service-search] Could not read campaigns.json:', e.message);
+            console.warn('[campaign-service-search] Could not read campaign config:', e.message);
         }
 
         const targetProductCode = bimaProductCode || productCode || 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY';

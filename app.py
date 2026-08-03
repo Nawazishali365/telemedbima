@@ -330,6 +330,17 @@ def service_search():
         logger.error(f"[/api/service-search] Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+def get_campaigns_file_path():
+    env = os.getenv('APP_ENV', os.getenv('ENVIRONMENT', os.getenv('FLASK_ENV', 'production'))).strip().lower()
+    if env in ['qa', 'staging', 'dev', 'development']:
+        qa_path = os.path.join(app.root_path, 'campaigns_qa.json')
+        if os.path.exists(qa_path):
+            return qa_path, env
+    prod_path = os.path.join(app.root_path, 'campaigns_prod.json')
+    if os.path.exists(prod_path):
+        return prod_path, env
+    return os.path.join(app.root_path, 'campaigns.json'), env
+
 @app.route('/api/campaign-service-search', methods=['POST'])
 @rate_limit(10, 60)
 def campaign_service_search():
@@ -347,9 +358,9 @@ def campaign_service_search():
         bima_campaign_code = ''
         bima_product_code = ''
 
-        # Read campaigns.json to resolve campaign parameters
+        # Read campaigns configuration file based on environment (QA vs Prod)
         try:
-            campaigns_path = os.path.join(app.root_path, 'campaigns.json')
+            campaigns_path, current_env = get_campaigns_file_path()
             if os.path.exists(campaigns_path):
                 with open(campaigns_path, 'r', encoding='utf-8') as f:
                     file_content = f.read()
@@ -364,7 +375,7 @@ def campaign_service_search():
                     bima_campaign_code = config.get('bimaCampaignCode', '')
                     bima_product_code = config.get('bimaProductCode', '')
         except Exception as e:
-            logger.warning(f"[campaign-service-search] Could not read campaigns.json: {e}")
+            logger.warning(f"[campaign-service-search] Could not read campaign config: {e}")
 
         target_product_code = bima_product_code or product_code or 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY'
         target_campaign_code = bima_campaign_code or 'HEALTH_FB1'
@@ -512,7 +523,7 @@ def jcms_callback_dynamic():
 @app.route('/api/campaign/<code>', methods=['GET'])
 def get_campaign_config(code):
     try:
-        campaigns_path = os.path.join(app.root_path, 'campaigns.json')
+        campaigns_path, current_env = get_campaigns_file_path()
         if not os.path.exists(campaigns_path):
             return jsonify({"success": False, "message": "Campaign configuration file missing"}), 404
         
@@ -529,6 +540,7 @@ def get_campaign_config(code):
 
         return jsonify({
             "success": True,
+            "environment": current_env,
             "campaignCode": campaign_data.get("campaignCode", clean_code),
             "config": campaign_data
         })
