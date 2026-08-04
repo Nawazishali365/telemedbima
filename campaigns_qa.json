@@ -56,7 +56,7 @@
   "tiktok_300": {
     "campaignCode": "tiktok_300",
     "campaignPlatform": "tiktok",
-    "pixelId": "D8J9AARC77UAEKHUNU60",
+    "pixelId": "D9O8K8RC77U1C011P6D0",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
     "price": 300,
     "currency": "PKR",
@@ -74,8 +74,8 @@
   "tiktok_600": {
     "campaignCode": "tiktok_600",
     "campaignPlatform": "tiktok",
-    "pixelId": "D8J9AARC77UAEKHUNU60",
-    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_HEALTH_COACH",
+    "pixelId": "D9O8K8RC77U1C011P6D0",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_BCARE_LITE",
     "price": 600,
     "currency": "PKR",
     "artworkImage": "campaign_artwork_tiktok_600.png",
@@ -92,7 +92,7 @@
   "tiktok_800": {
     "campaignCode": "tiktok_800",
     "campaignPlatform": "tiktok",
-    "pixelId": "D8J9AARC77UAEKHUNU60",
+    "pixelId": "D9O8K8RC77U1C011P6D0",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_PLUS",
     "price": 800,
     "currency": "PKR",
@@ -110,7 +110,7 @@
   "tiktok_1000": {
     "campaignCode": "tiktok_1000",
     "campaignPlatform": "tiktok",
-    "pixelId": "D8J9AARC77UAEKHUNU60",
+    "pixelId": "D9O8K8RC77U1C011P6D0",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_PREMIUM",
     "price": 1000,
     "currency": "PKR",
@@ -128,7 +128,7 @@
   "default": {
     "campaignCode": "tiktok_300",
     "campaignPlatform": "tiktok",
-    "pixelId": "D8J9AARC77UAEKHUNU60",
+    "pixelId": "D9O8K8RC77U1C011P6D0",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
     "price": 300,
     "currency": "PKR",
