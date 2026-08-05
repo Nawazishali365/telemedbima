@@ -287,7 +287,7 @@ def service_search():
             return jsonify({"error": "Phone number (msisdn) is required"}), 400
 
         token = get_bima_token()
-        url = f"https://pkcm.milvik.io/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY&campaignCode=HEALTH_FB1"
+        url = f"https://pkcm.milvik.io/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY&campaignCode=default"
         headers = {
             "auth-token": token
         }
@@ -378,7 +378,7 @@ def campaign_service_search():
             logger.warning(f"[campaign-service-search] Could not read campaign config: {e}")
 
         target_product_code = bima_product_code or product_code or 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY'
-        target_campaign_code = bima_campaign_code or 'HEALTH_FB1'
+        target_campaign_code = bima_campaign_code or 'default'
 
         token = get_bima_token()
         url = f"https://pkcm.milvik.io/tp/service/search/{msisdn}/{target_product_code}?deductionFrequency=MONTHLY&campaignCode={target_campaign_code}"
