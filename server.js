@@ -402,7 +402,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
 
     try {
         let token = await getBimaToken();
-        const apiPath = `/tp/service/search/${msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY&campaignCode=HEALTH_FB1`;
+        const apiPath = `/tp/service/search/${msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY&campaignCode=default`;
 
         let result = await httpsRequest({
             hostname: 'pkcm.milvik.io',
