@@ -125,8 +125,8 @@
       "purchase_failed": "PurchaseFailed_tiktok_1000_QA"
     }
   },
-  "default": {
-    "campaignCode": "tiktok_300",
+  "qa_default": {
+    "campaignCode": "qa_default",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
