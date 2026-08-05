@@ -339,7 +339,7 @@ def get_campaigns_file_path():
     prod_path = os.path.join(app.root_path, 'campaigns_prod.json')
     if os.path.exists(prod_path):
         return prod_path, env
-    return os.path.join(app.root_path, 'campaigns.json'), env
+    return prod_path, env
 
 @app.route('/api/campaign-service-search', methods=['POST'])
 @rate_limit(10, 60)

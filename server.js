@@ -25,7 +25,7 @@ function getCampaignsFilePath() {
     }
     const prodPath = path.join(__dirname, 'campaigns_prod.json');
     if (fs.existsSync(prodPath)) return { path: prodPath, env };
-    return { path: path.join(__dirname, 'campaigns.json'), env };
+    return { path: prodPath, env };
 }
 
 app.use((req, res, next) => {
@@ -39,7 +39,6 @@ app.use((req, res, next) => {
         '/.env sample',
         '/.git',
         '/security-audit-report.html',
-        '/campaigns.json',
         '/campaigns_qa.json',
         '/campaigns_prod.json'
     ];
