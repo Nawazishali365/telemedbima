@@ -9,7 +9,7 @@
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
         gtag('config', 'G-FLKEQYY9E9', { send_page_view: false });
-        gtag('event', 'View Content_d');
+        gtag('event', 'View Content');
     </script>
     <!-- TikTok Pixel Code Start -->
     <script>
@@ -23,7 +23,7 @@
             };
 
             ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: false });
-            ttq.track('View Content_d', {
+            ttq.track('View Content', {
                 content_id: 'bima_telemed_voucher',
                 content_type: 'product',
                 content_name: 'BIMA Telemedicine Voucher',
@@ -48,7 +48,7 @@
         !function (f, b, e, v, n, t, s) {
             if (f.fbq) return; n = f.fbq = function () {
                 n.callMethod ?
-                n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
             };
             if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
             n.queue = []; t = b.createElement(e); t.async = !0;
@@ -180,7 +180,7 @@
         }
 
         .phone-input:-webkit-autofill,
-        .phone-input:-webkit-autofill:hover, 
+        .phone-input:-webkit-autofill:hover,
         .phone-input:-webkit-autofill:focus {
             -webkit-text-fill-color: #1e293b;
             -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
@@ -451,8 +451,10 @@
                         style="margin-top: 2px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0; accent-color: #FFE100;"
                         checked required>
                     <span class="consent-text">
-                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.html?returnUrl=index2.html"
-                            target="_blank" onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms & Conditions</a>
+                        By clicking Subscribe, you accept the <a
+                            href="terms_and_conditions_bima.html?returnUrl=index2.html" target="_blank"
+                            onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms &
+                            Conditions</a>
                     </span>
                 </label>
             </div>
@@ -591,10 +593,10 @@
                     window.ttq.identify({
                         phone_number: hashedPhone
                     });
-                    window.ttq.track('Initiate Checkout_d', eventParams);
+                    window.ttq.track('Initiate Checkout', eventParams);
                 }).catch(err => {
                     console.error('TikTok identification hashing failed:', err);
-                    window.ttq.track('Initiate Checkout_d', eventParams);
+                    window.ttq.track('Initiate Checkout', eventParams);
                 });
             }
             if (typeof fbq === 'function') {
@@ -618,7 +620,7 @@
                 });
             }
             if (typeof gtag === 'function') {
-                gtag('event', 'Initiate Checkout_d', eventParams);
+                gtag('event', 'Initiate Checkout', eventParams);
             }
 
             setLoading(true);
@@ -665,10 +667,10 @@
 
                 if (isAlreadyRegistered) {
                     if (window.ttq) {
-                        window.ttq.track('duplicate_d');
+                        window.ttq.track('duplicate');
                     }
                     if (typeof gtag === 'function') {
-                        gtag('event', 'duplicate_d');
+                        gtag('event', 'duplicate');
                     }
                     setLoading(false);
                     showCustomAlert("You're already registered to Telemedicine Product, please reachout to 042 111 11 9878");
