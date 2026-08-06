@@ -475,7 +475,12 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
         // We return the original result body, but also attach the sessionToken
         return res.json({
             ...result.body,
-            paymentSessionToken: sessionToken
+            paymentSessionToken: sessionToken,
+            _debug: {
+                endpoint: '/api/service-search',
+                targetCampaignCode,
+                targetProductCode
+            }
         });
 
     } catch (err) {
@@ -567,7 +572,12 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
         const sessionToken = generatePaymentToken(msisdn, transId);
         return res.json({
             ...result.body,
-            paymentSessionToken: sessionToken
+            paymentSessionToken: sessionToken,
+            _debug: {
+                endpoint: '/api/campaign-service-search',
+                targetCampaignCode,
+                targetProductCode
+            }
         });
 
     } catch (err) {
