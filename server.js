@@ -395,6 +395,10 @@ app.get('/api/detect-msisdn', async (req, res) => {
    POST /api/service-search
    ────────────────────────────────────────────────────────────────── */
 app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res) => {
+    console.log('\n========================================');
+    console.log('[ENDPOINT CALLED] /api/service-search');
+    console.log('[service-search] Request Body:', JSON.stringify(req.body));
+    console.log('========================================');
     const { msisdn, campaignCode: reqCampaignCode, productCode: reqProductCode } = req.body;
     if (!msisdn) {
         return res.status(400).json({ error: 'Phone number (msisdn) is required' });
@@ -485,6 +489,10 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
    POST /api/campaign-service-search
    ────────────────────────────────────────────────────────────────── */
 app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (req, res) => {
+    console.log('\n========================================');
+    console.log('[ENDPOINT CALLED] /api/campaign-service-search');
+    console.log('[campaign-service-search] Request Body:', JSON.stringify(req.body));
+    console.log('========================================');
     const { msisdn, campaignCode: reqCampaignCode, productCode: reqProductCode } = req.body;
     if (!msisdn) {
         return res.status(400).json({ error: 'Phone number (msisdn) is required' });
