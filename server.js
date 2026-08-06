@@ -410,6 +410,9 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
         let bimaCampaignCode = '';
         let bimaProductCode = '';
 
+        const appEnv = (process.env.APP_ENV || '').toString().trim().toLowerCase();
+        const defaultCampaignCode = appEnv === 'qa' ? 'qa_default' : 'default';
+
         try {
             const { path: campaignsPath } = getCampaignsFilePath();
             if (fs.existsSync(campaignsPath)) {
@@ -418,7 +421,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
                 const campaigns = JSON.parse(fileContent);
                 const cleanCode = (campaignCode || '').toLowerCase().trim();
                 const unqaCode = cleanCode.replace(/^qa_/, '');
-                const config = campaigns[cleanCode] || campaigns[unqaCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns['default'];
+                const config = campaigns[cleanCode] || campaigns[unqaCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns[defaultCampaignCode];
                 if (config) {
                     if (!productCode) productCode = config.productCode;
                     campaignCode = config.campaignCode || campaignCode;
@@ -431,7 +434,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
         }
 
         const targetProductCode = bimaProductCode || productCode || 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY';
-        const targetCampaignCode = bimaCampaignCode || campaignCode || 'default';
+        const targetCampaignCode = bimaCampaignCode || campaignCode || defaultCampaignCode;
         console.log(`[service-search] Querying BIMA API - MSISDN: ${msisdn}, Product: ${targetProductCode}, BIMA Campaign: ${targetCampaignCode}`);
 
         const apiPath = `/tp/service/search/${msisdn}/${encodeURIComponent(targetProductCode)}?deductionFrequency=MONTHLY&campaignCode=${encodeURIComponent(targetCampaignCode)}`;
@@ -511,6 +514,9 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
         let bimaProductCode = '';
 
         // Read campaigns configuration file based on environment (QA vs Prod)
+        const appEnv = (process.env.APP_ENV || '').toString().trim().toLowerCase();
+        const defaultCampaignCode = appEnv === 'qa' ? 'qa_default' : 'default';
+
         try {
             const { path: campaignsPath } = getCampaignsFilePath();
             if (fs.existsSync(campaignsPath)) {
@@ -519,7 +525,7 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
                 const campaigns = JSON.parse(fileContent);
                 const cleanCode = (campaignCode || '').toLowerCase().trim();
                 const unqaCode = cleanCode.replace(/^qa_/, '');
-                const config = campaigns[cleanCode] || campaigns[unqaCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns['default'];
+                const config = campaigns[cleanCode] || campaigns[unqaCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns[defaultCampaignCode];
                 if (config) {
                     if (!productCode) productCode = config.productCode;
                     campaignCode = config.campaignCode || campaignCode;
@@ -532,7 +538,7 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
         }
 
         const targetProductCode = bimaProductCode || productCode || 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY';
-        const targetCampaignCode = campaignCode || 'default';
+        const targetCampaignCode = campaignCode || defaultCampaignCode;
         console.log(`[campaign-service-search] Querying BIMA API - MSISDN: ${msisdn}, Product: ${targetProductCode}, BIMA Campaign: ${targetCampaignCode}`);
 
         const apiPath = `/tp/service/search/${msisdn}/${encodeURIComponent(targetProductCode)}?deductionFrequency=MONTHLY&campaignCode=${encodeURIComponent(targetCampaignCode)}`;
@@ -885,3 +891,4 @@ app.post('/api/grant-access', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`\n✅  Server running → http://localhost:${PORT}\n`);
 });
+
