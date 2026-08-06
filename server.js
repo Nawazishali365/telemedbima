@@ -417,7 +417,8 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
                 fileContent = fileContent.replace(/\/\/.*$/gm, '');
                 const campaigns = JSON.parse(fileContent);
                 const cleanCode = (campaignCode || '').toLowerCase().trim();
-                const config = campaigns[cleanCode] || campaigns['default'];
+                const unqaCode = cleanCode.replace(/^qa_/, '');
+                const config = campaigns[cleanCode] || campaigns[unqaCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns['default'];
                 if (config) {
                     if (!productCode) productCode = config.productCode;
                     campaignCode = config.campaignCode || campaignCode;
@@ -517,7 +518,8 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
                 fileContent = fileContent.replace(/\/\/.*$/gm, '');
                 const campaigns = JSON.parse(fileContent);
                 const cleanCode = (campaignCode || '').toLowerCase().trim();
-                const config = campaigns[cleanCode] || campaigns['default'];
+                const unqaCode = cleanCode.replace(/^qa_/, '');
+                const config = campaigns[cleanCode] || campaigns[unqaCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns['default'];
                 if (config) {
                     if (!productCode) productCode = config.productCode;
                     campaignCode = config.campaignCode || campaignCode;

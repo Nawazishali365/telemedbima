@@ -27,7 +27,7 @@
         !function (f, b, e, v, n, t, s) {
             if (f.fbq) return; n = f.fbq = function () {
                 n.callMethod ?
-                n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
             };
             if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
             n.queue = []; t = b.createElement(e); t.async = !0;
@@ -153,7 +153,7 @@
         }
 
         .phone-input:-webkit-autofill,
-        .phone-input:-webkit-autofill:hover, 
+        .phone-input:-webkit-autofill:hover,
         .phone-input:-webkit-autofill:focus {
             -webkit-text-fill-color: #1e293b;
             -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
@@ -424,8 +424,10 @@
                         style="margin-top: 2px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0; accent-color: #FFE100;"
                         checked required>
                     <span class="consent-text">
-                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.html?returnUrl=index3.html" id="termsLink"
-                            target="_blank" onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms & Conditions</a>
+                        By clicking Subscribe, you accept the <a
+                            href="terms_and_conditions_bima.html?returnUrl=index3.html" id="termsLink" target="_blank"
+                            onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms &
+                            Conditions</a>
                     </span>
                 </label>
             </div>
@@ -765,7 +767,7 @@
         /* ── Display MSISDN if received from POST request, URL parameter, or HE headers & Fetch Campaign Details ── */
         window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
-            
+
             // Extract campaignCode parameter from URL query string
             const rawCampaignCode = (urlParams.get('campaignCode') || urlParams.get('campaign') || sessionStorage.getItem('campaign_code') || 'default').trim();
             if (urlParams.get('campaignCode')) {
@@ -779,6 +781,7 @@
                     const data = await res.json();
                     if (data.success && data.config) {
                         window.CAMPAIGN_VARS = data.config;
+                        if (data.code) window.CAMPAIGN_VARS.rawCode = data.code;
                         console.log('✅ Index3 loaded campaign parameters:', window.CAMPAIGN_VARS);
                     }
                 }
@@ -788,7 +791,7 @@
 
             // Initialize dynamic campaign parameters, artwork & terms URL
             const cVars = window.CAMPAIGN_VARS || {};
-            const campaignCode = cVars.campaignCode || 'default';
+            const campaignCode = cVars.rawCode || rawCampaignCode || cVars.campaignCode || 'default';
             const platform = (cVars.campaignPlatform || 'meta').toLowerCase();
             const pixelId = cVars.pixelId || '';
             const productCode = cVars.productCode || 'bima_telemed_voucher';
