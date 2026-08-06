@@ -517,7 +517,7 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
         }
 
         const targetProductCode = bimaProductCode || productCode || 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY';
-        const targetCampaignCode = bimaCampaignCode || 'default';
+        const targetCampaignCode = campaignCode || 'default';
         console.log(`[campaign-service-search] Querying BIMA API - MSISDN: ${msisdn}, Product: ${targetProductCode}, BIMA Campaign: ${targetCampaignCode}`);
 
         const apiPath = `/tp/service/search/${msisdn}/${encodeURIComponent(targetProductCode)}?deductionFrequency=MONTHLY&campaignCode=${encodeURIComponent(targetCampaignCode)}`;
