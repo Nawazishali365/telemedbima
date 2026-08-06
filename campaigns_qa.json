@@ -1,6 +1,6 @@
 {
   "meta_300": {
-    "campaignCode": "meta_300",
+    "campaignCode": "qa_meta_300",
     "campaignPlatform": "meta",
     "pixelId": "1048814397473573",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
@@ -18,10 +18,10 @@
     }
   },
   "meta_600": {
-    "campaignCode": "meta_600",
+    "campaignCode": "qa_meta_600",
     "campaignPlatform": "meta",
     "pixelId": "1048814397473573",
-    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_HEALTH_COACH",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_BCARE_LITE",
     "price": 600,
     "currency": "PKR",
     "artworkImage": "campaign_artwork_tiktok_600.png",
@@ -36,7 +36,7 @@
     }
   },
   "google_300": {
-    "campaignCode": "google_300",
+    "campaignCode": "qa_google_300",
     "campaignPlatform": "google",
     "pixelId": "AW-10779246142",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
@@ -54,7 +54,7 @@
     }
   },
   "tiktok_300": {
-    "campaignCode": "tiktok_300",
+    "campaignCode": "qa_tiktok_300",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
@@ -72,7 +72,7 @@
     }
   },
   "tiktok_600": {
-    "campaignCode": "tiktok_600",
+    "campaignCode": "qa_tiktok_600",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_BCARE_LITE",
@@ -90,7 +90,7 @@
     }
   },
   "tiktok_800": {
-    "campaignCode": "tiktok_800",
+    "campaignCode": "qa_tiktok_800",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_PLUS",
@@ -108,7 +108,7 @@
     }
   },
   "tiktok_1000": {
-    "campaignCode": "tiktok_1000",
+    "campaignCode": "qa_tiktok_1000",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_PREMIUM",
@@ -125,7 +125,7 @@
       "purchase_failed": "PurchaseFailed_tiktok_1000_QA"
     }
   },
-  "qa_default": {
+  "default": {
     "campaignCode": "qa_default",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",

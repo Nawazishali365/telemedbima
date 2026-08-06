@@ -1,81 +1,9 @@
 {
-  "meta_300": {
-    "campaignCode": "meta_300",
-    "campaignPlatform": "meta",
-    "pixelId": "1048814397473573",
-    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
-    "price": 300,
-    "currency": "PKR",
-    "artworkImage": "campaign_artwork_tiktok_300.jpeg",
-    "backgroundColor": "#0d2743",
-    "textColor": "#ffffff",
-    "termsUrl": "terms_and_conditions_bima.html",
-    "events": {
-      "page_view": "PageView_meta_300",
-      "initiate_checkout": "InitiateCheckout_meta_300",
-      "purchase": "Purchase_meta_300",
-      "purchase_failed": "PurchaseFailed_meta_300"
-    }
-  },
-  "meta_600": {
-    "campaignCode": "meta_600",
-    "campaignPlatform": "meta",
-    "pixelId": "1048814397473573",
-    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_HEALTH_COACH",
-    "price": 600,
-    "currency": "PKR",
-    "artworkImage": "campaign_artwork_tiktok_600.png",
-    "backgroundColor": "#0d2743",
-    "textColor": "#ffffff",
-    "termsUrl": "terms_and_conditions_bima_600.html",
-    "events": {
-      "page_view": "PageView_meta_600",
-      "initiate_checkout": "InitiateCheckout_meta_600",
-      "purchase": "Purchase_meta_600",
-      "purchase_failed": "PurchaseFailed_meta_600"
-    }
-  },
-  "google_300": {
-    "campaignCode": "google_300",
-    "campaignPlatform": "google",
-    "pixelId": "AW-10779246142",
-    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
-    "price": 300,
-    "currency": "PKR",
-    "artworkImage": "campaign2 artwork.jpeg",
-    "backgroundColor": "#0d2743",
-    "textColor": "#ffffff",
-    "termsUrl": "terms_and_conditions_bima.html",
-    "events": {
-      "page_view": "PageView_google_300",
-      "initiate_checkout": "InitiateCheckout_google_300",
-      "purchase": "Purchase_google_300",
-      "purchase_failed": "PurchaseFailed_google_300"
-    }
-  },
-  "tiktok_300": {
-    "campaignCode": "tiktok_300",
-    "campaignPlatform": "tiktok",
-    "pixelId": "D8J9AARC77UAEKHUNU60",
-    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
-    "price": 300,
-    "currency": "PKR",
-    "artworkImage": "campaign2 artwork.jpeg",
-    "backgroundColor": "#0d2743",
-    "textColor": "#ffffff",
-    "termsUrl": "terms_and_conditions_bima.html",
-    "events": {
-      "page_view": "View Content",
-      "initiate_checkout": "Initiate Checkout",
-      "purchase": "Purchase",
-      "purchase_failed": "Purchase Failed"
-    }
-  },
   "tiktok_600": {
     "campaignCode": "tiktok_600",
     "campaignPlatform": "tiktok",
     "pixelId": "D8J9AARC77UAEKHUNU60",
-    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_HEALTH_COACH",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_BCARE_LITE",
     "price": 600,
     "currency": "PKR",
     "artworkImage": "campaign_artwork_tiktok_600.png",
@@ -89,44 +17,8 @@
       "purchase_failed": "PurchaseFailed_tiktok_600"
     }
   },
-  "tiktok_800": {
-    "campaignCode": "tiktok_800",
-    "campaignPlatform": "tiktok",
-    "pixelId": "D8J9AARC77UAEKHUNU60",
-    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_PLUS",
-    "price": 800,
-    "currency": "PKR",
-    "artworkImage": "campaign2 artwork.jpeg",
-    "backgroundColor": "#0d2743",
-    "textColor": "#ffffff",
-    "termsUrl": "terms_and_conditions_bima.html",
-    "events": {
-      "page_view": "PageView_tiktok_800",
-      "initiate_checkout": "InitiateCheckout_tiktok_800",
-      "purchase": "Purchase_tiktok_800",
-      "purchase_failed": "PurchaseFailed_tiktok_800"
-    }
-  },
-  "tiktok_1000": {
-    "campaignCode": "tiktok_1000",
-    "campaignPlatform": "tiktok",
-    "pixelId": "D8J9AARC77UAEKHUNU60",
-    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY_PREMIUM",
-    "price": 1000,
-    "currency": "PKR",
-    "artworkImage": "campaign2 artwork.jpeg",
-    "backgroundColor": "#0d2743",
-    "textColor": "#ffffff",
-    "termsUrl": "terms_and_conditions_bima.html",
-    "events": {
-      "page_view": "PageView_tiktok_1000",
-      "initiate_checkout": "InitiateCheckout_tiktok_1000",
-      "purchase": "Purchase_tiktok_1000",
-      "purchase_failed": "PurchaseFailed_tiktok_1000"
-    }
-  },
   "default": {
-    "campaignCode": "tiktok_300",
+    "campaignCode": "default",
     "campaignPlatform": "tiktok",
     "pixelId": "D8J9AARC77UAEKHUNU60",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",

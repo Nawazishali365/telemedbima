@@ -395,15 +395,43 @@ app.get('/api/detect-msisdn', async (req, res) => {
    POST /api/service-search
    ────────────────────────────────────────────────────────────────── */
 app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res) => {
-    const { msisdn } = req.body;
+    const { msisdn, campaignCode: reqCampaignCode, productCode: reqProductCode } = req.body;
     if (!msisdn) {
         return res.status(400).json({ error: 'Phone number (msisdn) is required' });
     }
 
     try {
-        let token = await getBimaToken();
-        const apiPath = `/tp/service/search/${msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY&campaignCode=qa_default`;
+        let campaignCode = reqCampaignCode || 'default';
+        let productCode = reqProductCode || '';
+        let bimaCampaignCode = '';
+        let bimaProductCode = '';
 
+        try {
+            const { path: campaignsPath } = getCampaignsFilePath();
+            if (fs.existsSync(campaignsPath)) {
+                let fileContent = fs.readFileSync(campaignsPath, 'utf8');
+                fileContent = fileContent.replace(/\/\/.*$/gm, '');
+                const campaigns = JSON.parse(fileContent);
+                const cleanCode = (campaignCode || '').toLowerCase().trim();
+                const config = campaigns[cleanCode] || campaigns['default'];
+                if (config) {
+                    if (!productCode) productCode = config.productCode;
+                    campaignCode = config.campaignCode || campaignCode;
+                    bimaCampaignCode = config.bimaCampaignCode || '';
+                    bimaProductCode = config.bimaProductCode || '';
+                }
+            }
+        } catch (e) {
+            console.warn('[service-search] Could not read campaign config:', e.message);
+        }
+
+        const targetProductCode = bimaProductCode || productCode || 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY';
+        const targetCampaignCode = bimaCampaignCode || campaignCode || 'default';
+        console.log(`[service-search] Querying BIMA API - MSISDN: ${msisdn}, Product: ${targetProductCode}, BIMA Campaign: ${targetCampaignCode}`);
+
+        const apiPath = `/tp/service/search/${msisdn}/${encodeURIComponent(targetProductCode)}?deductionFrequency=MONTHLY&campaignCode=${encodeURIComponent(targetCampaignCode)}`;
+
+        let token = await getBimaToken();
         let result = await httpsRequest({
             hostname: 'pkcm.milvik.io',
             path: apiPath,
