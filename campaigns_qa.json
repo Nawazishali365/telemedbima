@@ -1,5 +1,5 @@
 {
-  "meta_300": {
+  "qa_meta_300": {
     "campaignCode": "qa_meta_300",
     "campaignPlatform": "meta",
     "pixelId": "1048814397473573",
@@ -17,7 +17,7 @@
       "purchase_failed": "PurchaseFailed_meta_300_QA"
     }
   },
-  "meta_600": {
+  "qa_meta_600": {
     "campaignCode": "qa_meta_600",
     "campaignPlatform": "meta",
     "pixelId": "1048814397473573",
@@ -35,7 +35,7 @@
       "purchase_failed": "PurchaseFailed_meta_600_QA"
     }
   },
-  "google_300": {
+  "qa_google_300": {
     "campaignCode": "qa_google_300",
     "campaignPlatform": "google",
     "pixelId": "AW-10779246142",
@@ -53,7 +53,7 @@
       "purchase_failed": "PurchaseFailed_google_300_QA"
     }
   },
-  "tiktok_300": {
+  "qa_tiktok_300": {
     "campaignCode": "qa_tiktok_300",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",
@@ -71,7 +71,7 @@
       "purchase_failed": "Purchase Failed QA"
     }
   },
-  "tiktok_600": {
+  "qa_tiktok_600": {
     "campaignCode": "qa_tiktok_600",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",
@@ -89,7 +89,7 @@
       "purchase_failed": "PurchaseFailed_tiktok_600_QA"
     }
   },
-  "tiktok_800": {
+  "qa_tiktok_800": {
     "campaignCode": "qa_tiktok_800",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",
@@ -107,7 +107,7 @@
       "purchase_failed": "PurchaseFailed_tiktok_800_QA"
     }
   },
-  "tiktok_1000": {
+  "qa_tiktok_1000": {
     "campaignCode": "qa_tiktok_1000",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",
@@ -125,7 +125,7 @@
       "purchase_failed": "PurchaseFailed_tiktok_1000_QA"
     }
   },
-  "default": {
+  "qa_default": {
     "campaignCode": "qa_default",
     "campaignPlatform": "tiktok",
     "pixelId": "D9O8K8RC77U1C011P6D0",
