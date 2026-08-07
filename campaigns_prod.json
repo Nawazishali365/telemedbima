@@ -14,7 +14,8 @@
       "page_view": "PageView_tiktok_600",
       "initiate_checkout": "InitiateCheckout_tiktok_600",
       "purchase": "Purchase_tiktok_600",
-      "purchase_failed": "PurchaseFailed_tiktok_600"
+      "purchase_failed": "PurchaseFailed_tiktok_600",
+      "duplicate": "Duplicate Sale"
     }
   },
   "default": {
@@ -32,7 +33,8 @@
       "page_view": "View Content",
       "initiate_checkout": "Initiate Checkout",
       "purchase": "Purchase",
-      "purchase_failed": "Purchase Failed"
+      "purchase_failed": "Purchase Failed",
+      "duplicate": "Duplicate Sale"
     }
   }
 }

@@ -701,7 +701,7 @@
                 );
 
                 if (isAlreadyRegistered) {
-                    const duplicateEventName = 'duplicate_d';
+                    const duplicateEventName = events.duplicate || 'duplicate_d';
                     if (platform === 'tiktok' && window.ttq) {
                         window.ttq.track(duplicateEventName, { campaign_code: campaignCode });
                     } else if (platform === 'meta' && typeof fbq === 'function') {
