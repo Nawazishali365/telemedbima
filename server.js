@@ -68,8 +68,7 @@ app.get('/api/campaign/:code', (req, res) => {
             code = defaultCode;
         }
 
-        const unqaCode = code.replace(/^qa_/, '');
-        const campaignData = campaigns[code] || campaigns[unqaCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code) || campaigns[defaultCode] || campaigns['default'] || null;
+        const campaignData = campaigns[code] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code) || campaigns[defaultCode] || campaigns['default'] || null;
 
         if (!campaignData) {
             return res.status(404).json({ success: false, message: 'Campaign not found' });
@@ -430,8 +429,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
                 fileContent = fileContent.replace(/\/\/.*$/gm, '');
                 const campaigns = JSON.parse(fileContent);
                 const cleanCode = (campaignCode || '').toLowerCase().trim();
-                const unqaCode = cleanCode.replace(/^qa_/, '');
-                const config = campaigns[cleanCode] || campaigns[unqaCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns[defaultCampaignCode];
+                const config = campaigns[cleanCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns[defaultCampaignCode] || campaigns['default'];
                 if (config) {
                     if (!productCode) productCode = config.productCode;
                     campaignCode = config.campaignCode || campaignCode;
@@ -534,8 +532,7 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
                 fileContent = fileContent.replace(/\/\/.*$/gm, '');
                 const campaigns = JSON.parse(fileContent);
                 const cleanCode = (campaignCode || '').toLowerCase().trim();
-                const unqaCode = cleanCode.replace(/^qa_/, '');
-                const config = campaigns[cleanCode] || campaigns[unqaCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns[defaultCampaignCode];
+                const config = campaigns[cleanCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns[defaultCampaignCode] || campaigns['default'];
                 if (config) {
                     if (!productCode) productCode = config.productCode;
                     campaignCode = config.campaignCode || campaignCode;
