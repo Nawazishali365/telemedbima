@@ -617,6 +617,7 @@
                         gtag('event', duplicateEventName, { campaign_code: campaignCode });
                     }
                     setLoading(false);
+                    // _isSubmitting stays true — prevents HE from re-triggering submission
                     showCustomAlert("You're already registered to Telemedicine Product, please reachout to 042 111 11 9878");
                     return;
                 }
@@ -700,14 +701,13 @@
 
             } catch (err) {
                 console.error('Activation pipeline failed:', err);
-                showToast('âš  ' + (err.message || 'Something went wrong. Please check your connection and try again.'), false);
-            } finally {
+                showToast('⚠ ' + (err.message || 'Something went wrong. Please check your connection and try again.'), false);
                 setLoading(false);
-                _isSubmitting = false; // reset so user can retry on error
+                _isSubmitting = false; // only reset on error so user can retry
             }
         }
 
-        /* â”€â”€ Keep input digits only â”€â”€ */
+        /* ── Keep input digits only ── */
         document.getElementById('phoneNumber').addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
