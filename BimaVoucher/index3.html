@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -531,6 +531,7 @@
             const consentChecked = document.getElementById('consentCheckbox').checked;
             if (!consentChecked) {
                 showToast('Please check the box to agree to the Terms & Conditions.', false);
+                _isSubmitting = false;
                 return;
             }
 
@@ -547,6 +548,7 @@
 
             if (rawNum.length !== 10 || !rawNum.startsWith('3')) {
                 showToast('Please enter a valid 10 or 11-digit mobile number.', false);
+                _isSubmitting = false;
                 return;
             }
 
@@ -567,15 +569,6 @@
             const price = Number(cVars.price) || 300;
             const currency = cVars.currency || 'PKR';
             const events = cVars.events || {};
-
-            /* Pre-load TikTok pixel (no event fired yet) */
-            if (platform === 'tiktok' && pixelId && window.ttq) {
-                if (!window._ttqLoadedPixels) window._ttqLoadedPixels = {};
-                if (!window._ttqLoadedPixels[pixelId]) {
-                    try { window.ttq.load(pixelId, { autoConfig: false }); } catch (e) { }
-                    window._ttqLoadedPixels[pixelId] = true;
-                }
-            }
 
             setLoading(true);
 
