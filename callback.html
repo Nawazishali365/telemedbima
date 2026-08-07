@@ -303,7 +303,7 @@
                     const data = await res.json();
                     if (data.success && data.config) {
                         cVars = data.config;
-                        console.log('✅ Dynamic callback loaded campaign config:', cVars);
+                        console.log(' Dynamic callback loaded campaign config:', cVars);
                     }
                 }
             } catch (e) {
@@ -394,17 +394,17 @@
                     container.style.boxShadow = '0 8px 25px rgba(78, 204, 167, 0.25)';
                 }
 
-                console.log('✅ Payment Successful! Triggering conversion & purchase events...');
+                console.log(' Payment Successful! Triggering conversion & purchase events...');
 
                 // Deduplication guard: ensure purchase events fire exactly ONCE per transaction
                 const guardKey = 'purchase_event_fired_' + (trxRefNo || 'default');
                 if (sessionStorage.getItem(guardKey)) {
-                    console.log('ℹ Conversion events already recorded for transaction:', trxRefNo);
+                    console.log(' Conversion events already recorded for transaction:', trxRefNo);
                     return;
                 }
                 sessionStorage.setItem(guardKey, 'true');
 
-                /* ── 1. META PLATFORM PURCHASE BLOCK ── */
+                /* -- 1. META PLATFORM PURCHASE BLOCK -- */
                 if (platform === 'meta' && pixelId) {
                     const purchaseEvent = events.purchase || 'Purchase';
                     const metaPurchaseParams = {
@@ -433,7 +433,7 @@
                         }
                     }
                 }
-                /* ── 2. TIKTOK PLATFORM PURCHASE BLOCK ── */
+                /* -- 2. TIKTOK PLATFORM PURCHASE BLOCK -- */
                 else if (platform === 'tiktok' && pixelId) {
                     const purchaseEvent = events.purchase || 'CompletePayment';
                     const tiktokPurchaseParams = {
@@ -474,7 +474,7 @@
                         }
                     }
                 }
-                /* ── 3. GOOGLE PLATFORM PURCHASE BLOCK ── */
+                /* -- 3. GOOGLE PLATFORM PURCHASE BLOCK -- */
                 else if (platform === 'google' && pixelId) {
                     const purchaseEvent = events.purchase || 'purchase';
                     const googlePurchaseParams = {
@@ -512,14 +512,14 @@
             } else {
                 statusEl.classList.add('status-error');
 
-                /* ── 1. META PLATFORM FAILURE BLOCK ── */
+                /* -- 1. META PLATFORM FAILURE BLOCK -- */
                 if (platform === 'meta' && pixelId) {
                     const failureEvent = events.purchase_failed || 'Purchase Failed';
                     if (typeof fbq === 'function') {
                         fbq('trackCustom', failureEvent, { campaign_code: rawCampaignCode, pixel_id: pixelId });
                     }
                 }
-                /* ── 2. TIKTOK PLATFORM FAILURE BLOCK ── */
+                /* -- 2. TIKTOK PLATFORM FAILURE BLOCK -- */
                 else if (platform === 'tiktok' && pixelId) {
                     const failureEvent = events.purchase_failed || 'Purchase Failed';
                     if (window.ttq) {
@@ -537,7 +537,7 @@
                         });
                     }
                 }
-                /* ── 3. GOOGLE PLATFORM FAILURE BLOCK ── */
+                /* -- 3. GOOGLE PLATFORM FAILURE BLOCK -- */
                 else if (platform === 'google' && pixelId) {
                     const failureEvent = events.purchase_failed || 'Purchase Failed';
                     if (typeof gtag === 'function') {

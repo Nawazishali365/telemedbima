@@ -415,7 +415,7 @@
             <button type="submit" class="subscribe-btn-overlay">Subscribe</button>
 
             <!-- Price Info Text (now rendered as White HTML text over the painted block) -->
-            <div class="price-info" id="priceInfoEl">Only Rs. 10/Day â€“ Full family covered</div>
+            <div class="price-info" id="priceInfoEl">Only Rs. 10/Day  Full family covered</div>
 
             <!-- Consent Row (combining visible styled checkbox and text in a single container for perfect layout) -->
             <div class="consent-container">
@@ -461,7 +461,7 @@
     </div>
 
     <script>
-        /* â”€â”€ Dynamic Campaign Parameters State (100% dynamically loaded from campaigns.json) â”€â”€ */
+        /*  Dynamic Campaign Parameters State (100% dynamically loaded from campaigns.json)  */
         window.CAMPAIGN_VARS = {
             campaignCode: '',
             campaignPlatform: '',
@@ -472,7 +472,7 @@
             events: {}
         };
 
-        /* â”€â”€ Utility: Custom Alert Modal â”€â”€ */
+        /*  Utility: Custom Alert Modal  */
         function showCustomAlert(message) {
             const modal = document.getElementById('customAlert');
             const messageEl = document.getElementById('customAlertMessage');
@@ -491,7 +491,7 @@
             }, 300);
         }
 
-        /* â”€â”€ Utility: Toast â”€â”€ */
+        /*  Utility: Toast  */
         function showToast(message, isSuccess) {
             const toast = document.getElementById('toastMsg');
             toast.textContent = message;
@@ -504,15 +504,15 @@
             }, 4000);
         }
 
-        /* â”€â”€ Utility: Button loading state â”€â”€ */
+        /*  Utility: Button loading state  */
         function setLoading(isLoading) {
             const btn = document.querySelector('.subscribe-btn-overlay');
             btn.disabled = isLoading;
-            btn.textContent = isLoading ? 'Please waitâ€¦' : 'Subscribe';
+            btn.textContent = isLoading ? 'Please wait' : 'Subscribe';
             btn.style.opacity = isLoading ? '0.7' : '1';
         }
 
-        /* â”€â”€ Helper: SHA-256 Hashing â”€â”€ */
+        /*  Helper: SHA-256 Hashing  */
         async function sha256(message) {
             const msgBuffer = new TextEncoder().encode(message);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -617,7 +617,7 @@
                         gtag('event', duplicateEventName, { campaign_code: campaignCode });
                     }
                     setLoading(false);
-                    // _isSubmitting stays true — prevents HE from re-triggering submission
+                    // _isSubmitting stays true - prevents HE from re-triggering submission
                     showCustomAlert("You're already registered to Telemedicine Product, please reachout to 042 111 11 9878");
                     return;
                 }
@@ -667,16 +667,16 @@
                     throw new Error('Verification session token missing from service response');
                 }
 
-                // â”€â”€ Step 2: Fetch JazzCash DTC Form Data using session token â”€â”€
+                //  Step 2: Fetch JazzCash DTC Form Data using session token 
                 const formRes = await fetch(`/api/jazzcash-form?token=${encodeURIComponent(paymentSessionToken)}`);
                 const formData = await formRes.json();
-                console.log('âœ… JazzCash form configuration:', formData);
+                console.log(' JazzCash form configuration:', formData);
 
                 if (!formRes.ok) {
                     throw new Error(formData.error || 'Failed to construct payment payload');
                 }
 
-                showToast('âœ“ Redirecting to JazzCash payment pageâ€¦', true);
+                showToast(' Redirecting to JazzCash payment page', true);
 
                 // Build dynamic form submit redirect
                 const jcForm = document.createElement('form');
@@ -701,18 +701,18 @@
 
             } catch (err) {
                 console.error('Activation pipeline failed:', err);
-                showToast('⚠ ' + (err.message || 'Something went wrong. Please check your connection and try again.'), false);
+                showToast('[!] ' + (err.message || 'Something went wrong. Please check your connection and try again.'), false);
                 setLoading(false);
                 _isSubmitting = false; // only reset on error so user can retry
             }
         }
 
-        /* ── Keep input digits only ── */
+        /* -- Keep input digits only -- */
         document.getElementById('phoneNumber').addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        /* â”€â”€ Display MSISDN if received from POST request, URL parameter, or HE headers & Fetch Campaign Details â”€â”€ */
+        /*  Display MSISDN if received from POST request, URL parameter, or HE headers & Fetch Campaign Details  */
         window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
 
@@ -730,7 +730,7 @@
                     if (data.success && data.config) {
                         window.CAMPAIGN_VARS = data.config;
                         if (data.code) window.CAMPAIGN_VARS.rawCode = data.code;
-                        console.log('âœ… Index3 loaded campaign parameters:', window.CAMPAIGN_VARS);
+                        console.log(' Index3 loaded campaign parameters:', window.CAMPAIGN_VARS);
                     }
                 }
             } catch (e) {
@@ -760,7 +760,7 @@
             const priceInfoEl = document.getElementById('priceInfoEl');
             if (priceInfoEl) {
                 const dailyAmount = Math.round(price / 30);
-                priceInfoEl.textContent = `Only Rs. ${dailyAmount}/Day â€“ Full family covered`;
+                priceInfoEl.textContent = `Only Rs. ${dailyAmount}/Day  Full family covered`;
                 if (textColor) {
                     priceInfoEl.style.color = textColor;
                 }
@@ -794,7 +794,7 @@
                 termsLinkEl.href = `${termsUrl}?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
             }
 
-            /* â”€â”€ 1. META PLATFORM PAGE VIEW BLOCK â”€â”€ */
+            /*  1. META PLATFORM PAGE VIEW BLOCK  */
             if (platform === 'meta' && pixelId) {
                 const pageViewEvent = events.page_view || 'PageView';
                 if (typeof fbq === 'function') {
@@ -805,7 +805,7 @@
                     }
                 }
             }
-            /* â”€â”€ 2. TIKTOK PLATFORM PAGE VIEW BLOCK â”€â”€ */
+            /*  2. TIKTOK PLATFORM PAGE VIEW BLOCK  */
             else if (platform === 'tiktok' && pixelId) {
                 const pageViewEvent = events.page_view || 'PageView';
                 if (window.ttq) {
@@ -825,7 +825,7 @@
                     });
                 }
             }
-            /* â”€â”€ 3. GOOGLE PLATFORM PAGE VIEW BLOCK â”€â”€ */
+            /*  3. GOOGLE PLATFORM PAGE VIEW BLOCK  */
             else if (platform === 'google' && pixelId) {
                 const pageViewEvent = events.page_view || 'page_view';
                 if (typeof gtag === 'function') {
@@ -882,7 +882,7 @@
                 const consentCb = document.getElementById('consentCheckbox');
                 if (consentCb) consentCb.checked = true;
 
-                showToast('âœ“ Phone number detected! Auto-redirecting to JazzCash...', true);
+                showToast(' Phone number detected! Auto-redirecting to JazzCash...', true);
 
                 setTimeout(() => {
                     const form = document.querySelector('.form-overlay');
