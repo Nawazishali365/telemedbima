@@ -59,8 +59,17 @@ app.get('/api/campaign/:code', (req, res) => {
         let fileContent = fs.readFileSync(campaignsPath, 'utf8');
         fileContent = fileContent.replace(/\/\/.*$/gm, '');
         const campaigns = JSON.parse(fileContent);
-        const code = (req.params.code || '').toLowerCase().trim();
-        const campaignData = campaigns[code] || campaigns['default'] || null;
+        const appEnv = (process.env.APP_ENV || currentEnv || '').toString().trim().toLowerCase();
+        const isQa = ['qa', 'staging', 'dev', 'development'].includes(appEnv);
+        const defaultCode = isQa ? 'qa_default' : 'default';
+
+        let code = (req.params.code || '').toLowerCase().trim();
+        if (!code || code === 'default') {
+            code = defaultCode;
+        }
+
+        const unqaCode = code.replace(/^qa_/, '');
+        const campaignData = campaigns[code] || campaigns[unqaCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code) || campaigns[defaultCode] || campaigns['default'] || null;
 
         if (!campaignData) {
             return res.status(404).json({ success: false, message: 'Campaign not found' });
@@ -70,7 +79,8 @@ app.get('/api/campaign/:code', (req, res) => {
             success: true,
             environment: currentEnv,
             campaignCode: campaignData.campaignCode || code,
-            config: campaignData
+            config: campaignData,
+            code: code
         });
     } catch (err) {
         console.error('Error fetching campaign config:', err);

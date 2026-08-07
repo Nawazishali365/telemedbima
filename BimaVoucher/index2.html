@@ -8,8 +8,6 @@
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-        gtag('config', 'G-FLKEQYY9E9', { send_page_view: false });
-        gtag('event', 'View Content');
     </script>
     <!-- TikTok Pixel Code Start -->
     <script>
@@ -21,25 +19,6 @@
                 var r = "https://analytics.tiktok.com/i18n/pixel/events.js", o = n && n.partner; ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = r, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {}; n = document.createElement("script")
                     ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
             };
-
-            ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: false });
-            ttq.track('View Content', {
-                content_id: 'bima_telemed_voucher',
-                content_type: 'product',
-                content_name: 'BIMA Telemedicine Voucher',
-                content_category: 'Healthcare',
-                price: 300,
-                value: 300,
-                currency: 'PKR',
-                quantity: 1,
-                contents: [{
-                    content_id: 'bima_telemed_voucher',
-                    content_name: 'BIMA Telemedicine Voucher',
-                    content_category: 'Healthcare',
-                    price: 300,
-                    quantity: 1
-                }]
-            });
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
@@ -56,13 +35,7 @@
             s.parentNode.insertBefore(t, s)
         }(window, document, 'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '1048814397473573');
-        fbq('track', 'PageView');
     </script>
-    <noscript>
-        <img height="1" width="1" style="display:none"
-            src="https://www.facebook.com/tr?id=1048814397473573&ev=PageView&noscript=1" />
-    </noscript>
     <!-- End Meta Pixel Code -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -165,7 +138,7 @@
             height: 100%;
             border: none;
             outline: none;
-            background: transparent;
+            background: transparent !important;
             color: #1e293b;
             font-family: 'Outfit', sans-serif;
             font-size: 16px;
@@ -183,8 +156,8 @@
         .phone-input:-webkit-autofill:hover,
         .phone-input:-webkit-autofill:focus {
             -webkit-text-fill-color: #1e293b;
-            -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
-            box-shadow: 0 0 0px 1000px #ffffff inset;
+            -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+            box-shadow: 0 0 0px 1000px transparent inset !important;
             transition: background-color 5000s ease-in-out 0s;
         }
 
@@ -442,7 +415,7 @@
             <button type="submit" class="subscribe-btn-overlay">Subscribe</button>
 
             <!-- Price Info Text (now rendered as White HTML text over the painted block) -->
-            <div class="price-info">Only Rs. 10/Day – Full family covered</div>
+            <div class="price-info" id="priceInfoEl">Only Rs. 10/Day – Full family covered</div>
 
             <!-- Consent Row (combining visible styled checkbox and text in a single container for perfect layout) -->
             <div class="consent-container">
@@ -452,7 +425,7 @@
                         checked required>
                     <span class="consent-text">
                         By clicking Subscribe, you accept the <a
-                            href="terms_and_conditions_bima.html?returnUrl=index2.html" target="_blank"
+                            href="terms_and_conditions_bima.html?returnUrl=index3.html" id="termsLink" target="_blank"
                             onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms &
                             Conditions</a>
                     </span>
@@ -488,6 +461,17 @@
     </div>
 
     <script>
+        /* ── Dynamic Campaign Parameters State (100% dynamically loaded from campaigns.json) ── */
+        window.CAMPAIGN_VARS = {
+            campaignCode: '',
+            campaignPlatform: '',
+            pixelId: '',
+            productCode: '',
+            price: 300,
+            currency: 'PKR',
+            events: {}
+        };
+
         /* ── Utility: Custom Alert Modal ── */
         function showCustomAlert(message) {
             const modal = document.getElementById('customAlert');
@@ -570,67 +554,118 @@
             const e164_phone = '+92' + rawNum;
             sessionStorage.setItem('user_phone_e164', e164_phone);
 
-            const eventParams = {
-                content_id: 'bima_telemed_voucher',
-                content_type: 'product',
-                content_name: 'BIMA Telemedicine Voucher',
-                content_category: 'Healthcare',
-                price: 300,
-                value: 300,
-                currency: 'PKR',
-                quantity: 1,
-                contents: [{
-                    content_id: 'bima_telemed_voucher',
+            // Access active campaign variables
+            const cVars = window.CAMPAIGN_VARS || {};
+            const campaignCode = cVars.campaignCode || 'default';
+            const platform = (cVars.campaignPlatform || 'meta').toLowerCase();
+            const pixelId = cVars.pixelId || '';
+            const productCode = cVars.productCode || 'bima_telemed_voucher';
+            const price = Number(cVars.price) || 300;
+            const currency = cVars.currency || 'PKR';
+            const events = cVars.events || {};
+
+            /* ── 1. META PLATFORM BLOCK ── */
+            if (platform === 'meta' && pixelId) {
+                const checkoutEvent = events.initiate_checkout || 'InitiateCheckout';
+                const metaParams = {
+                    content_ids: [productCode],
+                    content_type: 'product',
+                    content_name: 'BIMA Telemedicine Voucher',
+                    value: price,
+                    currency: currency,
+                    campaign_code: campaignCode,
+                    pixel_id: pixelId
+                };
+
+                const fireMetaCheckout = () => {
+                    fbq('track', 'InitiateCheckout', metaParams);
+                    if (checkoutEvent !== 'InitiateCheckout') {
+                        fbq('trackCustom', checkoutEvent, metaParams);
+                    }
+                };
+
+                if (typeof fbq === 'function') {
+                    if (e164_phone) {
+                        sha256(e164_phone).then(hashedPhone => {
+                            fbq('init', pixelId, { ph: hashedPhone });
+                            fireMetaCheckout();
+                        }).catch(() => {
+                            fbq('init', pixelId);
+                            fireMetaCheckout();
+                        });
+                    } else {
+                        fbq('init', pixelId);
+                        fireMetaCheckout();
+                    }
+                }
+            }
+            /* ── 2. TIKTOK PLATFORM BLOCK ── */
+            else if (platform === 'tiktok' && pixelId) {
+                const checkoutEvent = events.initiate_checkout || 'InitiateCheckout';
+                const tiktokParams = {
+                    content_id: productCode,
+                    content_type: 'product',
                     content_name: 'BIMA Telemedicine Voucher',
                     content_category: 'Healthcare',
-                    price: 300,
-                    quantity: 1
-                }]
-            };
+                    price: price,
+                    value: price,
+                    currency: currency,
+                    quantity: 1,
+                    campaign_code: campaignCode,
+                    pixel_id: pixelId,
+                    contents: [{
+                        content_id: productCode,
+                        content_name: 'BIMA Telemedicine Voucher',
+                        content_category: 'Healthcare',
+                        price: price,
+                        quantity: 1
+                    }]
+                };
 
-            if (window.ttq) {
-                sha256(e164_phone).then(hashedPhone => {
-                    window.ttq.identify({
-                        phone_number: hashedPhone
-                    });
-                    window.ttq.track('Initiate Checkout', eventParams);
-                }).catch(err => {
-                    console.error('TikTok identification hashing failed:', err);
-                    window.ttq.track('Initiate Checkout', eventParams);
-                });
+                if (window.ttq) {
+                    try { window.ttq.load(pixelId); } catch (e) { }
+                    if (e164_phone) {
+                        sha256(e164_phone).then(hashedPhone => {
+                            window.ttq.identify({ phone_number: hashedPhone });
+                            window.ttq.track(checkoutEvent, tiktokParams);
+                        }).catch(() => {
+                            window.ttq.track(checkoutEvent, tiktokParams);
+                        });
+                    } else {
+                        window.ttq.track(checkoutEvent, tiktokParams);
+                    }
+                }
             }
-            if (typeof fbq === 'function') {
-                sha256(e164_phone).then(hashedPhone => {
-                    fbq('init', '1048814397473573', { ph: hashedPhone });
-                    fbq('track', 'InitiateCheckout', {
-                        content_ids: ['bima_telemed_voucher'],
-                        content_type: 'product',
-                        content_name: 'BIMA Telemedicine Voucher',
-                        value: 300,
-                        currency: 'PKR'
-                    });
-                }).catch(() => {
-                    fbq('track', 'InitiateCheckout', {
-                        content_ids: ['bima_telemed_voucher'],
-                        content_type: 'product',
-                        content_name: 'BIMA Telemedicine Voucher',
-                        value: 300,
-                        currency: 'PKR'
-                    });
-                });
-            }
-            if (typeof gtag === 'function') {
-                gtag('event', 'Initiate Checkout', eventParams);
+            /* ── 3. GOOGLE PLATFORM BLOCK ── */
+            else if (platform === 'google' && pixelId) {
+                const checkoutEvent = events.initiate_checkout || 'begin_checkout';
+                const googleParams = {
+                    value: price,
+                    currency: currency,
+                    campaign_code: campaignCode,
+                    send_to: pixelId,
+                    items: [{
+                        id: productCode,
+                        name: 'BIMA Telemedicine Voucher',
+                        price: price,
+                        quantity: 1
+                    }]
+                };
+
+                if (typeof gtag === 'function') {
+                    gtag('config', pixelId);
+                    gtag('event', checkoutEvent, googleParams);
+                }
             }
 
             setLoading(true);
 
             try {
-                // ── Step 1: Service search (POST request to prevent URL logging of PII) ──
-                const serviceRes = await fetch('/api/service-search', {
+                // ── Step 1: Campaign Service search (POST request with campaignCode & productCode) ──
+                const serviceRes = await fetch('/api/campaign-service-search', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ msisdn })
+                    body: JSON.stringify({ msisdn, campaignCode, productCode })
                 });
                 const serviceData = await serviceRes.json().catch(() => ({}));
                 console.log('✅ Service response:', serviceData);
@@ -666,11 +701,13 @@
                 );
 
                 if (isAlreadyRegistered) {
-                    if (window.ttq) {
-                        window.ttq.track('duplicate');
-                    }
-                    if (typeof gtag === 'function') {
-                        gtag('event', 'duplicate');
+                    const duplicateEventName = 'duplicate_d';
+                    if (platform === 'tiktok' && window.ttq) {
+                        window.ttq.track(duplicateEventName, { campaign_code: campaignCode });
+                    } else if (platform === 'meta' && typeof fbq === 'function') {
+                        fbq('trackCustom', duplicateEventName, { campaign_code: campaignCode });
+                    } else if (typeof gtag === 'function') {
+                        gtag('event', duplicateEventName, { campaign_code: campaignCode });
                     }
                     setLoading(false);
                     showCustomAlert("You're already registered to Telemedicine Product, please reachout to 042 111 11 9878");
@@ -709,7 +746,8 @@
                 });
 
                 document.body.appendChild(jcForm);
-                sessionStorage.setItem('jazzcash_source', 'BimaVoucher/index2.html');
+                sessionStorage.setItem('jazzcash_source', 'BimaVoucher/index3.html');
+                sessionStorage.setItem('campaign_code', campaignCode);
 
                 setTimeout(() => jcForm.submit(), 1000);
 
@@ -726,9 +764,127 @@
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        /* ── Display MSISDN if received from POST request, URL parameter, or HE headers ── */
-        window.addEventListener('DOMContentLoaded', () => {
+        /* ── Display MSISDN if received from POST request, URL parameter, or HE headers & Fetch Campaign Details ── */
+        window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
+
+            // Extract campaignCode parameter from URL query string
+            const rawCampaignCode = (urlParams.get('campaignCode') || urlParams.get('campaign') || sessionStorage.getItem('campaign_code') || 'default').trim();
+            if (urlParams.get('campaignCode')) {
+                sessionStorage.setItem('campaign_code', rawCampaignCode);
+            }
+
+            // Fetch campaign configuration parameters from campaigns.json API endpoint
+            try {
+                const res = await fetch(`/api/campaign/${rawCampaignCode}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.config) {
+                        window.CAMPAIGN_VARS = data.config;
+                        if (data.code) window.CAMPAIGN_VARS.rawCode = data.code;
+                        console.log('✅ Index3 loaded campaign parameters:', window.CAMPAIGN_VARS);
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to fetch campaign parameters from API, using defaults:', e);
+            }
+
+            // Initialize dynamic campaign parameters, artwork & terms URL
+            const cVars = window.CAMPAIGN_VARS || {};
+            const campaignCode = cVars.rawCode || rawCampaignCode || cVars.campaignCode || 'default';
+            const platform = (cVars.campaignPlatform || 'meta').toLowerCase();
+            const pixelId = cVars.pixelId || '';
+            const productCode = cVars.productCode || 'bima_telemed_voucher';
+            const price = Number(cVars.price) || 300;
+            const currency = cVars.currency || 'PKR';
+            const artworkImage = cVars.artworkImage || 'campaign2 artwork.jpeg';
+            const backgroundColor = cVars.backgroundColor || '#0d2743';
+            const textColor = cVars.textColor || '#ffffff';
+            const termsUrl = cVars.termsUrl || 'terms_and_conditions_bima.html';
+            const events = cVars.events || {};
+
+            // Dynamically update page outer background color
+            if (backgroundColor) {
+                document.body.style.backgroundColor = backgroundColor;
+            }
+
+            // Dynamically update price text content and text color for all text elements including Terms link
+            const priceInfoEl = document.getElementById('priceInfoEl');
+            if (priceInfoEl) {
+                const dailyAmount = Math.round(price / 30);
+                priceInfoEl.textContent = `Only Rs. ${dailyAmount}/Day – Full family covered`;
+                if (textColor) {
+                    priceInfoEl.style.color = textColor;
+                }
+            }
+
+            // Dynamically update consent label, consent text, and Terms & Conditions link text color
+            if (textColor) {
+                const consentTextEl = document.querySelector('.consent-text');
+                if (consentTextEl) {
+                    consentTextEl.style.color = textColor;
+                }
+                const consentLabelEl = document.querySelector('.consent-label');
+                if (consentLabelEl) {
+                    consentLabelEl.style.color = textColor;
+                }
+                const termsLinkEl = document.getElementById('termsLink');
+                if (termsLinkEl) {
+                    termsLinkEl.style.color = textColor;
+                }
+            }
+
+            // Dynamically update container artwork background image
+            const containerEl = document.querySelector('.container');
+            if (containerEl && artworkImage) {
+                containerEl.style.backgroundImage = `url('${artworkImage}')`;
+            }
+
+            // Dynamically update Terms & Conditions link href
+            const termsLinkEl = document.getElementById('termsLink');
+            if (termsLinkEl && termsUrl) {
+                termsLinkEl.href = `${termsUrl}?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+            }
+
+            /* ── 1. META PLATFORM PAGE VIEW BLOCK ── */
+            if (platform === 'meta' && pixelId) {
+                const pageViewEvent = events.page_view || 'PageView';
+                if (typeof fbq === 'function') {
+                    fbq('init', pixelId);
+                    fbq('track', 'PageView');
+                    if (pageViewEvent !== 'PageView') {
+                        fbq('trackCustom', pageViewEvent, { campaign_code: campaignCode, pixel_id: pixelId });
+                    }
+                }
+            }
+            /* ── 2. TIKTOK PLATFORM PAGE VIEW BLOCK ── */
+            else if (platform === 'tiktok' && pixelId) {
+                const pageViewEvent = events.page_view || 'PageView';
+                if (window.ttq) {
+                    try { window.ttq.load(pixelId); } catch (e) { }
+                    window.ttq.track(pageViewEvent, {
+                        content_id: productCode,
+                        content_type: 'product',
+                        price: price,
+                        value: price,
+                        currency: currency,
+                        campaign_code: campaignCode,
+                        pixel_id: pixelId
+                    });
+                }
+            }
+            /* ── 3. GOOGLE PLATFORM PAGE VIEW BLOCK ── */
+            else if (platform === 'google' && pixelId) {
+                const pageViewEvent = events.page_view || 'page_view';
+                if (typeof gtag === 'function') {
+                    gtag('config', pixelId);
+                    gtag('event', pageViewEvent, {
+                        send_to: pixelId,
+                        campaign_code: campaignCode
+                    });
+                }
+            }
+
             const queryMsisdn = urlParams.get('msisdn');
             const detectedMsisdn = window.SERVER_DETECTED_MSISDN || queryMsisdn;
 
