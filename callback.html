@@ -459,7 +459,7 @@
                     if (window.ttq) {
                         if (!window._ttqLoadedPixels) window._ttqLoadedPixels = {};
                         if (!window._ttqLoadedPixels[pixelId]) {
-                            try { window.ttq.load(pixelId); } catch (e) { }
+                            try { window.ttq.load(pixelId, { autoConfig: false }); } catch (e) { }
                             window._ttqLoadedPixels[pixelId] = true;
                         }
                         if (userPhone) {
@@ -525,7 +525,7 @@
                     if (window.ttq) {
                         if (!window._ttqLoadedPixels) window._ttqLoadedPixels = {};
                         if (!window._ttqLoadedPixels[pixelId]) {
-                            try { window.ttq.load(pixelId); } catch (e) { }
+                            try { window.ttq.load(pixelId, { autoConfig: false }); } catch (e) { }
                             window._ttqLoadedPixels[pixelId] = true;
                         }
                         window.ttq.track(failureEvent, {

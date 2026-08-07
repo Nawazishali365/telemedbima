@@ -625,7 +625,7 @@
                 if (window.ttq) {
                     if (!window._ttqLoadedPixels) window._ttqLoadedPixels = {};
                     if (!window._ttqLoadedPixels[pixelId]) {
-                        try { window.ttq.load(pixelId); } catch (e) { }
+                        try { window.ttq.load(pixelId, { autoConfig: false }); } catch (e) { }
                         window._ttqLoadedPixels[pixelId] = true;
                     }
                     if (e164_phone) {
@@ -705,7 +705,7 @@
                 );
 
                 if (isAlreadyRegistered) {
-                    const duplicateEventName = events.duplicate || 'duplicate_d';
+                    const duplicateEventName = events.duplicate || 'duplicate';
                     if (platform === 'tiktok' && window.ttq) {
                         window.ttq.track(duplicateEventName, { campaign_code: campaignCode });
                     } else if (platform === 'meta' && typeof fbq === 'function') {
@@ -867,7 +867,7 @@
                 if (window.ttq) {
                     if (!window._ttqLoadedPixels) window._ttqLoadedPixels = {};
                     if (!window._ttqLoadedPixels[pixelId]) {
-                        try { window.ttq.load(pixelId); } catch (e) { }
+                        try { window.ttq.load(pixelId, { autoConfig: false }); } catch (e) { }
                         window._ttqLoadedPixels[pixelId] = true;
                     }
                     window.ttq.track(pageViewEvent, {
