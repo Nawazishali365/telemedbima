@@ -15,7 +15,7 @@
       "initiate_checkout": "InitiateCheckout_meta_300_QA",
       "purchase": "Purchase_meta_300_QA",
       "purchase_failed": "PurchaseFailed_meta_300_QA",
-      "duplicate": "Duplicate Sale QA"
+      "duplicate": "Duplicate"
     }
   },
   "qa_meta_600": {
@@ -34,7 +34,7 @@
       "initiate_checkout": "InitiateCheckout_meta_600_QA",
       "purchase": "Purchase_meta_600_QA",
       "purchase_failed": "PurchaseFailed_meta_600_QA",
-      "duplicate": "Duplicate Sale QA"
+      "duplicate": "Duplicate"
     }
   },
   "qa_google_300": {
@@ -53,7 +53,7 @@
       "initiate_checkout": "InitiateCheckout_google_300_QA",
       "purchase": "Purchase_google_300_QA",
       "purchase_failed": "PurchaseFailed_google_300_QA",
-      "duplicate": "Duplicate Sale QA"
+      "duplicate": "Duplicate"
     }
   },
   "qa_tiktok_300": {
@@ -63,16 +63,16 @@
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
     "price": 300,
     "currency": "PKR",
-    "artworkImage": "campaign2 artwork.jpeg",
+    "artworkImage": "campaign_artwork_tiktok_300.jpeg",
     "backgroundColor": "#0d2743",
     "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima.html",
     "events": {
-      "page_view": "View Content QA",
-      "initiate_checkout": "Initiate Checkout QA",
-      "purchase": "Purchase QA",
-      "purchase_failed": "Purchase Failed QA",
-      "duplicate": "Duplicate Sale QA"
+      "page_view": "View_Content_tiktok_300_QA",
+      "initiate_checkout": "Initiate_Checkout_tiktok_300_QA",
+      "purchase": "Purchase_tiktok_300_QA",
+      "purchase_failed": "Purchase_Failed_tiktok_300_QA",
+      "duplicate": "Duplicate_Sale_tiktok_300_QA"
     }
   },
   "qa_tiktok_600": {
@@ -91,7 +91,7 @@
       "initiate_checkout": "InitiateCheckout_tiktok_600_QA",
       "purchase": "Purchase_tiktok_600_QA",
       "purchase_failed": "PurchaseFailed_tiktok_600_QA",
-      "duplicate": "Duplicate Sale QA"
+      "duplicate": "Duplicate_Sale_tiktok_600_QA"
     }
   },
   "qa_tiktok_800": {
@@ -110,7 +110,7 @@
       "initiate_checkout": "InitiateCheckout_tiktok_800_QA",
       "purchase": "Purchase_tiktok_800_QA",
       "purchase_failed": "PurchaseFailed_tiktok_800_QA",
-      "duplicate": "Duplicate Sale QA"
+      "duplicate": "Duplicate_Sale_tiktok_800_QA"
     }
   },
   "qa_tiktok_1000": {
@@ -129,7 +129,7 @@
       "initiate_checkout": "InitiateCheckout_tiktok_1000_QA",
       "purchase": "Purchase_tiktok_1000_QA",
       "purchase_failed": "PurchaseFailed_tiktok_1000_QA",
-      "duplicate": "Duplicate Sale QA"
+      "duplicate": "Duplicate_Sale_tiktok_1000_QA"
     }
   },
   "qa_default": {
@@ -148,7 +148,7 @@
       "initiate_checkout": "Initiate Checkout QA",
       "purchase": "Purchase QA",
       "purchase_failed": "Purchase Failed QA",
-      "duplicate": "Duplicate Sale QA"
+      "duplicate": "duplicate Sale QA"
     }
   }
 }

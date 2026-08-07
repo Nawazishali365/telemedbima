@@ -623,7 +623,11 @@
                 };
 
                 if (window.ttq) {
-                    try { window.ttq.load(pixelId); } catch (e) { }
+                    if (!window._ttqLoadedPixels) window._ttqLoadedPixels = {};
+                    if (!window._ttqLoadedPixels[pixelId]) {
+                        try { window.ttq.load(pixelId); } catch (e) { }
+                        window._ttqLoadedPixels[pixelId] = true;
+                    }
                     if (e164_phone) {
                         sha256(e164_phone).then(hashedPhone => {
                             window.ttq.identify({ phone_number: hashedPhone });
@@ -861,7 +865,11 @@
             else if (platform === 'tiktok' && pixelId) {
                 const pageViewEvent = events.page_view || 'PageView';
                 if (window.ttq) {
-                    try { window.ttq.load(pixelId); } catch (e) { }
+                    if (!window._ttqLoadedPixels) window._ttqLoadedPixels = {};
+                    if (!window._ttqLoadedPixels[pixelId]) {
+                        try { window.ttq.load(pixelId); } catch (e) { }
+                        window._ttqLoadedPixels[pixelId] = true;
+                    }
                     window.ttq.track(pageViewEvent, {
                         content_id: productCode,
                         content_type: 'product',
