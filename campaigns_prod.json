@@ -13,7 +13,7 @@
     "events": {
       "page_view": "PageView_tiktok_600",
       "initiate_checkout": "InitiateCheckout_tiktok_600",
-      "purchase": "Purchase_tiktok_600",
+      "purchase": "Subscribe",
       "purchase_failed": "PurchaseFailed_tiktok_600",
       "duplicate": "Duplicate_Sale_tiktok_600"
     }
