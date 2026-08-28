@@ -49,8 +49,17 @@ app.use((req, res, next) => {
     next();
 });
 
+// Global request logger to track every hit
+app.use((req, res, next) => {
+    console.log(`[HTTP INCOMING] ${req.method} ${req.originalUrl || req.url}`);
+    next();
+});
+
 // 2b. Campaign API Endpoint
 app.get('/api/campaign/:code', (req, res) => {
+    console.log(`\n========================================`);
+    console.log(`[ENDPOINT HIT] GET /api/campaign/:code -> Code: "${req.params.code}"`);
+    console.log(`========================================`);
     try {
         const { path: campaignsPath, env: currentEnv } = getCampaignsFilePath();
         if (!fs.existsSync(campaignsPath)) {
@@ -116,8 +125,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,auth-token,x-api-key');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-    // Strict Security Headers
-    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://pkcm.milvik.io https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';");
+    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com https://connect.facebook.net; img-src 'self' data: https://www.facebook.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://pkcm.milvik.io https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com https://connect.facebook.net https://www.facebook.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';");
     res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("X-Content-Type-Options", "nosniff");
@@ -129,19 +137,21 @@ app.use((req, res, next) => {
     next();
 });
 
-// 2b. LandingPage & Index2 Routes
+// 2b. LandingPage & Voucher Routes
 app.get('/landingpage', (req, res) => {
     const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+    console.log(`\n[ENDPOINT HIT] GET /landingpage -> Redirecting to landingpage.html${query}`);
     res.redirect('/BimaVoucher/landingpage.html' + query);
 });
 
 app.get(/.*index2(\.html)?$/, (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET index2 -> Serving index2.html for path: ${req.path}`);
     res.sendFile(path.join(__dirname, 'BimaVoucher', 'index2.html'));
 });
 
 app.post(/.*index2(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
-    console.log(`[Node.js POST index2] Received POST payload for ${req.path}:`, msisdn);
+    console.log(`\n[ENDPOINT HIT] POST index2 -> Received payload for ${req.path}: MSISDN = "${msisdn}"`);
 
     const indexPath = path.join(__dirname, 'BimaVoucher', 'index2.html');
     fs.readFile(indexPath, 'utf8', (err, html) => {
@@ -156,14 +166,36 @@ app.post(/.*index2(\.html)?$/, (req, res) => {
 });
 
 app.get(/.*index3(\.html)?$/, (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET index3 -> Serving index3.html for path: ${req.path}`);
     res.sendFile(path.join(__dirname, 'BimaVoucher', 'index3.html'));
 });
 
 app.post(/.*index3(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
-    console.log(`[Node.js POST index3] Received POST payload for ${req.path}:`, msisdn);
-
+    console.log(`\n[ENDPOINT HIT] POST index3 -> Received payload for ${req.path}: MSISDN = "${msisdn}"`);
+    
     const indexPath = path.join(__dirname, 'BimaVoucher', 'index3.html');
+    fs.readFile(indexPath, 'utf8', (err, html) => {
+        if (err) return res.status(500).send('Error loading page');
+        const injectedHtml = html.replace(
+            '<head>',
+            `<head><script>window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};</script>`
+        );
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.send(injectedHtml);
+    });
+});
+
+app.get(/.*index4(\.html)?$/, (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET index4 -> Serving index4.html for path: ${req.path}`);
+    res.sendFile(path.join(__dirname, 'BimaVoucher', 'index4.html'));
+});
+
+app.post(/.*index4(\.html)?$/, (req, res) => {
+    const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
+    console.log(`\n[ENDPOINT HIT] POST index4 -> Received payload for ${req.path}: MSISDN = "${msisdn}"`);
+
+    const indexPath = path.join(__dirname, 'BimaVoucher', 'index4.html');
     fs.readFile(indexPath, 'utf8', (err, html) => {
         if (err) return res.status(500).send('Error loading page');
         const injectedHtml = html.replace(
@@ -261,6 +293,7 @@ function httpsRequest(options, postBody) {
    PROXY 1: Token endpoint (RETIRED FOR SECURITY)
    ────────────────────────────────────────────────────────────────── */
 app.post('/api/token', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] POST /api/token -> Blocked (retired endpoint)`);
     res.status(403).json({ error: 'Endpoint retired for security reasons.' });
 });
 
@@ -342,6 +375,9 @@ function httpRequestExternal(options, postBody) {
    GET /api/detect-msisdn
    ────────────────────────────────────────────────────────────────── */
 app.get('/api/detect-msisdn', async (req, res) => {
+    console.log(`\n========================================`);
+    console.log(`[ENDPOINT HIT] GET /api/detect-msisdn -> Header Enrichment Detection`);
+    console.log(`========================================`);
     const headerKeys = [
         'x-msisdn',
         'x-up-calling-line-id',
@@ -405,7 +441,7 @@ app.get('/api/detect-msisdn', async (req, res) => {
    ────────────────────────────────────────────────────────────────── */
 app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res) => {
     console.log('\n========================================');
-    console.log('[ENDPOINT CALLED] /api/service-search');
+    console.log('[ENDPOINT HIT] POST /api/service-search');
     console.log('[service-search] Request Body:', JSON.stringify(req.body));
     console.log('========================================');
     const { msisdn, campaignCode: reqCampaignCode, productCode: reqProductCode } = req.body;
@@ -507,7 +543,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
    ────────────────────────────────────────────────────────────────── */
 app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (req, res) => {
     console.log('\n========================================');
-    console.log('[ENDPOINT CALLED] /api/campaign-service-search');
+    console.log('[ENDPOINT HIT] POST /api/campaign-service-search');
     console.log('[campaign-service-search] Request Body:', JSON.stringify(req.body));
     console.log('========================================');
     const { msisdn, campaignCode: reqCampaignCode, productCode: reqProductCode } = req.body;
@@ -606,6 +642,9 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
    GET /api/jazzcash-form?token=<paymentSessionToken>
    ────────────────────────────────────────────────────────────────── */
 app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
+    console.log(`\n========================================`);
+    console.log(`[ENDPOINT HIT] GET /api/jazzcash-form -> Token: "${req.query?.token ? req.query.token.substring(0, 16) + '...' : 'none'}"`);
+    console.log(`========================================`);
     const { token } = req.query;
 
     if (!token) {
@@ -660,7 +699,10 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
    ────────────────────────────────────────────────────────────────── */
 const handleJcmsCallback = (req, res) => {
     const data = { ...req.query, ...req.body };
-    console.log(`[Node.js ${req.path}] Received callback payload:`, data);
+    console.log(`\n========================================`);
+    console.log(`[ENDPOINT HIT] ${req.method} ${req.path} -> JCMS Callback`);
+    console.log(`[JCMS Callback] Data:`, data);
+    console.log(`========================================`);
 
     const status = data.status || data.pp_ResponseCode || data.pp_TxnResponseCode || '';
     const message = data.message || data.pp_ResponseMessage || data.pp_TxnResponseMessage || '';
@@ -697,9 +739,11 @@ app.get('/jcm/callback_dynamic', handleJcmsCallback);
 
 // Direct alias routes for callback_dynamic.html
 app.get('/callback_dynamic', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /callback_dynamic -> Serving callback_dynamic.html`);
     res.sendFile(path.join(__dirname, 'callback_dynamic.html'));
 });
 app.get('/callback dynamic.html', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /callback dynamic.html -> Serving callback_dynamic.html`);
     res.sendFile(path.join(__dirname, 'callback_dynamic.html'));
 });
 
@@ -709,30 +753,39 @@ app.get('/callback dynamic.html', (req, res) => {
 
 // Serve consultation.html as the primary landing page on root '/' and '/consultation'
 app.get('/', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET / -> Serving consultation.html`);
     res.sendFile(path.join(__dirname, 'consultation.html'));
 });
 
 app.get('/consultation', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /consultation -> Serving consultation.html`);
     res.sendFile(path.join(__dirname, 'consultation.html'));
 });
 
 app.get('/bima-sehat', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /bima-sehat -> Redirecting to /BimaTelemedicine/`);
     res.redirect('/BimaTelemedicine/');
 });
 
 app.get('/bima_sehat', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /bima_sehat -> Redirecting to /BimaTelemedicine/`);
     res.redirect('/BimaTelemedicine/');
 });
 
 app.get('/bima-family', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /bima-family -> Redirecting to /BimaTelemedicine/`);
     res.redirect('/BimaTelemedicine/');
 });
 
 app.get('/bima_family', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /bima_family -> Redirecting to /BimaTelemedicine/`);
     res.redirect('/BimaTelemedicine/');
 });
 
 app.post('/api/grant-access', async (req, res) => {
+    console.log(`\n========================================`);
+    console.log(`[ENDPOINT HIT] POST /api/grant-access -> MSISDN: ${req.body?.msisdn}`);
+    console.log(`========================================`);
     try {
         let rawMsisdn = (req.body.msisdn || '').toString().trim();
         if (!rawMsisdn) {

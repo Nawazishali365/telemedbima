@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FLKEQYY9E9"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+    </script>
+    <!-- TikTok Pixel Code Start -->
+    <script>
+        !function (w, d, t) {
+            w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || []; ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"], ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } }; for (var i = 0; i < ttq.methods.length; i++)ttq.setAndDefer(ttq, ttq.methods[i]); ttq.instance = function (t) { for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++)ttq.setAndDefer(e, ttq.methods[n]); return e }, ttq.load = function (e, n) { var r = "https://analytics.tiktok.com/i18n/pixel/events.js", o = n && n.partner; ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = r, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {}; n = document.createElement("script"); n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e) };
+        }(window, document, 'ttq');
+    </script>
+    <!-- TikTok Pixel Code End -->
+    <!-- Meta Pixel Code (loader only — init & events fired dynamically from campaigns_qa.json) -->
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments) };
+            if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+            n.queue = []; t = b.createElement(e); t.async = !0;
+            t.src = v; s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+        /* NO hardcoded init/PageView — pixel ID and event names come from campaigns_qa.json */
+    </script>
+    <!-- End Meta Pixel Code -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIMA Health - Free Food Voucher Campaign</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0d2743;
+            height: 100vh;
+            height: 100dvh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .container {
+            container-type: inline-size;
+            position: relative;
+            width: 100vw;
+            height: 177.78vw;
+            max-height: 100vh;
+            max-height: 100dvh;
+            max-width: 56.25vh;
+            max-width: 56.25dvh;
+            background-image: url('campaign2 artwork.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        @media (max-width: 480px) and (max-aspect-ratio: 9/16) {
+            .container {
+                box-shadow: none;
+            }
+        }
+
+        .form-overlay {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .input-box-overlay {
+            position: absolute;
+            left: 13.78%;
+            top: 72.25%;
+            width: 70.00%;
+            height: 6.56%;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .phone-input {
+            position: absolute;
+            left: 20.5%;
+            top: 0;
+            width: 79.5%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: transparent !important;
+            color: #1e293b;
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(13px, 3.6cqw, 18px);
+            font-weight: 500;
+            padding: 0 12px;
+        }
+
+        .phone-input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .phone-input:-webkit-autofill,
+        .phone-input:-webkit-autofill:hover,
+        .phone-input:-webkit-autofill:focus {
+            -webkit-text-fill-color: #1e293b;
+            -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+            box-shadow: 0 0 0px 1000px transparent inset !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        .subscribe-btn-overlay {
+            position: absolute;
+            left: 13.67%;
+            top: 81.125%;
+            width: 70.22%;
+            height: 6.68%;
+            background: transparent;
+            color: #16497B;
+            border: none;
+            border-radius: 9999px;
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(15px, 4.2cqw, 21px);
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
+        }
+
+        .subscribe-btn-overlay:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.015);
+        }
+
+        .subscribe-btn-overlay:active {
+            transform: scale(0.985);
+        }
+
+        .subscribe-btn-overlay:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .price-info {
+            position: absolute;
+            left: 0;
+            top: 88.4%;
+            width: 100%;
+            text-align: center;
+            font-size: clamp(10.5px, 2.8cqw, 14.5px);
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+        }
+
+        .consent-container {
+            position: absolute;
+            left: 13.67%;
+            width: 70.22%;
+            top: 90.8%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        .consent-label {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .consent-text {
+            color: #ffffff;
+            font-size: clamp(9px, 2.1cqw, 10.5px);
+            line-height: 1.35;
+            text-align: left;
+            font-weight: 400;
+        }
+
+        .consent-text a {
+            color: #ffffff;
+            text-decoration: underline;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .consent-text a:hover {
+            color: #FFE100;
+        }
+
+        #toastMsg {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 9999;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.3s ease;
+            max-width: 90vw;
+            text-align: center;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 39, 67, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-card {
+            background: linear-gradient(135deg, #133a63 0%, #0d2743 100%);
+            border: 2px solid #1e4d7d;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 380px;
+            padding: 30px 24px 24px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: #ffffff;
+        }
+
+        .modal-overlay.show .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 225, 0, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFE100;
+            animation: pulse-glow 2s infinite;
+        }
+
+        .modal-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .modal-body {
+            margin-bottom: 28px;
+        }
+
+        .modal-body p {
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.5;
+            color: #f1f5f9;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            background-color: #FFE100;
+            color: #0d2743;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 48px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 225, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .modal-btn:hover {
+            background-color: #ffffff;
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .modal-btn:active {
+            transform: translateY(0);
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 225, 0, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 225, 0, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 225, 0, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <form class="form-overlay" onsubmit="handleSubmit(event)">
+            <div class="input-box-overlay">
+                <input type="tel" class="phone-input" id="phoneNumber" placeholder="Enter your Jazzcash number" required
+                    pattern="(03|3)[0-9]{9}" title="Please enter a valid JazzCash mobile number (e.g. 03XXXXXXXXX)">
+            </div>
+            <button type="submit" class="subscribe-btn-overlay" id="subscribeBtn">Subscribe</button>
+            <div class="price-info" id="priceInfoEl">Only Rs. 10/Day &nbsp; Full family covered</div>
+            <div class="consent-container">
+                <label class="consent-label" for="consentCheckbox">
+                    <input type="checkbox" id="consentCheckbox"
+                        style="margin-top:2px;margin-right:6px;width:13px;height:13px;cursor:pointer;flex-shrink:0;accent-color:#FFE100;"
+                        checked required>
+                    <span class="consent-text">
+                        By clicking Subscribe, you accept the <a
+                            href="terms_and_conditions_bima.html?returnUrl=index4.html" id="termsLink" target="_blank"
+                            onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms &amp;
+                            Conditions</a>
+                    </span>
+                </label>
+            </div>
+        </form>
+    </div>
+
+    <div id="toastMsg"></div>
+
+    <div id="customAlert" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p id="customAlertMessage">You are already registered to Telemedicine Product, please reachout to 042
+                    111 11 9878</p>
+            </div>
+            <div class="modal-footer"><button type="button" onclick="closeCustomAlert()" class="modal-btn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================
+           CAMPAIGN VARS — 100% populated at runtime from campaigns_qa.json
+           via GET /api/campaign/:code (server reads campaigns_qa.json)
+
+           Every field that the page uses is sourced from the JSON:
+             campaignCode        used in all API / tracking calls
+             campaignPlatform    "meta" | "tiktok" | "google"
+             pixelId             pixel/tag ID
+             productCode         BIMA product code
+             price               monthly price; daily = price/30
+             currency            e.g. "PKR"
+             artworkImage        background image file
+             backgroundColor     body background
+             textColor           price text, consent, terms link colour
+             termsUrl            T&C href base
+             events.page_view         fired on load
+             events.initiate_checkout fired on new-user submit
+             events.duplicate         fired when already subscribed
+             events.purchase          used by callback page
+             events.purchase_failed   used by callback page
+        ========================================================== */
+        window.CAMPAIGN_VARS = {
+            campaignCode: '', campaignPlatform: '', pixelId: '',
+            productCode: '', price: 300, currency: 'PKR',
+            artworkImage: 'campaign2 artwork.jpeg',
+            backgroundColor: '#0d2743', textColor: '#ffffff',
+            termsUrl: 'terms_and_conditions_bima.html', events: {}
+        };
+
+        /* ---- Modal ---- */
+        function showCustomAlert(msg) {
+            var m = document.getElementById('customAlert');
+            document.getElementById('customAlertMessage').textContent = msg;
+            m.style.display = 'flex';
+            setTimeout(function () { m.classList.add('show'); }, 10);
+        }
+        function closeCustomAlert() {
+            var m = document.getElementById('customAlert');
+            m.classList.remove('show');
+            setTimeout(function () { m.style.display = 'none'; }, 300);
+        }
+
+        /* ---- Toast ---- */
+        function showToast(msg, ok) {
+            var t = document.getElementById('toastMsg');
+            t.textContent = msg;
+            t.style.background = ok ? '#1db97b' : '#e74c3c';
+            t.style.display = 'block'; t.style.opacity = '1';
+            setTimeout(function () {
+                t.style.opacity = '0';
+                setTimeout(function () { t.style.display = 'none'; }, 400);
+            }, 4000);
+        }
+
+        /* ---- Button state ---- */
+        function setLoading(on) {
+            var b = document.getElementById('subscribeBtn');
+            b.disabled = on;
+            b.textContent = on ? 'Please wait...' : 'Subscribe';
+            b.style.opacity = on ? '0.7' : '1';
+        }
+
+        /* ---- SHA-256 ---- */
+        async function sha256(msg) {
+            var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+            return Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+        }
+
+        /* ---- Meta standard event map ---- */
+        var META_STD = {
+            addpaymentinfo: 'AddPaymentInfo', addtocart: 'AddToCart', addtowishlist: 'AddToWishlist',
+            completeregistration: 'CompleteRegistration', contact: 'Contact', customizeproduct: 'CustomizeProduct',
+            donate: 'Donate', findlocation: 'FindLocation', initiatecheckout: 'InitiateCheckout',
+            lead: 'Lead', pageview: 'PageView', purchase: 'Purchase', schedule: 'Schedule',
+            search: 'Search', starttrial: 'StartTrial', submitapplication: 'SubmitApplication',
+            subscribe: 'Subscribe', viewcontent: 'ViewContent'
+        };
+
+        /* ---- Platform pixel helpers ---- */
+        function fireMetaEvent(pixelId, name, params, phone) {
+            if (!name || typeof fbq !== 'function') return;
+            var pid = pixelId || '2262504581219583';
+            var std = META_STD[name.toLowerCase().replace(/[\s_-]+/g, '')];
+            var go = function () {
+                if (std) { console.log('[Meta] Standard:', std, params); fbq('track', std, params); }
+                else { console.log('[Meta] Custom:', name, params); fbq('trackCustom', name, params); }
+            };
+            if (phone) {
+                sha256(phone).then(function (h) { fbq('init', pid, { ph: h }); go(); }).catch(function () { fbq('init', pid); go(); });
+            } else { fbq('init', pid); go(); }
+        }
+
+        function fireTikTokEvent(pixelId, name, params, phone) {
+            if (!pixelId || !name || !window.ttq) return;
+            if (!window._ttqPx) window._ttqPx = {};
+            if (!window._ttqPx[pixelId]) { try { ttq.load(pixelId, { autoConfig: false }); } catch (e) { } window._ttqPx[pixelId] = 1; }
+            console.log('[TikTok]', name, params);
+            if (phone) {
+                sha256(phone).then(function (h) { ttq.identify({ phone_number: h }); ttq.track(name, params); }).catch(function () { ttq.track(name, params); });
+            } else { ttq.track(name, params); }
+        }
+
+        function fireGoogleEvent(pixelId, name, params) {
+            if (!pixelId || !name || typeof gtag !== 'function') return;
+            console.log('[Google]', name, params);
+            gtag('config', pixelId);
+            gtag('event', name, Object.assign({ send_to: pixelId }, params));
+        }
+
+        /* ================================================================
+           fireTrackingEvent(eventKey, extraParams, e164Phone)
+           ---------------------------------------------------------------
+           Single dispatcher that reads EVERYTHING from campaigns_qa.json:
+             - eventKey:  "page_view" | "initiate_checkout" | "duplicate" |
+                          "purchase" | "purchase_failed"
+             - event name: window.CAMPAIGN_VARS.events[eventKey]
+             - platform:   window.CAMPAIGN_VARS.campaignPlatform
+             - pixelId:    window.CAMPAIGN_VARS.pixelId
+             - productCode, price, currency all from CAMPAIGN_VARS
+        ================================================================ */
+        function fireTrackingEvent(eventKey, extra, phone) {
+            var cv = window.CAMPAIGN_VARS || {};
+            var platform = (cv.campaignPlatform || 'meta').toLowerCase();
+            var pixelId = cv.pixelId || '';
+            var name = (cv.events || {})[eventKey];
+
+            if (!name) {
+                console.warn('[Tracking] No event for key "' + eventKey + '" in campaigns_qa.json events block.');
+                return;
+            }
+
+            var cc = cv.campaignCode || '';
+            var pc = cv.productCode || '';
+            var price = Number(cv.price) || 300;
+            var cur = cv.currency || 'PKR';
+            var base = Object.assign({ campaign_code: cc, pixel_id: pixelId }, extra || {});
+
+            console.log('[Tracking] key="' + eventKey + '" platform="' + platform + '" event="' + name + '"');
+
+            if (platform === 'meta') {
+                fireMetaEvent(pixelId, name, Object.assign({
+                    content_ids: [pc], content_type: 'product', content_name: 'BIMA Telemedicine Voucher',
+                    value: price, currency: cur
+                }, base), phone);
+
+            } else if (platform === 'tiktok') {
+                fireTikTokEvent(pixelId, name, Object.assign({
+                    content_id: pc, content_type: 'product', content_name: 'BIMA Telemedicine Voucher',
+                    content_category: 'Healthcare', price: price, value: price, currency: cur, quantity: 1,
+                    contents: [{ content_id: pc, content_name: 'BIMA Telemedicine Voucher', content_category: 'Healthcare', price: price, quantity: 1 }]
+                }, base), phone);
+
+            } else if (platform === 'google') {
+                fireGoogleEvent(pixelId, name, Object.assign({
+                    value: price, currency: cur,
+                    items: [{ id: pc, name: 'BIMA Telemedicine Voucher', price: price, quantity: 1 }]
+                }, base));
+            }
+        }
+
+        /* ================================================================
+           Form Submit Handler
+        ================================================================ */
+        var _busy = false;
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            if (_busy) return;
+            _busy = true;
+
+            if (!document.getElementById('consentCheckbox').checked) {
+                showToast('Please check the box to agree to the Terms & Conditions.', false);
+                _busy = false; return;
+            }
+
+            var raw = document.getElementById('phoneNumber').value.trim().replace(/[^0-9]/g, '');
+            if (raw.startsWith('92') && raw.length > 10) raw = raw.substring(2);
+            if (raw.startsWith('0')) raw = raw.substring(1);
+
+            if (raw.length !== 10 || !raw.startsWith('3')) {
+                showToast('Please enter a valid 10 or 11-digit mobile number.', false);
+                _busy = false; return;
+            }
+
+            var msisdn = '0' + raw;
+            var e164 = '+92' + raw;
+            sessionStorage.setItem('user_phone_e164', e164);
+            console.log('MSISDN:', msisdn);
+
+            var cv = window.CAMPAIGN_VARS || {};
+            var campaignCode = cv.campaignCode || 'default';
+            var productCode = cv.productCode || 'bima_telemed_voucher';
+
+            setLoading(true);
+
+            try {
+                /* Step 1 — campaign-service-search */
+                var sRes = await fetch('/api/campaign-service-search', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ msisdn: msisdn, campaignCode: campaignCode, productCode: productCode })
+                });
+                var sData = await sRes.json().catch(function () { return {}; });
+                console.log('Service response:', sData);
+
+                if (!sRes.ok) throw new Error(sData.message || sData.error || 'Service lookup failed: ' + sRes.status);
+
+                /* Check subscription status */
+                var dig = function (o, k) {
+                    var r = [];
+                    if (!o || typeof o !== 'object') return r;
+                    if (o[k] !== undefined) r.push(o[k]);
+                    (Array.isArray(o) ? o : Object.values(o)).forEach(function (v) { if (typeof v === 'object') r = r.concat(dig(v, k)); });
+                    return r;
+                };
+                var statuses = dig(sData, 'subscriptionStatus');
+                var duplicate = statuses.some(function (s) { return s && ['NO_PAY', 'ACTIVE', 'CONFIRMED'].includes(s.toUpperCase()); });
+
+                if (duplicate) {
+                    /* fire events.duplicate from campaigns_qa.json */
+                    fireTrackingEvent('duplicate', {}, e164);
+                    setLoading(false);
+                    showCustomAlert("You're already registered to Telemedicine Product, please reachout to 042 111 11 9878");
+                    return; /* _busy stays true — prevents re-trigger */
+                }
+
+                /* fire events.initiate_checkout from campaigns_qa.json */
+                fireTrackingEvent('initiate_checkout', {}, e164);
+
+                var token = sData.paymentSessionToken;
+                if (!token) throw new Error('Verification session token missing from service response');
+
+                /* Step 2 — jazzcash-form */
+                var fRes = await fetch('/api/jazzcash-form?token=' + encodeURIComponent(token));
+                var fData = await fRes.json();
+                console.log('JazzCash form:', fData);
+                if (!fRes.ok) throw new Error(fData.error || 'Failed to construct payment payload');
+
+                showToast('Redirecting to JazzCash payment page', true);
+
+                var jcForm = document.createElement('form');
+                jcForm.method = 'POST';
+                jcForm.action = fData.actionUrl;
+                Object.entries(fData).forEach(function (pair) {
+                    if (pair[0] === 'actionUrl') return;
+                    var inp = document.createElement('input');
+                    inp.type = 'hidden'; inp.name = pair[0]; inp.value = pair[1] || '';
+                    jcForm.appendChild(inp);
+                });
+                document.body.appendChild(jcForm);
+                sessionStorage.setItem('jazzcash_source', 'BimaVoucher/index4.html');
+                sessionStorage.setItem('campaign_code', campaignCode);
+                setTimeout(function () { jcForm.submit(); }, 1000);
+
+            } catch (err) {
+                console.error('Pipeline error:', err);
+                showToast('[!] ' + (err.message || 'Something went wrong, please try again.'), false);
+                setLoading(false);
+                _busy = false;
+            }
+        }
+
+        /* digits-only input */
+        document.getElementById('phoneNumber').addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        /* ================================================================
+           DOMContentLoaded
+           Fetches full campaign config from /api/campaign/:code
+           (server reads campaigns_qa.json based on APP_ENV).
+
+           Applies ALL visual fields from campaigns_qa.json:
+             artworkImage     -> container background-image
+             backgroundColor  -> body background-color
+             textColor        -> price text, consent text, terms link
+             termsUrl         -> Terms & Conditions link href
+             price            -> daily price label (price/30 rounded)
+
+           Then fires events.page_view (name from campaigns_qa.json).
+        ================================================================ */
+        window.addEventListener('DOMContentLoaded', async function () {
+            var params = new URLSearchParams(window.location.search);
+
+            var rawCode = (
+                params.get('campaignCode') ||
+                params.get('campaign') ||
+                sessionStorage.getItem('campaign_code') ||
+                'default'
+            ).trim();
+
+            if (params.get('campaignCode') || params.get('campaign')) {
+                sessionStorage.setItem('campaign_code', rawCode);
+            }
+
+            /* Fetch from /api/campaign/:code — which reads campaigns_qa.json */
+            try {
+                var res = await fetch('/api/campaign/' + encodeURIComponent(rawCode));
+                if (res.ok) {
+                    var d = await res.json();
+                    if (d.success && d.config) {
+                        window.CAMPAIGN_VARS = d.config;
+                        if (d.code) window.CAMPAIGN_VARS.rawCode = d.code;
+                        console.log('Loaded from campaigns_qa.json:', window.CAMPAIGN_VARS);
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load campaign config, using defaults:', e);
+            }
+
+            var cv = window.CAMPAIGN_VARS || {};
+            var cc = cv.rawCode || rawCode || cv.campaignCode || 'default';
+            var art = cv.artworkImage || 'campaign2 artwork.jpeg';
+            var bg = cv.backgroundColor || '#0d2743';
+            var tc = cv.textColor || '#ffffff';
+            var tu = cv.termsUrl || 'terms_and_conditions_bima.html';
+            var pr = Number(cv.price) || 300;
+            var evs = cv.events || {};
+
+            console.log('Campaign fields -> code:', cc, '| art:', art, '| bg:', bg,
+                '| textColor:', tc, '| termsUrl:', tu, '| price:', pr,
+                '| events:', JSON.stringify(evs));
+
+            /* Apply: body background */
+            document.body.style.backgroundColor = bg;
+
+            /* Apply: artwork */
+            var cont = document.querySelector('.container');
+            if (cont) cont.style.backgroundImage = "url('" + art + "')";
+
+            /* Apply: price text & colour */
+            var pEl = document.getElementById('priceInfoEl');
+            if (pEl) {
+                pEl.textContent = 'Only Rs. ' + Math.round(pr / 30) + '/Day \u00a0 Full family covered';
+                pEl.style.color = tc;
+            }
+
+            /* Apply: consent text colour */
+            var cTxt = document.querySelector('.consent-text');
+            if (cTxt) cTxt.style.color = tc;
+
+            var cLbl = document.querySelector('.consent-label');
+            if (cLbl) cLbl.style.color = tc;
+
+            /* Apply: terms link */
+            var tLink = document.getElementById('termsLink');
+            if (tLink) {
+                tLink.href = tu + '?returnUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+                tLink.style.color = tc;
+            }
+
+            /* Fire events.page_view (name from campaigns_qa.json) */
+            fireTrackingEvent('page_view', {});
+
+            /* HE / MSISDN auto-detection */
+            var qMsisdn = params.get('msisdn');
+            var detMsisdn = window.SERVER_DETECTED_MSISDN || qMsisdn;
+            var autoTriggered = false;
+
+            if (detMsisdn) {
+                fill(detMsisdn);
+            } else {
+                fetch('/api/detect-msisdn')
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) { if (d && d.msisdn) fill(d.msisdn); })
+                    .catch(function (err) { console.error('HE fetch failed:', err); });
+            }
+
+            function fill(raw) {
+                if (!raw || autoTriggered) return;
+                var clean = raw.toString().replace(/[^0-9]/g, '');
+                var local = clean;
+                if (clean.startsWith('92')) local = clean.substring(2);
+                else if (clean.startsWith('03')) local = clean.substring(1);
+                else if (clean.startsWith('3') && clean.length === 10) local = clean;
+
+                var inp = document.getElementById('phoneNumber');
+                if (inp && local.length === 10 && local.startsWith('3')) {
+                    inp.value = local;
+                    console.log('HE MSISDN populated:', raw, '->', local);
+                    autoTriggered = true;
+                    autoGo();
+                }
+            }
+
+            function autoGo() {
+                var cb = document.getElementById('consentCheckbox');
+                if (cb) cb.checked = true;
+                showToast('Phone number detected! Auto-redirecting to JazzCash...', true);
+                setTimeout(function () {
+                    var frm = document.querySelector('.form-overlay');
+                    if (!frm) return;
+                    if (typeof frm.requestSubmit === 'function') frm.requestSubmit();
+                    else handleSubmit(new Event('submit'));
+                }, 800);
+            }
+        });
+    </script>
+</body>
+
+</html>
