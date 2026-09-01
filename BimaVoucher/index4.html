@@ -516,9 +516,10 @@
         ];
 
         function fireMetaEvent(pixelId, eventName, params, e164Phone) {
-            if (!pixelId || !eventName || typeof fbq !== 'function') return;
+            if (!pixelId || !eventName || typeof fbq === 'undefined') return;
             const isStandard = META_STANDARD_EVENTS.includes(eventName);
             const fire = () => {
+                console.log(`[META EVENT] Firing ${isStandard ? 'standard' : 'custom'} event: ${eventName}`, params);
                 if (isStandard) {
                     fbq('track', eventName, params);
                 } else {
@@ -805,6 +806,8 @@
             const termsUrl = cVars.termsUrl || 'terms_and_conditions_bima.html';
             const events = cVars.events || {};
 
+            console.log('[CAMPAIGN INIT] Campaign loaded:', { campaignCode, platform, pixelId, events });
+
             // Dynamically update page outer background color
             if (backgroundColor) {
                 document.body.style.backgroundColor = backgroundColor;
@@ -851,6 +854,7 @@
             // Dynamic Page View Event Tracking (picked from campaigns config)
             const pageViewEventName = events.page_view;
             if (pageViewEventName) {
+                console.log(`[PAGE VIEW] Event name from config: "${pageViewEventName}", Platform: ${platform}, PixelId: ${pixelId}`);
                 if (platform === 'meta') {
                     fireMetaEvent(pixelId, pageViewEventName, {
                         content_ids: [productCode],
