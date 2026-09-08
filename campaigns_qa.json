@@ -1,31 +1,12 @@
 {
-  "qa_meta_300": {
-    "campaignCode": "qa_meta_300",
-    "campaignPlatform": "meta",
-    "pixelId": "2262504581219583",
-    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
-    "price": 300,
-    "currency": "PKR",
-    "artworkImage": "campaign_artwork_tiktok_300.jpeg",
-    "backgroundColor": "#0d2743",
-    "textColor": "#ffffff",
-    "termsUrl": "terms_and_conditions_bima.html",
-    "events": {
-      "page_view": "Page View",
-      "initiate_checkout": "Initiate Checkout",
-      "purchase": "Subscribe",
-      "purchase_failed": "Failed Subscription",
-      "duplicate": "Duplicate"
-    }
-  },
   "qa_meta_600": {
     "campaignCode": "qa_meta_600",
     "campaignPlatform": "meta",
-    "pixelId": "2262504581219583",
+    "pixelId": "1579358147062828",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_BCARE_LITE",
     "price": 600,
     "currency": "PKR",
-    "artworkImage": "campaign_artwork_tiktok_600.jpg",
+    "artworkImage": "campaign_artwork_tiktok_600.png",
     "backgroundColor": "#0d2743",
     "textColor": "#111111",
     "termsUrl": "terms_and_conditions_bima_600.html",
@@ -82,7 +63,7 @@
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_BCARE_LITE",
     "price": 600,
     "currency": "PKR",
-    "artworkImage": "campaign_artwork_tiktok_600.jpg",
+    "artworkImage": "campaign_artwork_tiktok_600.png",
     "backgroundColor": "#0d2743",
     "textColor": "#111111",
     "termsUrl": "terms_and_conditions_bima_600.html",
