@@ -207,6 +207,27 @@ app.post(/.*index4(\.html)?$/, (req, res) => {
     });
 });
 
+app.get('/BimaVoucher/meta.html', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /BimaVoucher/meta.html`);
+    res.sendFile(path.join(__dirname, 'BimaVoucher', 'meta.html'));
+});
+
+app.post('/BimaVoucher/meta.html', (req, res) => {
+    const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
+    console.log(`\n[ENDPOINT HIT] POST /BimaVoucher/meta.html -> MSISDN: "${msisdn}"`);
+
+    const metaPath = path.join(__dirname, 'BimaVoucher', 'meta.html');
+    fs.readFile(metaPath, 'utf8', (err, html) => {
+        if (err) return res.status(500).send('Error loading Meta page');
+        const injectedHtml = html.replace(
+            '<head>',
+            `<head><script>window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};</script>`
+        );
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.send(injectedHtml);
+    });
+});
+
 app.use(express.static(path.join(__dirname)));
 
 // 3. In-memory IP Rate Limiter
