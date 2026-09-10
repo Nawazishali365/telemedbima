@@ -27,6 +27,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIMA Health - Free Food Voucher Campaign (Meta)</title>
+    <script>
+        function setMetaDomainVerification(token) {
+            const existingTag = document.querySelector('meta[name="facebook-domain-verification"]');
+            if (existingTag) existingTag.remove();
+            if (!token || typeof token !== 'string') return;
+
+            const verificationTag = document.createElement('meta');
+            verificationTag.name = 'facebook-domain-verification';
+            verificationTag.content = token.trim();
+            document.head.appendChild(verificationTag);
+        }
+    </script>
 
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -190,6 +202,17 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .subscribe-btn-overlay.is-loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            margin-left: 8px;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: button-spinner 0.7s linear infinite;
         }
 
         /* White text price info centered under the Subscribe button */
@@ -385,6 +408,12 @@
                 box-shadow: 0 0 0 0 rgba(255, 225, 0, 0);
             }
         }
+
+        @keyframes button-spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
@@ -495,7 +524,8 @@
         function setLoading(isLoading) {
             const btn = document.querySelector('.subscribe-btn-overlay');
             btn.disabled = isLoading;
-            btn.textContent = isLoading ? 'Please wait' : 'Subscribe';
+            btn.textContent = isLoading ? 'Processing' : 'Subscribe';
+            btn.classList.toggle('is-loading', isLoading);
             btn.style.opacity = isLoading ? '0.7' : '1';
         }
 
@@ -514,9 +544,18 @@
             'Lead', 'PageView', 'Purchase', 'Schedule', 'Search', 'StartTrial',
             'SubmitApplication', 'Subscribe', 'ViewContent'
         ];
+        const META_EVENT_DEDUPE_WINDOW_MS = 2000;
+        const recentMetaEvents = new Map();
+        const initializedMetaPixels = new Set();
 
-        function fireMetaEvent(pixelId, eventName, params, e164Phone) {
-            if (!pixelId || !eventName || typeof fbq === 'undefined') return;
+        async function fireMetaEvent(pixelId, eventName, params, e164Phone) {
+            if (!pixelId || !eventName || typeof fbq === 'undefined') return false;
+            const eventKey = `${pixelId}:${eventName}`;
+            const now = Date.now();
+            const lastFiredAt = recentMetaEvents.get(eventKey);
+            if (lastFiredAt && now - lastFiredAt < META_EVENT_DEDUPE_WINDOW_MS) return false;
+            recentMetaEvents.set(eventKey, now);
+
             const isStandard = META_STANDARD_EVENTS.includes(eventName);
             const fire = () => {
                 console.log(`[META EVENT] Firing ${isStandard ? 'standard' : 'custom'} event: ${eventName}`, params);
@@ -526,18 +565,22 @@
                     fbq('trackCustom', eventName, params);
                 }
             };
+            const shouldInitialize = !initializedMetaPixels.has(pixelId);
+            if (shouldInitialize) initializedMetaPixels.add(pixelId);
+
             if (e164Phone) {
-                sha256(e164Phone).then(h => {
-                    fbq('init', pixelId, { ph: h });
-                    fire();
-                }).catch(() => {
-                    fbq('init', pixelId);
-                    fire();
-                });
-            } else {
+                let hashedPhone = null;
+                try {
+                    hashedPhone = await sha256(e164Phone);
+                } catch (e) { }
+                if (shouldInitialize) {
+                    fbq('init', pixelId, hashedPhone ? { ph: hashedPhone } : undefined);
+                }
+            } else if (shouldInitialize) {
                 fbq('init', pixelId);
-                fire();
             }
+            fire();
+            return true;
         }
 
         function fireTikTokEvent(pixelId, eventName, params, e164Phone) {
@@ -669,11 +712,25 @@
                     return;
                 }
 
-                // New user only: fire initiate_checkout tracking from campaign config
+                // New Meta users need AddToCart before InitiateCheckout for funnel attribution.
+                const addToCartEventName = events.add_to_cart || 'AddToCart';
+                if (platform === 'meta' && addToCartEventName) {
+                    await fireMetaEvent(pixelId, addToCartEventName, {
+                        content_ids: [productCode],
+                        content_type: 'product',
+                        content_name: 'BIMA Telemedicine Voucher',
+                        value: price,
+                        currency: currency,
+                        campaign_code: campaignCode,
+                        pixel_id: pixelId
+                    }, e164_phone);
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
                 const checkoutEventName = events.initiate_checkout;
                 if (checkoutEventName) {
                     if (platform === 'meta') {
-                        fireMetaEvent(pixelId, checkoutEventName, {
+                        await fireMetaEvent(pixelId, checkoutEventName, {
                             content_ids: [productCode],
                             content_type: 'product',
                             content_name: 'BIMA Telemedicine Voucher',
@@ -752,7 +809,7 @@
                 sessionStorage.setItem('jazzcash_source', 'BimaVoucher/index4.html');
                 sessionStorage.setItem('campaign_code', campaignCode);
 
-                setTimeout(() => jcForm.submit(), 1000);
+                setTimeout(() => jcForm.submit(), 100);
 
             } catch (err) {
                 console.error('Activation pipeline failed:', err);
@@ -806,6 +863,8 @@
             const termsUrl = cVars.termsUrl || 'terms_and_conditions_bima.html';
             const events = cVars.events || {};
 
+            setMetaDomainVerification(cVars.metaDomainVerification);
+
             console.log('[CAMPAIGN INIT] Campaign loaded:', { campaignCode, platform, pixelId, events });
 
             // Dynamically update page outer background color
@@ -856,7 +915,7 @@
             if (pageViewEventName) {
                 console.log(`[PAGE VIEW] Event name from config: "${pageViewEventName}", Platform: ${platform}, PixelId: ${pixelId}`);
                 if (platform === 'meta') {
-                    fireMetaEvent(pixelId, pageViewEventName, {
+                    const pageViewParams = {
                         content_ids: [productCode],
                         content_type: 'product',
                         content_name: 'BIMA Telemedicine Voucher',
@@ -864,7 +923,11 @@
                         currency: currency,
                         campaign_code: campaignCode,
                         pixel_id: pixelId
-                    });
+                    };
+                    fireMetaEvent(pixelId, 'PageView', pageViewParams);
+                    if (pageViewEventName !== 'PageView') {
+                        fireMetaEvent(pixelId, pageViewEventName, pageViewParams);
+                    }
                 } else if (platform === 'tiktok') {
                     fireTikTokEvent(pixelId, pageViewEventName, {
                         content_id: productCode,

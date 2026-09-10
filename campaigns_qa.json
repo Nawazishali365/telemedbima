@@ -3,6 +3,7 @@
     "campaignCode": "qa_meta_600",
     "campaignPlatform": "meta",
     "pixelId": "1579358147062828",
+      "metaDomainVerification": "dummyvalue",
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_BCARE_LITE",
     "price": 600,
     "currency": "PKR",
@@ -11,10 +12,11 @@
     "textColor": "#111111",
     "termsUrl": "terms_and_conditions_bima_600.html",
     "events": {
-      "page_view": "Page View",
-      "initiate_checkout": "Initiate Checkout",
+      "page_view": "PageView",
+      "add_to_cart": "AddToCart",
+      "initiate_checkout": "InitiateCheckout",
       "purchase": "Subscribe",
-      "purchase_failed": "Failed Subscription",
+      "purchase_failed": "FailedSubscription",
       "duplicate": "Duplicate"
     }
   },
