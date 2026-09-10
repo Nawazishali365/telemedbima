@@ -32,13 +32,7 @@
         t.src=v;s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '2262504581219583');
-        fbq('track', 'PageView');
     </script>
-    <noscript>
-        <img height="1" width="1" style="display:none"
-            src="https://www.facebook.com/tr?id=2262504581219583&ev=PageView&noscript=1" />
-    </noscript>
     <!-- End Meta Pixel Code -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -307,9 +301,21 @@
             'viewcontent': 'ViewContent'
         };
 
-        function fireMetaEvent(pixelId, eventName, params, userPhone) {
-            if (!eventName || typeof fbq !== 'function') return;
-            const targetPixel = pixelId || '2262504581219583';
+        async function waitForMetaPixel(timeoutMs = 1000) {
+            const startedAt = Date.now();
+            while (typeof fbq !== 'function' && Date.now() - startedAt < timeoutMs) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            return typeof fbq === 'function';
+        }
+
+        async function fireMetaEvent(pixelId, eventName, params, userPhone) {
+            if (!pixelId || !eventName) return false;
+            if (!await waitForMetaPixel()) {
+                console.error('[META EVENT] Meta Pixel SDK was not ready:', { pixelId, eventName });
+                return false;
+            }
+            const targetPixel = pixelId;
 
             // Normalize event name to check if it matches a standard Meta event (case-insensitive & space-tolerant)
             const cleanKey = eventName.toLowerCase().replace(/[\s_-]+/g, '');
@@ -326,17 +332,21 @@
             };
 
             if (userPhone) {
-                sha256(userPhone).then(h => {
-                    fbq('init', targetPixel, { ph: h });
-                    fire();
-                }).catch(() => {
+                try {
+                    const hashedPhone = await sha256(userPhone);
+                    fbq('init', targetPixel, { ph: hashedPhone });
+                } catch (e) {
                     fbq('init', targetPixel);
-                    fire();
-                });
+                }
             } else {
                 fbq('init', targetPixel);
-                fire();
             }
+            console.log('[META EVENT] Pixel initialized for callback event:', {
+                pixelId: targetPixel,
+                eventName
+            });
+            fire();
+            return true;
         }
 
         function fireTikTokEvent(pixelId, eventName, params, userPhone) {
@@ -436,6 +446,7 @@
             const rawStatus = (params.get('status') || params.get('pp_ResponseCode') || 'N/A').trim();
             const rawMessage = (params.get('message') || params.get('pp_ResponseMessage') || 'No message provided').trim();
             const trxRefNo = params.get('trxRefNo') || params.get('pp_TxnRefNo') || params.get('pp_RetrievalReferenceNo') || 'N/A';
+            const normalizedStatus = rawStatus.toLowerCase();
 
             const statusEl = document.getElementById('resStatus');
             const messageEl = document.getElementById('resMessage');
@@ -443,17 +454,17 @@
 
             const isExplicitFailure = (
                 rawStatus === '0' ||
-                rawStatus.toLowerCase() === 'fail' ||
-                rawStatus.toLowerCase() === 'failed' ||
-                rawStatus.toLowerCase().includes('error')
+                normalizedStatus === 'fail' ||
+                normalizedStatus === 'failed' ||
+                normalizedStatus.includes('error')
             );
 
             const isSuccess = !isExplicitFailure && (
-                rawStatus === '000' ||
-                rawStatus === '121' ||
-                rawStatus === '200' ||
-                rawStatus === '1' ||
-                rawStatus.toLowerCase().includes('success') ||
+                normalizedStatus === '000' ||
+                normalizedStatus === '121' ||
+                normalizedStatus === '200' ||
+                normalizedStatus === '1' ||
+                normalizedStatus.includes('success') ||
                 rawMessage.toLowerCase().includes('success') ||
                 rawMessage.toLowerCase().includes('approved') ||
                 rawMessage.toLowerCase().includes('completed')
@@ -487,18 +498,28 @@
                 console.log(' Payment Successful! Triggering conversion & purchase events...');
 
                 // Deduplication guard: ensure purchase events fire exactly ONCE per transaction
-                const guardKey = 'purchase_event_fired_' + (trxRefNo || 'default');
-                if (sessionStorage.getItem(guardKey)) {
+                const hasTransactionReference = trxRefNo && trxRefNo !== 'N/A';
+                const guardKey = hasTransactionReference ? 'purchase_event_fired_' + trxRefNo : null;
+                const shouldDeduplicateSuccess = normalizedStatus !== '1';
+                if (shouldDeduplicateSuccess && guardKey && sessionStorage.getItem(guardKey)) {
                     console.log(' Conversion events already recorded for transaction:', trxRefNo);
                     return;
                 }
-                sessionStorage.setItem(guardKey, 'true');
+                if (shouldDeduplicateSuccess && guardKey) sessionStorage.setItem(guardKey, 'true');
 
                 // Dynamic Purchase Event from campaign config
-                const purchaseEventName = events.purchase;
+                const purchaseEventName = platform === 'meta' ? (events.purchase || 'Purchase') : events.purchase;
+                console.log('[CALLBACK SUCCESS] Meta configuration:', {
+                    status: rawStatus,
+                    campaignCode: rawCampaignCode,
+                    platform,
+                    pixelId,
+                    purchaseEventName,
+                    trxRefNo
+                });
                 if (purchaseEventName) {
                     if (platform === 'meta') {
-                        fireMetaEvent(pixelId, purchaseEventName, {
+                        await fireMetaEvent(pixelId, purchaseEventName, {
                             value: price,
                             currency: currency,
                             content_ids: [productCode],
@@ -563,7 +584,7 @@
                 const failureEventName = events.purchase_failed;
                 if (failureEventName) {
                     if (platform === 'meta') {
-                        fireMetaEvent(pixelId, failureEventName, {
+                        await fireMetaEvent(pixelId, failureEventName, {
                             content_ids: [productCode],
                             content_type: 'product',
                             content_name: 'BIMA Telemedicine Voucher',

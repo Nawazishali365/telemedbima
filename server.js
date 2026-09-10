@@ -231,10 +231,11 @@ function rateLimitMiddleware(limit, windowMs) {
 // 4. Cryptographic payment session tokens (prevent arbitrary signature generation)
 const SESSION_SECRET = process.env.INTEGRITY_SALT || 'fallback-session-secret';
 
-function generatePaymentToken(msisdn, transId) {
+function generatePaymentToken(msisdn, transId, campaignCode) {
     const payload = JSON.stringify({
         msisdn,
         transId,
+        campaignCode,
         exp: Date.now() + 5 * 60 * 1000 // 5 minutes validity
     });
     const base64Payload = Buffer.from(payload).toString('base64');
@@ -518,7 +519,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
         }
 
         // Generate signed token to bind this session
-        const sessionToken = generatePaymentToken(msisdn, transId);
+        const sessionToken = generatePaymentToken(msisdn, transId, campaignCode);
 
         // We return the original result body, but also attach the sessionToken
         return res.json({
@@ -620,7 +621,7 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
             return res.status(502).json({ error: 'Transaction ID was not returned by service provider' });
         }
 
-        const sessionToken = generatePaymentToken(msisdn, transId);
+        const sessionToken = generatePaymentToken(msisdn, transId, campaignCode);
         return res.json({
             ...result.body,
             paymentSessionToken: sessionToken,
@@ -656,7 +657,7 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
         return res.status(403).json({ error: 'Invalid or expired payment session token' });
     }
 
-    const { msisdn, transId } = payload;
+    const { msisdn, transId, campaignCode } = payload;
 
     const merchantId = process.env.PP_MERCHANT_ID;
     const password = process.env.PP_PASSWORD;
@@ -688,6 +689,7 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
         pp_RequestID: transId,
         pp_ReturnURL: returnUrl,
         pp_MSISDN: msisdn,
+        ppmp_2: campaignCode || '',
         pp_SecureHash: secureHash
     });
 });
