@@ -301,6 +301,14 @@
             'viewcontent': 'ViewContent'
         };
 
+        const META_EVENT_DEDUPE_WINDOW_MS = 2000;
+        const recentMetaEvents = new Map();
+        const initializedMetaPixels = new Map(); // pixelId -> hashedPhone or 'anonymous'
+
+        if (window.CAMPAIGN_VARS && window.CAMPAIGN_VARS.pixelId) {
+            initializedMetaPixels.set(window.CAMPAIGN_VARS.pixelId, 'anonymous');
+        }
+
         async function waitForMetaPixel(timeoutMs = 1000) {
             const startedAt = Date.now();
             while (typeof fbq !== 'function' && Date.now() - startedAt < timeoutMs) {
@@ -316,6 +324,14 @@
                 return false;
             }
             const targetPixel = pixelId;
+            const eventKey = `${targetPixel}:${eventName}`;
+            const now = Date.now();
+            const lastFiredAt = recentMetaEvents.get(eventKey);
+            if (lastFiredAt && now - lastFiredAt < META_EVENT_DEDUPE_WINDOW_MS) {
+                console.log(`[META EVENT] Deduped ${eventName} (already fired within ${META_EVENT_DEDUPE_WINDOW_MS}ms)`);
+                return false;
+            }
+            recentMetaEvents.set(eventKey, now);
 
             // Normalize event name to check if it matches a standard Meta event (case-insensitive & space-tolerant)
             const cleanKey = eventName.toLowerCase().replace(/[\s_-]+/g, '');
@@ -332,19 +348,19 @@
             };
 
             if (userPhone) {
+                let hashedPhone = null;
                 try {
-                    const hashedPhone = await sha256(userPhone);
-                    fbq('init', targetPixel, { ph: hashedPhone });
-                } catch (e) {
-                    fbq('init', targetPixel);
+                    hashedPhone = await sha256(userPhone);
+                } catch (e) { }
+                if (initializedMetaPixels.get(targetPixel) !== hashedPhone) {
+                    fbq('init', targetPixel, hashedPhone ? { ph: hashedPhone } : undefined);
+                    initializedMetaPixels.set(targetPixel, hashedPhone || 'anonymous');
                 }
-            } else {
+            } else if (!initializedMetaPixels.has(targetPixel)) {
                 fbq('init', targetPixel);
+                initializedMetaPixels.set(targetPixel, 'anonymous');
             }
-            console.log('[META EVENT] Pixel initialized for callback event:', {
-                pixelId: targetPixel,
-                eventName
-            });
+
             fire();
             return true;
         }
@@ -383,28 +399,35 @@
             // Extract campaignCode parameter from URL or sessionStorage
             const rawCampaignCode = (params.get('campaignCode') || params.get('campaign') || sessionStorage.getItem('campaign_code') || 'default').trim();
             
-            // Fetch dynamic campaign parameters from campaigns.json API
-            let cVars = {
-                campaignCode: rawCampaignCode,
-                campaignPlatform: 'meta',
-                pixelId: '',
-                productCode: 'bima_telemed_voucher',
-                price: 300,
-                currency: 'PKR',
-                events: {}
-            };
+            // Use server-injected campaign configuration if available, otherwise fetch from API
+            let cVars = (window.CAMPAIGN_VARS && Object.keys(window.CAMPAIGN_VARS).length > 0 && window.CAMPAIGN_VARS.campaignCode)
+                ? window.CAMPAIGN_VARS
+                : {
+                    campaignCode: rawCampaignCode,
+                    campaignPlatform: 'meta',
+                    pixelId: '',
+                    productCode: 'bima_telemed_voucher',
+                    price: 300,
+                    currency: 'PKR',
+                    events: {}
+                };
 
-            try {
-                const res = await fetch(`/api/campaign/${rawCampaignCode}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.success && data.config) {
-                        cVars = data.config;
-                        console.log(' Dynamic callback loaded campaign config:', cVars);
+            if (!window.CAMPAIGN_VARS || Object.keys(window.CAMPAIGN_VARS).length === 0 || !window.CAMPAIGN_VARS.campaignCode) {
+                try {
+                    const res = await fetch(`/api/campaign/${rawCampaignCode}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success && data.config) {
+                            cVars = data.config;
+                            window.CAMPAIGN_VARS = data.config;
+                            console.log(' Dynamic callback loaded campaign config from API fallback:', cVars);
+                        }
                     }
+                } catch (e) {
+                    console.warn('Failed to fetch campaign config for callback page, using defaults:', e);
                 }
-            } catch (e) {
-                console.warn('Failed to fetch campaign config for callback page, using defaults:', e);
+            } else {
+                console.log(' Dynamic callback using server-injected campaign config:', cVars);
             }
 
             const platform = (cVars.campaignPlatform || 'meta').toLowerCase();
@@ -497,15 +520,15 @@
 
                 console.log(' Payment Successful! Triggering conversion & purchase events...');
 
-                // Deduplication guard: ensure purchase events fire exactly ONCE per transaction
+                // Deduplication guard: ensure purchase events fire exactly ONCE per transaction (unless testing)
                 const hasTransactionReference = trxRefNo && trxRefNo !== 'N/A';
                 const guardKey = hasTransactionReference ? 'purchase_event_fired_' + trxRefNo : null;
-                const shouldDeduplicateSuccess = normalizedStatus !== '1';
-                if (shouldDeduplicateSuccess && guardKey && sessionStorage.getItem(guardKey)) {
+                const isTestingUrl = (params.get('test') === '1') || (trxRefNo && trxRefNo.toLowerCase().startsWith('test'));
+                if (!isTestingUrl && guardKey && sessionStorage.getItem(guardKey)) {
                     console.log(' Conversion events already recorded for transaction:', trxRefNo);
                     return;
                 }
-                if (shouldDeduplicateSuccess && guardKey) sessionStorage.setItem(guardKey, 'true');
+                if (guardKey) sessionStorage.setItem(guardKey, 'true');
 
                 // Dynamic Purchase Event from campaign config
                 const purchaseEventName = platform === 'meta' ? (events.purchase || 'Purchase') : events.purchase;
@@ -519,7 +542,7 @@
                 });
                 if (purchaseEventName) {
                     if (platform === 'meta') {
-                        await fireMetaEvent(pixelId, purchaseEventName, {
+                        const metaPurchaseParams = {
                             value: price,
                             currency: currency,
                             content_ids: [productCode],
@@ -528,7 +551,11 @@
                             campaign_code: rawCampaignCode,
                             pixel_id: pixelId,
                             transaction_id: trxRefNo
-                        }, userPhone);
+                        };
+                        await fireMetaEvent(pixelId, 'Purchase', metaPurchaseParams, userPhone);
+                        if (purchaseEventName && purchaseEventName !== 'Purchase') {
+                            await fireMetaEvent(pixelId, purchaseEventName, metaPurchaseParams, userPhone);
+                        }
                     } else if (platform === 'tiktok') {
                         fireTikTokEvent(pixelId, purchaseEventName, {
                             content_id: productCode,

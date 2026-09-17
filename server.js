@@ -55,40 +55,58 @@ app.use((req, res, next) => {
     next();
 });
 
+function getCampaignConfig(requestedCode, pagePath = '') {
+    try {
+        const { path: campaignsPath, env: currentEnv } = getCampaignsFilePath();
+        if (!fs.existsSync(campaignsPath)) return null;
+        let fileContent = fs.readFileSync(campaignsPath, 'utf8');
+        fileContent = fileContent.replace(/\/\/.*$/gm, '');
+        const campaigns = JSON.parse(fileContent);
+        const appEnv = (process.env.APP_ENV || currentEnv || '').toString().trim().toLowerCase();
+        const isQa = ['qa', 'staging', 'dev', 'development'].includes(appEnv);
+
+        const isMetaPage = pagePath && (pagePath.includes('meta') || pagePath.includes('index4'));
+        const defaultCode = isQa
+            ? (isMetaPage ? 'qa_meta_600' : 'qa_default')
+            : (isMetaPage ? 'meta_600' : 'default');
+
+        let code = (requestedCode || '').toLowerCase().trim();
+        if (!code || code === 'default') {
+            code = defaultCode;
+        }
+
+        const campaignData = campaigns[code] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code) || campaigns[defaultCode] || campaigns['qa_meta_600'] || campaigns['default'] || null;
+        if (campaignData) {
+            return {
+                ...campaignData,
+                rawCode: campaignData.campaignCode || code,
+                environment: currentEnv
+            };
+        }
+        return null;
+    } catch (err) {
+        console.error('Error in getCampaignConfig:', err);
+        return null;
+    }
+}
+
 // 2b. Campaign API Endpoint
 app.get('/api/campaign/:code', (req, res) => {
     console.log(`\n========================================`);
     console.log(`[ENDPOINT HIT] GET /api/campaign/:code -> Code: "${req.params.code}"`);
     console.log(`========================================`);
     try {
-        const { path: campaignsPath, env: currentEnv } = getCampaignsFilePath();
-        if (!fs.existsSync(campaignsPath)) {
-            return res.status(404).json({ success: false, message: 'Campaign configuration not found' });
-        }
-        let fileContent = fs.readFileSync(campaignsPath, 'utf8');
-        fileContent = fileContent.replace(/\/\/.*$/gm, '');
-        const campaigns = JSON.parse(fileContent);
-        const appEnv = (process.env.APP_ENV || currentEnv || '').toString().trim().toLowerCase();
-        const isQa = ['qa', 'staging', 'dev', 'development'].includes(appEnv);
-        const defaultCode = isQa ? 'qa_default' : 'default';
-
-        let code = (req.params.code || '').toLowerCase().trim();
-        if (!code || code === 'default') {
-            code = defaultCode;
-        }
-
-        const campaignData = campaigns[code] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code) || campaigns[defaultCode] || campaigns['default'] || null;
-
+        const campaignData = getCampaignConfig(req.params.code);
         if (!campaignData) {
             return res.status(404).json({ success: false, message: 'Campaign not found' });
         }
 
         return res.json({
             success: true,
-            environment: currentEnv,
-            campaignCode: campaignData.campaignCode || code,
+            environment: campaignData.environment,
+            campaignCode: campaignData.campaignCode || campaignData.rawCode,
             config: campaignData,
-            code: code
+            code: campaignData.rawCode
         });
     } catch (err) {
         console.error('Error fetching campaign config:', err);
@@ -137,6 +155,71 @@ app.use((req, res, next) => {
     next();
 });
 
+function renderHtmlWithCampaign(filePath, req, res, msisdn = '') {
+    fs.readFile(filePath, 'utf8', (err, html) => {
+        if (err) {
+            console.error(`Error loading HTML from ${filePath}:`, err.message);
+            return res.status(500).send('Error loading page');
+        }
+
+        const rawCampaignCode = (req.query.campaignCode || req.query.campaign || (req.body && req.body.campaignCode) || '').trim();
+        const campaignConfig = getCampaignConfig(rawCampaignCode, filePath);
+
+        const headInjections = [];
+
+        // 1. Synchronously inject server variables into window scope before any other script runs
+        headInjections.push(`<script>
+    window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};
+    window.CAMPAIGN_VARS = ${JSON.stringify(campaignConfig || {})};
+</script>`);
+
+        if (campaignConfig) {
+            // 2. Meta Domain Verification Tag (Instantly detectable by Facebook Domain Verification bot)
+            if (campaignConfig.metaDomainVerification) {
+                headInjections.push(`<meta name="facebook-domain-verification" content="${campaignConfig.metaDomainVerification.trim()}" />`);
+            }
+
+            // 3. Synchronous Meta Pixel Initialization (0ms delay for Meta Crawlers, Event Setup Tool & Ads Manager)
+            if (campaignConfig.campaignPlatform && campaignConfig.campaignPlatform.toLowerCase() === 'meta' && campaignConfig.pixelId) {
+                const pixelId = campaignConfig.pixelId.trim();
+                const isCallback = filePath.toLowerCase().includes('callback');
+                const pageViewEvent = (campaignConfig.events && campaignConfig.events.page_view) || 'PageView';
+
+                if (isCallback) {
+                    headInjections.push(`<!-- Server Injected Meta Pixel (Callback Init Only) -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${pixelId}');
+</script>`);
+                } else {
+                    headInjections.push(`<!-- Server Injected Meta Pixel (Immediate 0ms Init) -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${pixelId}');
+fbq('track', 'PageView');
+${pageViewEvent !== 'PageView' ? `fbq('trackCustom', '${pageViewEvent}');\n` : ''}window._metaServerPageViewFired = true;
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"
+/></noscript>`);
+                }
+            }
+        }
+
+        const injectedHtml = html.replace('<head>', '<head>\n    ' + headInjections.join('\n    '));
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.send(injectedHtml);
+    });
+}
+
 // 2b. LandingPage & Voucher Routes
 app.get('/landingpage', (req, res) => {
     const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
@@ -144,88 +227,70 @@ app.get('/landingpage', (req, res) => {
     res.redirect('/BimaVoucher/landingpage.html' + query);
 });
 
+// Index2 (Campaign 2)
 app.get(/.*index2(\.html)?$/, (req, res) => {
-    console.log(`\n[ENDPOINT HIT] GET index2 -> Serving index2.html for path: ${req.path}`);
-    res.sendFile(path.join(__dirname, 'BimaVoucher', 'index2.html'));
+    console.log(`\n[ENDPOINT HIT] GET index2 -> Serving index2.html with server-injected campaign for path: ${req.path}`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'index2.html'), req, res);
 });
 
 app.post(/.*index2(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
     console.log(`\n[ENDPOINT HIT] POST index2 -> Received payload for ${req.path}: MSISDN = "${msisdn}"`);
-
-    const indexPath = path.join(__dirname, 'BimaVoucher', 'index2.html');
-    fs.readFile(indexPath, 'utf8', (err, html) => {
-        if (err) return res.status(500).send('Error loading page');
-        const injectedHtml = html.replace(
-            '<head>',
-            `<head><script>window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};</script>`
-        );
-        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        res.send(injectedHtml);
-    });
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'index2.html'), req, res, msisdn);
 });
 
+// Index3 (Campaign 3)
 app.get(/.*index3(\.html)?$/, (req, res) => {
-    console.log(`\n[ENDPOINT HIT] GET index3 -> Serving index3.html for path: ${req.path}`);
-    res.sendFile(path.join(__dirname, 'BimaVoucher', 'index3.html'));
+    console.log(`\n[ENDPOINT HIT] GET index3 -> Serving index3.html with server-injected campaign for path: ${req.path}`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'index3.html'), req, res);
 });
 
 app.post(/.*index3(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
     console.log(`\n[ENDPOINT HIT] POST index3 -> Received payload for ${req.path}: MSISDN = "${msisdn}"`);
-    
-    const indexPath = path.join(__dirname, 'BimaVoucher', 'index3.html');
-    fs.readFile(indexPath, 'utf8', (err, html) => {
-        if (err) return res.status(500).send('Error loading page');
-        const injectedHtml = html.replace(
-            '<head>',
-            `<head><script>window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};</script>`
-        );
-        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        res.send(injectedHtml);
-    });
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'index3.html'), req, res, msisdn);
 });
 
+// Index4 / Meta Landing Pages
 app.get(/.*index4(\.html)?$/, (req, res) => {
-    console.log(`\n[ENDPOINT HIT] GET index4 -> Serving index4.html for path: ${req.path}`);
-    res.sendFile(path.join(__dirname, 'BimaVoucher', 'index4.html'));
+    console.log(`\n[ENDPOINT HIT] GET index4 -> Serving meta.html with server-injected campaign for path: ${req.path}`);
+    const metaPath = fs.existsSync(path.join(__dirname, 'BimaVoucher', 'meta.html'))
+        ? path.join(__dirname, 'BimaVoucher', 'meta.html')
+        : path.join(__dirname, 'BimaVoucher', 'index4.html');
+    renderHtmlWithCampaign(metaPath, req, res);
 });
 
 app.post(/.*index4(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
     console.log(`\n[ENDPOINT HIT] POST index4 -> Received payload for ${req.path}: MSISDN = "${msisdn}"`);
-
-    const indexPath = path.join(__dirname, 'BimaVoucher', 'index4.html');
-    fs.readFile(indexPath, 'utf8', (err, html) => {
-        if (err) return res.status(500).send('Error loading page');
-        const injectedHtml = html.replace(
-            '<head>',
-            `<head><script>window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};</script>`
-        );
-        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        res.send(injectedHtml);
-    });
+    const metaPath = fs.existsSync(path.join(__dirname, 'BimaVoucher', 'meta.html'))
+        ? path.join(__dirname, 'BimaVoucher', 'meta.html')
+        : path.join(__dirname, 'BimaVoucher', 'index4.html');
+    renderHtmlWithCampaign(metaPath, req, res, msisdn);
 });
 
-app.get('/BimaVoucher/meta.html', (req, res) => {
-    console.log(`\n[ENDPOINT HIT] GET /BimaVoucher/meta.html`);
-    res.sendFile(path.join(__dirname, 'BimaVoucher', 'meta.html'));
+// Meta Landing Page Direct Route
+app.get(/.*meta(\.html)?$/, (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET meta.html -> Serving meta.html with server-injected campaign for path: ${req.path}`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'meta.html'), req, res);
 });
 
-app.post('/BimaVoucher/meta.html', (req, res) => {
+app.post(/.*meta(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
-    console.log(`\n[ENDPOINT HIT] POST /BimaVoucher/meta.html -> MSISDN: "${msisdn}"`);
+    console.log(`\n[ENDPOINT HIT] POST meta.html -> MSISDN: "${msisdn}"`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'meta.html'), req, res, msisdn);
+});
 
-    const metaPath = path.join(__dirname, 'BimaVoucher', 'meta.html');
-    fs.readFile(metaPath, 'utf8', (err, html) => {
-        if (err) return res.status(500).send('Error loading Meta page');
-        const injectedHtml = html.replace(
-            '<head>',
-            `<head><script>window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};</script>`
-        );
-        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        res.send(injectedHtml);
-    });
+// Callback Result Page Route (serves callback.html with server-injected campaign, domain verification, and pixel)
+app.get(/.*callback(\.html)?$/, (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET callback.html -> Serving callback.html with server-injected campaign for path: ${req.path}`);
+    renderHtmlWithCampaign(path.join(__dirname, 'callback.html'), req, res);
+});
+
+app.post(/.*callback(\.html)?$/, (req, res) => {
+    const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
+    console.log(`\n[ENDPOINT HIT] POST callback.html -> MSISDN: "${msisdn}"`);
+    renderHtmlWithCampaign(path.join(__dirname, 'callback.html'), req, res, msisdn);
 });
 
 app.use(express.static(path.join(__dirname)));

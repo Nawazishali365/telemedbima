@@ -546,14 +546,25 @@
         ];
         const META_EVENT_DEDUPE_WINDOW_MS = 2000;
         const recentMetaEvents = new Map();
-        const initializedMetaPixels = new Set();
+        const initializedMetaPixels = new Map(); // pixelId -> hashedPhone or 'anonymous'
+
+        // If server already initialized Meta pixel, mark it to prevent duplicate init
+        if (window.CAMPAIGN_VARS && window.CAMPAIGN_VARS.pixelId) {
+            initializedMetaPixels.set(window.CAMPAIGN_VARS.pixelId, 'anonymous');
+            if (window._metaServerPageViewFired) {
+                recentMetaEvents.set(`${window.CAMPAIGN_VARS.pixelId}:PageView`, Date.now());
+            }
+        }
 
         async function fireMetaEvent(pixelId, eventName, params, e164Phone) {
             if (!pixelId || !eventName || typeof fbq === 'undefined') return false;
             const eventKey = `${pixelId}:${eventName}`;
             const now = Date.now();
             const lastFiredAt = recentMetaEvents.get(eventKey);
-            if (lastFiredAt && now - lastFiredAt < META_EVENT_DEDUPE_WINDOW_MS) return false;
+            if (lastFiredAt && now - lastFiredAt < META_EVENT_DEDUPE_WINDOW_MS) {
+                console.log(`[META EVENT] Deduped ${eventName} (already fired within ${META_EVENT_DEDUPE_WINDOW_MS}ms)`);
+                return false;
+            }
             recentMetaEvents.set(eventKey, now);
 
             const isStandard = META_STANDARD_EVENTS.includes(eventName);
@@ -565,19 +576,19 @@
                     fbq('trackCustom', eventName, params);
                 }
             };
-            const shouldInitialize = !initializedMetaPixels.has(pixelId);
-            if (shouldInitialize) initializedMetaPixels.add(pixelId);
 
             if (e164Phone) {
                 let hashedPhone = null;
                 try {
                     hashedPhone = await sha256(e164Phone);
                 } catch (e) { }
-                if (shouldInitialize) {
+                if (initializedMetaPixels.get(pixelId) !== hashedPhone) {
                     fbq('init', pixelId, hashedPhone ? { ph: hashedPhone } : undefined);
+                    initializedMetaPixels.set(pixelId, hashedPhone || 'anonymous');
                 }
-            } else if (shouldInitialize) {
+            } else if (!initializedMetaPixels.has(pixelId)) {
                 fbq('init', pixelId);
+                initializedMetaPixels.set(pixelId, 'anonymous');
             }
             fire();
             return true;
@@ -712,10 +723,10 @@
                     return;
                 }
 
-                // New Meta users need AddToCart before InitiateCheckout for funnel attribution.
+                // Meta users: fire standard AddToCart and InitiateCheckout for campaign manager funnel tracking
                 const addToCartEventName = events.add_to_cart || 'AddToCart';
-                if (platform === 'meta' && addToCartEventName) {
-                    await fireMetaEvent(pixelId, addToCartEventName, {
+                if (platform === 'meta') {
+                    const metaAddToCartParams = {
                         content_ids: [productCode],
                         content_type: 'product',
                         content_name: 'BIMA Telemedicine Voucher',
@@ -723,14 +734,18 @@
                         currency: currency,
                         campaign_code: campaignCode,
                         pixel_id: pixelId
-                    }, e164_phone);
+                    };
+                    await fireMetaEvent(pixelId, 'AddToCart', metaAddToCartParams, e164_phone);
+                    if (addToCartEventName !== 'AddToCart') {
+                        await fireMetaEvent(pixelId, addToCartEventName, metaAddToCartParams, e164_phone);
+                    }
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
 
-                const checkoutEventName = events.initiate_checkout;
+                const checkoutEventName = events.initiate_checkout || 'InitiateCheckout';
                 if (checkoutEventName) {
                     if (platform === 'meta') {
-                        await fireMetaEvent(pixelId, checkoutEventName, {
+                        const metaCheckoutParams = {
                             content_ids: [productCode],
                             content_type: 'product',
                             content_name: 'BIMA Telemedicine Voucher',
@@ -738,7 +753,11 @@
                             currency: currency,
                             campaign_code: campaignCode,
                             pixel_id: pixelId
-                        }, e164_phone);
+                        };
+                        await fireMetaEvent(pixelId, 'InitiateCheckout', metaCheckoutParams, e164_phone);
+                        if (checkoutEventName !== 'InitiateCheckout') {
+                            await fireMetaEvent(pixelId, checkoutEventName, metaCheckoutParams, e164_phone);
+                        }
                     } else if (platform === 'tiktok') {
                         fireTikTokEvent(pixelId, checkoutEventName, {
                             content_id: productCode,
@@ -809,7 +828,7 @@
                 sessionStorage.setItem('jazzcash_source', 'BimaVoucher/index4.html');
                 sessionStorage.setItem('campaign_code', campaignCode);
 
-                setTimeout(() => jcForm.submit(), 100);
+                setTimeout(() => jcForm.submit(), 800);
 
             } catch (err) {
                 console.error('Activation pipeline failed:', err);
@@ -834,19 +853,23 @@
                 sessionStorage.setItem('campaign_code', rawCampaignCode);
             }
 
-            // Fetch campaign configuration parameters from campaigns.json API endpoint
-            try {
-                const res = await fetch(`/api/campaign/${rawCampaignCode}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.success && data.config) {
-                        window.CAMPAIGN_VARS = data.config;
-                        if (data.code) window.CAMPAIGN_VARS.rawCode = data.code;
-                        console.log(' Loaded campaign parameters:', window.CAMPAIGN_VARS);
+            // Use server-injected campaign configuration if available, otherwise fetch from API
+            if (!window.CAMPAIGN_VARS || Object.keys(window.CAMPAIGN_VARS).length === 0 || !window.CAMPAIGN_VARS.campaignCode) {
+                try {
+                    const res = await fetch(`/api/campaign/${rawCampaignCode}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success && data.config) {
+                            window.CAMPAIGN_VARS = data.config;
+                            if (data.code) window.CAMPAIGN_VARS.rawCode = data.code;
+                            console.log(' Loaded campaign parameters from API fallback:', window.CAMPAIGN_VARS);
+                        }
                     }
+                } catch (e) {
+                    console.warn('Failed to fetch campaign parameters from API, using defaults:', e);
                 }
-            } catch (e) {
-                console.warn('Failed to fetch campaign parameters from API, using defaults:', e);
+            } else {
+                console.log(' Using server-injected campaign parameters:', window.CAMPAIGN_VARS);
             }
 
             // Initialize dynamic campaign parameters, artwork & terms URL
@@ -924,9 +947,11 @@
                         campaign_code: campaignCode,
                         pixel_id: pixelId
                     };
-                    fireMetaEvent(pixelId, 'PageView', pageViewParams);
-                    if (pageViewEventName !== 'PageView') {
-                        fireMetaEvent(pixelId, pageViewEventName, pageViewParams);
+                    if (!window._metaServerPageViewFired) {
+                        fireMetaEvent(pixelId, 'PageView', pageViewParams);
+                        if (pageViewEventName !== 'PageView') {
+                            fireMetaEvent(pixelId, pageViewEventName, pageViewParams);
+                        }
                     }
                 } else if (platform === 'tiktok') {
                     fireTikTokEvent(pixelId, pageViewEventName, {
