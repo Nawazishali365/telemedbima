@@ -214,7 +214,8 @@ src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"
             }
         }
 
-        const injectedHtml = html.replace('<head>', '<head>\n    ' + headInjections.join('\n    '));
+        let cleanHtml = html.replace(/<meta\s+name=["']facebook-domain-verification["']\s+content=["'][^"']*["']\s*\/?>/gi, '');
+        const injectedHtml = cleanHtml.replace('<head>', '<head>\n    ' + headInjections.join('\n    '));
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.send(injectedHtml);
     });
@@ -291,6 +292,28 @@ app.post(/.*callback(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
     console.log(`\n[ENDPOINT HIT] POST callback.html -> MSISDN: "${msisdn}"`);
     renderHtmlWithCampaign(path.join(__dirname, 'callback.html'), req, res, msisdn);
+});
+
+// Root route handler (serves meta landing page with server injection)
+app.get('/', (req, res) => {
+    const metaPath = fs.existsSync(path.join(__dirname, 'BimaVoucher', 'meta.html'))
+        ? path.join(__dirname, 'BimaVoucher', 'meta.html')
+        : path.join(__dirname, 'index.html');
+    renderHtmlWithCampaign(metaPath, req, res);
+});
+
+// Middleware to serve all static HTML requests with server campaign injection
+app.use((req, res, next) => {
+    if (req.method === 'GET' && req.path.endsWith('.html')) {
+        let requestedFile = path.join(__dirname, req.path);
+        if (!fs.existsSync(requestedFile)) {
+            requestedFile = path.join(__dirname, 'BimaVoucher', path.basename(req.path));
+        }
+        if (fs.existsSync(requestedFile) && fs.statSync(requestedFile).isFile()) {
+            return renderHtmlWithCampaign(requestedFile, req, res);
+        }
+    }
+    next();
 });
 
 app.use(express.static(path.join(__dirname)));
