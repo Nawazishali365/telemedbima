@@ -119,6 +119,7 @@ app.use((req, res, next) => {
     const origin = req.headers.origin;
     const allowedOrigins = [
         'https://jzmhealth.milvikpakistan.com',
+        'https://qa-bcare.milvikpakistan.com',
         'https://milvikpakistan.com',
         'https://jzmhealth.milvik.io',
         'https://milvik.io'
@@ -143,7 +144,18 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,auth-token,x-api-key');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com https://connect.facebook.net; img-src 'self' data: https://www.facebook.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://pkcm.milvik.io https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com https://connect.facebook.net https://www.facebook.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';");
+    const contentSecurityPolicy = [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com https://connect.facebook.net",
+        "img-src 'self' data: https://www.facebook.com https://analytics.tiktok.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "connect-src 'self' https://pkcm.milvik.io https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com https://connect.facebook.net https://www.facebook.com",
+        "form-action https://onlinepayments.jazzcash.com.pk 'self'",
+        "frame-ancestors 'none'",
+        "object-src 'none'"
+    ].join('; ');
+    res.setHeader("Content-Security-Policy", contentSecurityPolicy);
     res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("X-Content-Type-Options", "nosniff");
