@@ -9,20 +9,7 @@
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
     </script>
-    <!-- TikTok Pixel Code Start -->
-    <script>
-        !function (w, d, t) {
-            w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || []; ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"], ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } }; for (var i = 0; i < ttq.methods.length; i++)ttq.setAndDefer(ttq, ttq.methods[i]); ttq.instance = function (t) {
-                for (
-                    var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++)ttq.setAndDefer(e, ttq.methods[n]); return e
-            }, ttq.load = function (e, n) {
-                var r = "https://analytics.tiktok.com/i18n/pixel/events.js", o = n && n.partner; ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = r, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {}; n = document.createElement("script")
-                    ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
-            };
-        }(window, document, 'ttq');
-    </script>
-    <!-- TikTok Pixel Code End -->
-    <!-- Meta Pixel Code -->
+    <!-- Meta Pixel Code (Primary for index4.html - Meta Events) -->
     <script>
         !function (f, b, e, v, n, t, s) {
             if (f.fbq) return; n = f.fbq = function () {
@@ -39,7 +26,19 @@
     <!-- End Meta Pixel Code -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIMA Health - Free Food Voucher Campaign</title>
+    <title>BIMA Health - Free Food Voucher Campaign (Meta)</title>
+    <script>
+        function setMetaDomainVerification(token) {
+            const existingTag = document.querySelector('meta[name="facebook-domain-verification"]');
+            if (existingTag) existingTag.remove();
+            if (!token || typeof token !== 'string') return;
+
+            const verificationTag = document.createElement('meta');
+            verificationTag.name = 'facebook-domain-verification';
+            verificationTag.content = token.trim();
+            document.head.appendChild(verificationTag);
+        }
+    </script>
 
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -203,6 +202,17 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .subscribe-btn-overlay.is-loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            margin-left: 8px;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: button-spinner 0.7s linear infinite;
         }
 
         /* White text price info centered under the Subscribe button */
@@ -398,6 +408,12 @@
                 box-shadow: 0 0 0 0 rgba(255, 225, 0, 0);
             }
         }
+
+        @keyframes button-spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
@@ -415,7 +431,7 @@
             <button type="submit" class="subscribe-btn-overlay">Subscribe</button>
 
             <!-- Price Info Text (now rendered as White HTML text over the painted block) -->
-            <div class="price-info" id="priceInfoEl">Only Rs. 10/Day Full family covered</div>
+            <div class="price-info" id="priceInfoEl">Only Rs. 10/Day  Full family covered</div>
 
             <!-- Consent Row (combining visible styled checkbox and text in a single container for perfect layout) -->
             <div class="consent-container">
@@ -425,7 +441,7 @@
                         checked required>
                     <span class="consent-text">
                         By clicking Subscribe, you accept the <a
-                            href="terms_and_conditions_bima.html?returnUrl=index3.html" id="termsLink" target="_blank"
+                            href="terms_and_conditions_bima.html?returnUrl=index4.html" id="termsLink" target="_blank"
                             onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms &
                             Conditions</a>
                     </span>
@@ -464,7 +480,7 @@
         /*  Dynamic Campaign Parameters State (100% dynamically loaded from campaigns.json)  */
         window.CAMPAIGN_VARS = {
             campaignCode: '',
-            campaignPlatform: '',
+            campaignPlatform: 'meta', // Meta events by default for index4.html
             pixelId: '',
             productCode: '',
             price: 300,
@@ -508,7 +524,8 @@
         function setLoading(isLoading) {
             const btn = document.querySelector('.subscribe-btn-overlay');
             btn.disabled = isLoading;
-            btn.textContent = isLoading ? 'Please wait' : 'Subscribe';
+            btn.textContent = isLoading ? 'Processing' : 'Subscribe';
+            btn.classList.toggle('is-loading', isLoading);
             btn.style.opacity = isLoading ? '0.7' : '1';
         }
 
@@ -518,6 +535,88 @@
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Tracking Helper Functions (Picks all event names dynamically from campaign config)
+        const META_STANDARD_EVENTS = [
+            'AddPaymentInfo', 'AddToCart', 'AddToWishlist', 'CompleteRegistration',
+            'Contact', 'CustomizeProduct', 'Donate', 'FindLocation', 'InitiateCheckout',
+            'Lead', 'PageView', 'Purchase', 'Schedule', 'Search', 'StartTrial',
+            'SubmitApplication', 'Subscribe', 'ViewContent'
+        ];
+        const META_EVENT_DEDUPE_WINDOW_MS = 2000;
+        const recentMetaEvents = new Map();
+        const initializedMetaPixels = new Map(); // pixelId -> hashedPhone or 'anonymous'
+
+        // If server already initialized Meta pixel, mark it to prevent duplicate init
+        if (window.CAMPAIGN_VARS && window.CAMPAIGN_VARS.pixelId) {
+            initializedMetaPixels.set(window.CAMPAIGN_VARS.pixelId, 'anonymous');
+            if (window._metaServerPageViewFired) {
+                recentMetaEvents.set(`${window.CAMPAIGN_VARS.pixelId}:PageView`, Date.now());
+            }
+        }
+
+        async function fireMetaEvent(pixelId, eventName, params, e164Phone) {
+            if (!pixelId || !eventName || typeof fbq === 'undefined') return false;
+            const eventKey = `${pixelId}:${eventName}`;
+            const now = Date.now();
+            const lastFiredAt = recentMetaEvents.get(eventKey);
+            if (lastFiredAt && now - lastFiredAt < META_EVENT_DEDUPE_WINDOW_MS) {
+                console.log(`[META EVENT] Deduped ${eventName} (already fired within ${META_EVENT_DEDUPE_WINDOW_MS}ms)`);
+                return false;
+            }
+            recentMetaEvents.set(eventKey, now);
+
+            const isStandard = META_STANDARD_EVENTS.includes(eventName);
+            const fire = () => {
+                console.log(`[META EVENT] Firing ${isStandard ? 'standard' : 'custom'} event: ${eventName}`, params);
+                if (isStandard) {
+                    fbq('track', eventName, params);
+                } else {
+                    fbq('trackCustom', eventName, params);
+                }
+            };
+
+            if (e164Phone) {
+                let hashedPhone = null;
+                try {
+                    hashedPhone = await sha256(e164Phone);
+                } catch (e) { }
+                if (initializedMetaPixels.get(pixelId) !== hashedPhone) {
+                    fbq('init', pixelId, hashedPhone ? { ph: hashedPhone } : undefined);
+                    initializedMetaPixels.set(pixelId, hashedPhone || 'anonymous');
+                }
+            } else if (!initializedMetaPixels.has(pixelId)) {
+                fbq('init', pixelId);
+                initializedMetaPixels.set(pixelId, 'anonymous');
+            }
+            fire();
+            return true;
+        }
+
+        function fireTikTokEvent(pixelId, eventName, params, e164Phone) {
+            if (!pixelId || !eventName || !window.ttq) return;
+            if (!window._ttqLoadedPixels) window._ttqLoadedPixels = {};
+            if (!window._ttqLoadedPixels[pixelId]) {
+                try { window.ttq.load(pixelId, { autoConfig: false }); } catch (e) { }
+                window._ttqLoadedPixels[pixelId] = true;
+            }
+            if (e164Phone) {
+                sha256(e164Phone).then(h => {
+                    window.ttq.identify({ phone_number: h });
+                    window.ttq.track(eventName, params);
+                }).catch(() => {
+                    window.ttq.track(eventName, params);
+                });
+            } else {
+                window.ttq.track(eventName, params);
+            }
+        }
+
+        function fireGoogleEvent(pixelId, eventName, params) {
+            if (!pixelId || !eventName || typeof gtag !== 'function') return;
+            gtag('config', pixelId);
+            gtag('event', eventName, Object.assign({ send_to: pixelId }, params));
         }
 
         let _isSubmitting = false;
@@ -556,7 +655,7 @@
             const msisdn = '0' + rawNum;
             console.log('Processed MSISDN:', msisdn);
 
-            // Format phone number to E.164 format (+923XXXXXXXXX) for TikTok matching
+            // Format phone number to E.164 format (+923XXXXXXXXX) for matching
             const e164_phone = '+92' + rawNum;
             sessionStorage.setItem('user_phone_e164', e164_phone);
 
@@ -607,14 +706,16 @@
                 );
 
                 if (isAlreadyRegistered) {
-                    // Duplicate: only fire duplicate event, skip checkout
-                    const duplicateEventName = events.duplicate || 'duplicate';
-                    if (platform === 'tiktok' && window.ttq) {
-                        window.ttq.track(duplicateEventName, { campaign_code: campaignCode });
-                    } else if (platform === 'meta' && typeof fbq === 'function') {
-                        fbq('trackCustom', duplicateEventName, { campaign_code: campaignCode });
-                    } else if (typeof gtag === 'function') {
-                        gtag('event', duplicateEventName, { campaign_code: campaignCode });
+                    // Duplicate: only fire duplicate event from campaign config
+                    const duplicateEventName = events.duplicate;
+                    if (duplicateEventName) {
+                        if (platform === 'meta') {
+                            fireMetaEvent(pixelId, duplicateEventName, { campaign_code: campaignCode, pixel_id: pixelId }, e164_phone);
+                        } else if (platform === 'tiktok') {
+                            fireTikTokEvent(pixelId, duplicateEventName, { campaign_code: campaignCode, pixel_id: pixelId }, e164_phone);
+                        } else if (platform === 'google') {
+                            fireGoogleEvent(pixelId, duplicateEventName, { campaign_code: campaignCode });
+                        }
                     }
                     setLoading(false);
                     // _isSubmitting stays true - prevents HE from re-triggering submission
@@ -622,45 +723,75 @@
                     return;
                 }
 
-                // New user only: fire checkout tracking
-                if (platform === 'meta' && pixelId && typeof fbq === 'function') {
-                    const checkoutEvent = events.initiate_checkout || 'InitiateCheckout';
-                    const metaParams = {
-                        content_ids: [productCode], content_type: 'product',
+                // Meta users: fire standard AddToCart and InitiateCheckout for campaign manager funnel tracking
+                const addToCartEventName = events.add_to_cart || 'AddToCart';
+                if (platform === 'meta') {
+                    const metaAddToCartParams = {
+                        content_ids: [productCode],
+                        content_type: 'product',
                         content_name: 'BIMA Telemedicine Voucher',
-                        value: price, currency: currency,
-                        campaign_code: campaignCode, pixel_id: pixelId
+                        value: price,
+                        currency: currency,
+                        campaign_code: campaignCode,
+                        pixel_id: pixelId
                     };
-                    const fireMetaCheckout = () => {
-                        fbq('track', 'InitiateCheckout', metaParams);
-                        if (checkoutEvent !== 'InitiateCheckout') fbq('trackCustom', checkoutEvent, metaParams);
-                    };
-                    if (e164_phone) {
-                        sha256(e164_phone).then(h => { fbq('init', pixelId, { ph: h }); fireMetaCheckout(); })
-                            .catch(() => { fbq('init', pixelId); fireMetaCheckout(); });
-                    } else { fbq('init', pixelId); fireMetaCheckout(); }
-                } else if (platform === 'tiktok' && pixelId && window.ttq) {
-                    const checkoutEvent = events.initiate_checkout || 'InitiateCheckout';
-                    const tiktokParams = {
-                        content_id: productCode, content_type: 'product',
-                        content_name: 'BIMA Telemedicine Voucher', content_category: 'Healthcare',
-                        price: price, value: price, currency: currency, quantity: 1,
-                        campaign_code: campaignCode, pixel_id: pixelId,
-                        contents: [{ content_id: productCode, content_name: 'BIMA Telemedicine Voucher', content_category: 'Healthcare', price: price, quantity: 1 }]
-                    };
-                    if (e164_phone) {
-                        sha256(e164_phone).then(h => { window.ttq.identify({ phone_number: h }); window.ttq.track(checkoutEvent, tiktokParams); })
-                            .catch(() => window.ttq.track(checkoutEvent, tiktokParams));
-                    } else { window.ttq.track(checkoutEvent, tiktokParams); }
-                } else if (platform === 'google' && pixelId && typeof gtag === 'function') {
-                    const checkoutEvent = events.initiate_checkout || 'begin_checkout';
-                    gtag('config', pixelId);
-                    gtag('event', checkoutEvent, {
-                        value: price, currency: currency, campaign_code: campaignCode, send_to: pixelId,
-                        items: [{ id: productCode, name: 'BIMA Telemedicine Voucher', price: price, quantity: 1 }]
-                    });
+                    await fireMetaEvent(pixelId, 'AddToCart', metaAddToCartParams, e164_phone);
+                    if (addToCartEventName !== 'AddToCart') {
+                        await fireMetaEvent(pixelId, addToCartEventName, metaAddToCartParams, e164_phone);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
 
+                const checkoutEventName = events.initiate_checkout || 'InitiateCheckout';
+                if (checkoutEventName) {
+                    if (platform === 'meta') {
+                        const metaCheckoutParams = {
+                            content_ids: [productCode],
+                            content_type: 'product',
+                            content_name: 'BIMA Telemedicine Voucher',
+                            value: price,
+                            currency: currency,
+                            campaign_code: campaignCode,
+                            pixel_id: pixelId
+                        };
+                        await fireMetaEvent(pixelId, 'InitiateCheckout', metaCheckoutParams, e164_phone);
+                        if (checkoutEventName !== 'InitiateCheckout') {
+                            await fireMetaEvent(pixelId, checkoutEventName, metaCheckoutParams, e164_phone);
+                        }
+                    } else if (platform === 'tiktok') {
+                        fireTikTokEvent(pixelId, checkoutEventName, {
+                            content_id: productCode,
+                            content_type: 'product',
+                            content_name: 'BIMA Telemedicine Voucher',
+                            content_category: 'Healthcare',
+                            price: price,
+                            value: price,
+                            currency: currency,
+                            quantity: 1,
+                            campaign_code: campaignCode,
+                            pixel_id: pixelId,
+                            contents: [{
+                                content_id: productCode,
+                                content_name: 'BIMA Telemedicine Voucher',
+                                content_category: 'Healthcare',
+                                price: price,
+                                quantity: 1
+                            }]
+                        }, e164_phone);
+                    } else if (platform === 'google') {
+                        fireGoogleEvent(pixelId, checkoutEventName, {
+                            value: price,
+                            currency: currency,
+                            campaign_code: campaignCode,
+                            items: [{
+                                id: productCode,
+                                name: 'BIMA Telemedicine Voucher',
+                                price: price,
+                                quantity: 1
+                            }]
+                        });
+                    }
+                }
 
                 const paymentSessionToken = serviceData.paymentSessionToken;
                 if (!paymentSessionToken) {
@@ -694,20 +825,20 @@
                 });
 
                 document.body.appendChild(jcForm);
-                sessionStorage.setItem('jazzcash_source', 'BimaVoucher/index3.html');
+                sessionStorage.setItem('jazzcash_source', 'BimaVoucher/index4.html');
                 sessionStorage.setItem('campaign_code', campaignCode);
 
-                setTimeout(() => jcForm.submit(), 1000);
+                setTimeout(() => jcForm.submit(), 800);
 
             } catch (err) {
                 console.error('Activation pipeline failed:', err);
-                showToast(' ' + (err.message || 'Something went wrong. Please check your connection and try again.'), false);
+                showToast('[!] ' + (err.message || 'Something went wrong. Please check your connection and try again.'), false);
                 setLoading(false);
                 _isSubmitting = false; // only reset on error so user can retry
             }
         }
 
-        /*  Keep input digits only  */
+        /* -- Keep input digits only -- */
         document.getElementById('phoneNumber').addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
@@ -722,19 +853,23 @@
                 sessionStorage.setItem('campaign_code', rawCampaignCode);
             }
 
-            // Fetch campaign configuration parameters from campaigns.json API endpoint
-            try {
-                const res = await fetch(`/api/campaign/${rawCampaignCode}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.success && data.config) {
-                        window.CAMPAIGN_VARS = data.config;
-                        if (data.code) window.CAMPAIGN_VARS.rawCode = data.code;
-                        console.log(' Index3 loaded campaign parameters:', window.CAMPAIGN_VARS);
+            // Use server-injected campaign configuration if available, otherwise fetch from API
+            if (!window.CAMPAIGN_VARS || Object.keys(window.CAMPAIGN_VARS).length === 0 || !window.CAMPAIGN_VARS.campaignCode) {
+                try {
+                    const res = await fetch(`/api/campaign/${rawCampaignCode}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success && data.config) {
+                            window.CAMPAIGN_VARS = data.config;
+                            if (data.code) window.CAMPAIGN_VARS.rawCode = data.code;
+                            console.log(' Loaded campaign parameters from API fallback:', window.CAMPAIGN_VARS);
+                        }
                     }
+                } catch (e) {
+                    console.warn('Failed to fetch campaign parameters from API, using defaults:', e);
                 }
-            } catch (e) {
-                console.warn('Failed to fetch campaign parameters from API, using defaults:', e);
+            } else {
+                console.log(' Using server-injected campaign parameters:', window.CAMPAIGN_VARS);
             }
 
             // Initialize dynamic campaign parameters, artwork & terms URL
@@ -750,6 +885,10 @@
             const textColor = cVars.textColor || '#ffffff';
             const termsUrl = cVars.termsUrl || 'terms_and_conditions_bima.html';
             const events = cVars.events || {};
+
+            setMetaDomainVerification(cVars.metaDomainVerification);
+
+            console.log('[CAMPAIGN INIT] Campaign loaded:', { campaignCode, platform, pixelId, events });
 
             // Dynamically update page outer background color
             if (backgroundColor) {
@@ -794,27 +933,28 @@
                 termsLinkEl.href = `${termsUrl}?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
             }
 
-            /*  1. META PLATFORM PAGE VIEW BLOCK  */
-            if (platform === 'meta' && pixelId) {
-                const pageViewEvent = events.page_view || 'PageView';
-                if (typeof fbq === 'function') {
-                    fbq('init', pixelId);
-                    fbq('track', 'PageView');
-                    if (pageViewEvent !== 'PageView') {
-                        fbq('trackCustom', pageViewEvent, { campaign_code: campaignCode, pixel_id: pixelId });
+            // Dynamic Page View Event Tracking (picked from campaigns config)
+            const pageViewEventName = events.page_view;
+            if (pageViewEventName) {
+                console.log(`[PAGE VIEW] Event name from config: "${pageViewEventName}", Platform: ${platform}, PixelId: ${pixelId}`);
+                if (platform === 'meta') {
+                    const pageViewParams = {
+                        content_ids: [productCode],
+                        content_type: 'product',
+                        content_name: 'BIMA Telemedicine Voucher',
+                        value: price,
+                        currency: currency,
+                        campaign_code: campaignCode,
+                        pixel_id: pixelId
+                    };
+                    if (!window._metaServerPageViewFired) {
+                        fireMetaEvent(pixelId, 'PageView', pageViewParams);
+                        if (pageViewEventName !== 'PageView') {
+                            fireMetaEvent(pixelId, pageViewEventName, pageViewParams);
+                        }
                     }
-                }
-            }
-            /*  2. TIKTOK PLATFORM PAGE VIEW BLOCK  */
-            else if (platform === 'tiktok' && pixelId) {
-                const pageViewEvent = events.page_view || 'PageView';
-                if (window.ttq) {
-                    if (!window._ttqLoadedPixels) window._ttqLoadedPixels = {};
-                    if (!window._ttqLoadedPixels[pixelId]) {
-                        try { window.ttq.load(pixelId, { autoConfig: false }); } catch (e) { }
-                        window._ttqLoadedPixels[pixelId] = true;
-                    }
-                    window.ttq.track(pageViewEvent, {
+                } else if (platform === 'tiktok') {
+                    fireTikTokEvent(pixelId, pageViewEventName, {
                         content_id: productCode,
                         content_type: 'product',
                         price: price,
@@ -823,15 +963,8 @@
                         campaign_code: campaignCode,
                         pixel_id: pixelId
                     });
-                }
-            }
-            /*  3. GOOGLE PLATFORM PAGE VIEW BLOCK  */
-            else if (platform === 'google' && pixelId) {
-                const pageViewEvent = events.page_view || 'page_view';
-                if (typeof gtag === 'function') {
-                    gtag('config', pixelId);
-                    gtag('event', pageViewEvent, {
-                        send_to: pixelId,
+                } else if (platform === 'google') {
+                    fireGoogleEvent(pixelId, pageViewEventName, {
                         campaign_code: campaignCode
                     });
                 }

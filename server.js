@@ -49,37 +49,64 @@ app.use((req, res, next) => {
     next();
 });
 
-// 2b. Campaign API Endpoint
-app.get('/api/campaign/:code', (req, res) => {
+// Global request logger to track every hit
+app.use((req, res, next) => {
+    console.log(`[HTTP INCOMING] ${req.method} ${req.originalUrl || req.url}`);
+    next();
+});
+
+function getCampaignConfig(requestedCode, pagePath = '') {
     try {
         const { path: campaignsPath, env: currentEnv } = getCampaignsFilePath();
-        if (!fs.existsSync(campaignsPath)) {
-            return res.status(404).json({ success: false, message: 'Campaign configuration not found' });
-        }
+        if (!fs.existsSync(campaignsPath)) return null;
         let fileContent = fs.readFileSync(campaignsPath, 'utf8');
         fileContent = fileContent.replace(/\/\/.*$/gm, '');
         const campaigns = JSON.parse(fileContent);
         const appEnv = (process.env.APP_ENV || currentEnv || '').toString().trim().toLowerCase();
         const isQa = ['qa', 'staging', 'dev', 'development'].includes(appEnv);
-        const defaultCode = isQa ? 'qa_default' : 'default';
 
-        let code = (req.params.code || '').toLowerCase().trim();
+        const isMetaPage = pagePath && (pagePath.includes('meta') || pagePath.includes('index4'));
+        const defaultCode = isQa
+            ? (isMetaPage ? 'qa_meta_600' : 'qa_default')
+            : (isMetaPage ? 'meta_600' : 'default');
+
+        let code = (requestedCode || '').toLowerCase().trim();
         if (!code || code === 'default') {
             code = defaultCode;
         }
 
-        const campaignData = campaigns[code] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code) || campaigns[defaultCode] || campaigns['default'] || null;
+        const campaignData = campaigns[code] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code) || campaigns[defaultCode] || campaigns['qa_meta_600'] || campaigns['default'] || null;
+        if (campaignData) {
+            return {
+                ...campaignData,
+                rawCode: campaignData.campaignCode || code,
+                environment: currentEnv
+            };
+        }
+        return null;
+    } catch (err) {
+        console.error('Error in getCampaignConfig:', err);
+        return null;
+    }
+}
 
+// 2b. Campaign API Endpoint
+app.get('/api/campaign/:code', (req, res) => {
+    console.log(`\n========================================`);
+    console.log(`[ENDPOINT HIT] GET /api/campaign/:code -> Code: "${req.params.code}"`);
+    console.log(`========================================`);
+    try {
+        const campaignData = getCampaignConfig(req.params.code);
         if (!campaignData) {
             return res.status(404).json({ success: false, message: 'Campaign not found' });
         }
 
         return res.json({
             success: true,
-            environment: currentEnv,
-            campaignCode: campaignData.campaignCode || code,
+            environment: campaignData.environment,
+            campaignCode: campaignData.campaignCode || campaignData.rawCode,
             config: campaignData,
-            code: code
+            code: campaignData.rawCode
         });
     } catch (err) {
         console.error('Error fetching campaign config:', err);
@@ -92,6 +119,7 @@ app.use((req, res, next) => {
     const origin = req.headers.origin;
     const allowedOrigins = [
         'https://jzmhealth.milvikpakistan.com',
+        'https://qa-bcare.milvikpakistan.com',
         'https://milvikpakistan.com',
         'https://jzmhealth.milvik.io',
         'https://milvik.io'
@@ -116,8 +144,6 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,auth-token,x-api-key');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-    // Strict Security Headers
-    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://pkcm.milvik.io https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';");
     res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("X-Content-Type-Options", "nosniff");
@@ -129,50 +155,165 @@ app.use((req, res, next) => {
     next();
 });
 
-// 2b. LandingPage & Index2 Routes
+function renderHtmlWithCampaign(filePath, req, res, msisdn = '') {
+    fs.readFile(filePath, 'utf8', (err, html) => {
+        if (err) {
+            console.error(`Error loading HTML from ${filePath}:`, err.message);
+            return res.status(500).send('Error loading page');
+        }
+
+        const rawCampaignCode = (req.query.campaignCode || req.query.campaign || (req.body && req.body.campaignCode) || '').trim();
+        const campaignConfig = getCampaignConfig(rawCampaignCode, filePath);
+
+        const headInjections = [];
+
+        // 1. Synchronously inject server variables into window scope before any other script runs
+        headInjections.push(`<script>
+    window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};
+    window.CAMPAIGN_VARS = ${JSON.stringify(campaignConfig || {})};
+</script>`);
+
+        if (campaignConfig) {
+            // 2. Meta Domain Verification Tag (Instantly detectable by Facebook Domain Verification bot)
+            if (campaignConfig.metaDomainVerification) {
+                headInjections.push(`<meta name="facebook-domain-verification" content="${campaignConfig.metaDomainVerification.trim()}" />`);
+            }
+
+            // 3. Synchronous Meta Pixel Initialization (0ms delay for Meta Crawlers, Event Setup Tool & Ads Manager)
+            if (campaignConfig.campaignPlatform && campaignConfig.campaignPlatform.toLowerCase() === 'meta' && campaignConfig.pixelId) {
+                const pixelId = campaignConfig.pixelId.trim();
+                const isCallback = filePath.toLowerCase().includes('callback');
+                const pageViewEvent = (campaignConfig.events && campaignConfig.events.page_view) || 'PageView';
+
+                if (isCallback) {
+                    headInjections.push(`<!-- Server Injected Meta Pixel (Callback Init Only) -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${pixelId}');
+</script>`);
+                } else {
+                    headInjections.push(`<!-- Server Injected Meta Pixel (Immediate 0ms Init) -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${pixelId}');
+fbq('track', 'PageView');
+${pageViewEvent !== 'PageView' ? `fbq('trackCustom', '${pageViewEvent}');\n` : ''}window._metaServerPageViewFired = true;
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"
+/></noscript>`);
+                }
+            }
+        }
+
+        let cleanHtml = html.replace(/<meta\s+name=["']facebook-domain-verification["']\s+content=["'][^"']*["']\s*\/?>/gi, '');
+        const injectedHtml = cleanHtml.replace('<head>', '<head>\n    ' + headInjections.join('\n    '));
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.send(injectedHtml);
+    });
+}
+
+// 2b. LandingPage & Voucher Routes
 app.get('/landingpage', (req, res) => {
     const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+    console.log(`\n[ENDPOINT HIT] GET /landingpage -> Redirecting to landingpage.html${query}`);
     res.redirect('/BimaVoucher/landingpage.html' + query);
 });
 
+// Index2 (Campaign 2)
 app.get(/.*index2(\.html)?$/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'BimaVoucher', 'index2.html'));
+    console.log(`\n[ENDPOINT HIT] GET index2 -> Serving index2.html with server-injected campaign for path: ${req.path}`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'index2.html'), req, res);
 });
 
 app.post(/.*index2(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
-    console.log(`[Node.js POST index2] Received POST payload for ${req.path}:`, msisdn);
-
-    const indexPath = path.join(__dirname, 'BimaVoucher', 'index2.html');
-    fs.readFile(indexPath, 'utf8', (err, html) => {
-        if (err) return res.status(500).send('Error loading page');
-        const injectedHtml = html.replace(
-            '<head>',
-            `<head><script>window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};</script>`
-        );
-        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        res.send(injectedHtml);
-    });
+    console.log(`\n[ENDPOINT HIT] POST index2 -> Received payload for ${req.path}: MSISDN = "${msisdn}"`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'index2.html'), req, res, msisdn);
 });
 
+// Index3 (Campaign 3)
 app.get(/.*index3(\.html)?$/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'BimaVoucher', 'index3.html'));
+    console.log(`\n[ENDPOINT HIT] GET index3 -> Serving index3.html with server-injected campaign for path: ${req.path}`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'index3.html'), req, res);
 });
 
 app.post(/.*index3(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
-    console.log(`[Node.js POST index3] Received POST payload for ${req.path}:`, msisdn);
+    console.log(`\n[ENDPOINT HIT] POST index3 -> Received payload for ${req.path}: MSISDN = "${msisdn}"`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'index3.html'), req, res, msisdn);
+});
 
-    const indexPath = path.join(__dirname, 'BimaVoucher', 'index3.html');
-    fs.readFile(indexPath, 'utf8', (err, html) => {
-        if (err) return res.status(500).send('Error loading page');
-        const injectedHtml = html.replace(
-            '<head>',
-            `<head><script>window.SERVER_DETECTED_MSISDN = ${JSON.stringify(msisdn)};</script>`
-        );
-        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        res.send(injectedHtml);
-    });
+// Index4 / Meta Landing Pages
+app.get(/.*index4(\.html)?$/, (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET index4 -> Serving meta.html with server-injected campaign for path: ${req.path}`);
+    const metaPath = fs.existsSync(path.join(__dirname, 'BimaVoucher', 'meta.html'))
+        ? path.join(__dirname, 'BimaVoucher', 'meta.html')
+        : path.join(__dirname, 'BimaVoucher', 'index4.html');
+    renderHtmlWithCampaign(metaPath, req, res);
+});
+
+app.post(/.*index4(\.html)?$/, (req, res) => {
+    const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
+    console.log(`\n[ENDPOINT HIT] POST index4 -> Received payload for ${req.path}: MSISDN = "${msisdn}"`);
+    const metaPath = fs.existsSync(path.join(__dirname, 'BimaVoucher', 'meta.html'))
+        ? path.join(__dirname, 'BimaVoucher', 'meta.html')
+        : path.join(__dirname, 'BimaVoucher', 'index4.html');
+    renderHtmlWithCampaign(metaPath, req, res, msisdn);
+});
+
+// Meta Landing Page Direct Route
+app.get(/.*meta(\.html)?$/, (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET meta.html -> Serving meta.html with server-injected campaign for path: ${req.path}`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'meta.html'), req, res);
+});
+
+app.post(/.*meta(\.html)?$/, (req, res) => {
+    const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
+    console.log(`\n[ENDPOINT HIT] POST meta.html -> MSISDN: "${msisdn}"`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'meta.html'), req, res, msisdn);
+});
+
+// Callback Result Page Route (serves callback.html with server-injected campaign, domain verification, and pixel)
+app.get(/.*callback(\.html)?$/, (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET callback.html -> Serving callback.html with server-injected campaign for path: ${req.path}`);
+    renderHtmlWithCampaign(path.join(__dirname, 'callback.html'), req, res);
+});
+
+app.post(/.*callback(\.html)?$/, (req, res) => {
+    const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
+    console.log(`\n[ENDPOINT HIT] POST callback.html -> MSISDN: "${msisdn}"`);
+    renderHtmlWithCampaign(path.join(__dirname, 'callback.html'), req, res, msisdn);
+});
+
+// Root route handler (serves meta landing page with server injection)
+app.get('/', (req, res) => {
+    const metaPath = fs.existsSync(path.join(__dirname, 'BimaVoucher', 'meta.html'))
+        ? path.join(__dirname, 'BimaVoucher', 'meta.html')
+        : path.join(__dirname, 'index.html');
+    renderHtmlWithCampaign(metaPath, req, res);
+});
+
+// Middleware to serve all static HTML requests with server campaign injection
+app.use((req, res, next) => {
+    if (req.method === 'GET' && req.path.endsWith('.html')) {
+        let requestedFile = path.join(__dirname, req.path);
+        if (!fs.existsSync(requestedFile)) {
+            requestedFile = path.join(__dirname, 'BimaVoucher', path.basename(req.path));
+        }
+        if (fs.existsSync(requestedFile) && fs.statSync(requestedFile).isFile()) {
+            return renderHtmlWithCampaign(requestedFile, req, res);
+        }
+    }
+    next();
 });
 
 app.use(express.static(path.join(__dirname)));
@@ -199,10 +340,11 @@ function rateLimitMiddleware(limit, windowMs) {
 // 4. Cryptographic payment session tokens (prevent arbitrary signature generation)
 const SESSION_SECRET = process.env.INTEGRITY_SALT || 'fallback-session-secret';
 
-function generatePaymentToken(msisdn, transId) {
+function generatePaymentToken(msisdn, transId, campaignCode) {
     const payload = JSON.stringify({
         msisdn,
         transId,
+        campaignCode,
         exp: Date.now() + 5 * 60 * 1000 // 5 minutes validity
     });
     const base64Payload = Buffer.from(payload).toString('base64');
@@ -261,6 +403,7 @@ function httpsRequest(options, postBody) {
    PROXY 1: Token endpoint (RETIRED FOR SECURITY)
    ────────────────────────────────────────────────────────────────── */
 app.post('/api/token', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] POST /api/token -> Blocked (retired endpoint)`);
     res.status(403).json({ error: 'Endpoint retired for security reasons.' });
 });
 
@@ -342,6 +485,9 @@ function httpRequestExternal(options, postBody) {
    GET /api/detect-msisdn
    ────────────────────────────────────────────────────────────────── */
 app.get('/api/detect-msisdn', async (req, res) => {
+    console.log(`\n========================================`);
+    console.log(`[ENDPOINT HIT] GET /api/detect-msisdn -> Header Enrichment Detection`);
+    console.log(`========================================`);
     const headerKeys = [
         'x-msisdn',
         'x-up-calling-line-id',
@@ -405,7 +551,7 @@ app.get('/api/detect-msisdn', async (req, res) => {
    ────────────────────────────────────────────────────────────────── */
 app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res) => {
     console.log('\n========================================');
-    console.log('[ENDPOINT CALLED] /api/service-search');
+    console.log('[ENDPOINT HIT] POST /api/service-search');
     console.log('[service-search] Request Body:', JSON.stringify(req.body));
     console.log('========================================');
     const { msisdn, campaignCode: reqCampaignCode, productCode: reqProductCode } = req.body;
@@ -482,7 +628,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
         }
 
         // Generate signed token to bind this session
-        const sessionToken = generatePaymentToken(msisdn, transId);
+        const sessionToken = generatePaymentToken(msisdn, transId, campaignCode);
 
         // We return the original result body, but also attach the sessionToken
         return res.json({
@@ -507,7 +653,7 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
    ────────────────────────────────────────────────────────────────── */
 app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (req, res) => {
     console.log('\n========================================');
-    console.log('[ENDPOINT CALLED] /api/campaign-service-search');
+    console.log('[ENDPOINT HIT] POST /api/campaign-service-search');
     console.log('[campaign-service-search] Request Body:', JSON.stringify(req.body));
     console.log('========================================');
     const { msisdn, campaignCode: reqCampaignCode, productCode: reqProductCode } = req.body;
@@ -584,7 +730,7 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
             return res.status(502).json({ error: 'Transaction ID was not returned by service provider' });
         }
 
-        const sessionToken = generatePaymentToken(msisdn, transId);
+        const sessionToken = generatePaymentToken(msisdn, transId, campaignCode);
         return res.json({
             ...result.body,
             paymentSessionToken: sessionToken,
@@ -606,6 +752,9 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
    GET /api/jazzcash-form?token=<paymentSessionToken>
    ────────────────────────────────────────────────────────────────── */
 app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
+    console.log(`\n========================================`);
+    console.log(`[ENDPOINT HIT] GET /api/jazzcash-form -> Token: "${req.query?.token ? req.query.token.substring(0, 16) + '...' : 'none'}"`);
+    console.log(`========================================`);
     const { token } = req.query;
 
     if (!token) {
@@ -617,7 +766,7 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
         return res.status(403).json({ error: 'Invalid or expired payment session token' });
     }
 
-    const { msisdn, transId } = payload;
+    const { msisdn, transId, campaignCode } = payload;
 
     const merchantId = process.env.PP_MERCHANT_ID;
     const password = process.env.PP_PASSWORD;
@@ -649,6 +798,7 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
         pp_RequestID: transId,
         pp_ReturnURL: returnUrl,
         pp_MSISDN: msisdn,
+        ppmp_2: campaignCode || '',
         pp_SecureHash: secureHash
     });
 });
@@ -660,7 +810,10 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
    ────────────────────────────────────────────────────────────────── */
 const handleJcmsCallback = (req, res) => {
     const data = { ...req.query, ...req.body };
-    console.log(`[Node.js ${req.path}] Received callback payload:`, data);
+    console.log(`\n========================================`);
+    console.log(`[ENDPOINT HIT] ${req.method} ${req.path} -> JCMS Callback`);
+    console.log(`[JCMS Callback] Data:`, data);
+    console.log(`========================================`);
 
     const status = data.status || data.pp_ResponseCode || data.pp_TxnResponseCode || '';
     const message = data.message || data.pp_ResponseMessage || data.pp_TxnResponseMessage || '';
@@ -697,9 +850,11 @@ app.get('/jcm/callback_dynamic', handleJcmsCallback);
 
 // Direct alias routes for callback_dynamic.html
 app.get('/callback_dynamic', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /callback_dynamic -> Serving callback_dynamic.html`);
     res.sendFile(path.join(__dirname, 'callback_dynamic.html'));
 });
 app.get('/callback dynamic.html', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /callback dynamic.html -> Serving callback_dynamic.html`);
     res.sendFile(path.join(__dirname, 'callback_dynamic.html'));
 });
 
@@ -709,30 +864,39 @@ app.get('/callback dynamic.html', (req, res) => {
 
 // Serve consultation.html as the primary landing page on root '/' and '/consultation'
 app.get('/', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET / -> Serving consultation.html`);
     res.sendFile(path.join(__dirname, 'consultation.html'));
 });
 
 app.get('/consultation', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /consultation -> Serving consultation.html`);
     res.sendFile(path.join(__dirname, 'consultation.html'));
 });
 
 app.get('/bima-sehat', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /bima-sehat -> Redirecting to /BimaTelemedicine/`);
     res.redirect('/BimaTelemedicine/');
 });
 
 app.get('/bima_sehat', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /bima_sehat -> Redirecting to /BimaTelemedicine/`);
     res.redirect('/BimaTelemedicine/');
 });
 
 app.get('/bima-family', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /bima-family -> Redirecting to /BimaTelemedicine/`);
     res.redirect('/BimaTelemedicine/');
 });
 
 app.get('/bima_family', (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET /bima_family -> Redirecting to /BimaTelemedicine/`);
     res.redirect('/BimaTelemedicine/');
 });
 
 app.post('/api/grant-access', async (req, res) => {
+    console.log(`\n========================================`);
+    console.log(`[ENDPOINT HIT] POST /api/grant-access -> MSISDN: ${req.body?.msisdn}`);
+    console.log(`========================================`);
     try {
         let rawMsisdn = (req.body.msisdn || '').toString().trim();
         if (!rawMsisdn) {

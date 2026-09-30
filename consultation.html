@@ -459,9 +459,22 @@
 
                 showToast('✓ Redirecting to video consultation…', true);
 
-                // Redirect to deep_link returned from Python server
+                // Redirect to deep_link returned from Python server with URL parameters
                 setTimeout(() => {
-                    window.location.href = data.deep_link;
+                    // Get all URL parameters from current page
+                    const currentUrlParams = new URLSearchParams(window.location.search);
+                    const queryString = currentUrlParams.toString();
+                    
+                    // Append parameters to deep_link
+                    let redirectUrl = data.deep_link;
+                    if (queryString) {
+                        // Check if deep_link already has parameters
+                        const separator = redirectUrl.includes('?') ? '&' : '?';
+                        redirectUrl = redirectUrl + separator + queryString;
+                    }
+                    
+                    console.log('Redirecting to:', redirectUrl);
+                    window.location.href = redirectUrl;
                 }, 1000); // Small delay to let the toast be visible
 
             } catch (err) {
