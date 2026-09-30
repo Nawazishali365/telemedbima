@@ -122,7 +122,8 @@ app.use((req, res, next) => {
         'https://qa-bcare.milvikpakistan.com',
         'https://milvikpakistan.com',
         'https://jzmhealth.milvik.io',
-        'https://milvik.io'
+        'https://milvik.io',
+        'https://bacarelite.milvikpakistan.com'
     ];
 
     if (origin) {
