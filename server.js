@@ -284,16 +284,16 @@ app.post(/.*meta(\.html)?$/, (req, res) => {
 });
 
 // Callback Result Page Route (serves callback.html with server-injected campaign, domain verification, and pixel)
-app.get(/.*callback(\.html)?$/, (req, res) => {
+app.get('/callback.html', (req, res) => {
     console.log(`\n[ENDPOINT HIT] GET callback.html -> Serving callback.html with server-injected campaign for path: ${req.path}`);
     renderHtmlWithCampaign(path.join(__dirname, 'callback.html'), req, res);
 });
 
-app.post(/.*callback(\.html)?$/, (req, res) => {
-    const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
-    console.log(`\n[ENDPOINT HIT] POST callback.html -> MSISDN: "${msisdn}"`);
-    renderHtmlWithCampaign(path.join(__dirname, 'callback.html'), req, res, msisdn);
-});
+// app.post(/.*callback(\.html)?$/, (req, res) => {
+//     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
+//     console.log(`\n[ENDPOINT HIT] POST callback.html -> MSISDN: "${msisdn}"`);
+//     renderHtmlWithCampaign(path.join(__dirname, 'callback.html'), req, res, msisdn);
+// });
 
 // Root route handler (serves meta landing page with server injection)
 app.get('/', (req, res) => {
@@ -835,9 +835,9 @@ const handleJcmsCallback = (req, res) => {
 
 // Standard Callback Routes (supports /jcms/callback and /jcm/callback)
 app.post('/jcms/callback', handleJcmsCallback);
-app.get('/jcms/callback', handleJcmsCallback);
-app.post('/jcm/callback', handleJcmsCallback);
-app.get('/jcm/callback', handleJcmsCallback);
+// app.get('/jcms/callback', handleJcmsCallback);
+// app.post('/jcm/callback', handleJcmsCallback);
+// app.get('/jcm/callback', handleJcmsCallback);
 
 // Dynamic Callback Routes (supports /jcms/ and /jcm/ with underscore and hyphen)
 app.post('/jcms/callback-dynamic', handleJcmsCallback);
