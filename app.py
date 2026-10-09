@@ -7,7 +7,11 @@ import time
 from urllib.parse import urlparse
 from flask import Flask, request, jsonify, send_from_directory, redirect
 import requests
+import urllib3
 import hmac
+
+# Disable urllib3 warnings for self-signed certificates
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import hashlib
 from dotenv import load_dotenv
 
@@ -55,15 +59,17 @@ def set_security_headers(response):
     origin = request.headers.get('Origin')
     allowed_origins = [
         'https://jzmhealth.milvikpakistan.com',
-        'https://milvikpakistan.com'
+        'https://milvikpakistan.com',
+        'https://jzmhealth.milvik.io',
+        'https://milvik.io'
     ]
     
     if origin:
         try:
             parsed_origin = urlparse(origin)
             is_local = parsed_origin.hostname in ('localhost', '127.0.0.1')
-            is_allowed_milvik = parsed_origin.hostname == 'milvikpakistan.com' or \
-                                (parsed_origin.hostname and parsed_origin.hostname.endswith('.milvikpakistan.com'))
+            is_allowed_milvik = parsed_origin.hostname in ('milvikpakistan.com', 'milvik.io') or \
+                                (parsed_origin.hostname and (parsed_origin.hostname.endswith('.milvikpakistan.com') or parsed_origin.hostname.endswith('.milvik.io')))
             if origin in allowed_origins or is_local or is_allowed_milvik:
                 response.headers['Access-Control-Allow-Origin'] = origin
         except Exception:
@@ -74,7 +80,7 @@ def set_security_headers(response):
     response.headers['Access-Control-Allow-Credentials'] = 'true'
     
     # Strict Security Headers
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; connect-src 'self' https://bcare.milvikpakistan.com https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';"
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://pkcm.milvik.io https://onlinepayments.jazzcash.com.pk https://www.google-analytics.com https://analytics.tiktok.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com; form-action https://onlinepayments.jazzcash.com.pk 'self'; frame-ancestors 'none'; object-src 'none';"
     response.headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -204,10 +210,11 @@ def get_bima_token(force_refresh=False):
 
     logger.info("[Flask Backend] Refreshing BIMA API token...")
     res = requests.post(
-        "https://bcare.milvikpakistan.com/authorize/tp/login",
+        "https://pkcm.milvik.io/authorize/tp/login",
         json=payload,
         headers=headers,
-        timeout=15
+        timeout=15,
+        verify=False
     )
 
     if res.status_code != 200:
@@ -225,6 +232,51 @@ def get_bima_token(force_refresh=False):
     bima_token_cache = token
     return bima_token_cache
 
+@app.route('/api/detect-msisdn', methods=['GET'])
+def detect_msisdn():
+    header_keys = [
+        'x-msisdn',
+        'x-up-calling-line-id',
+        'msisdn',
+        'x-device-msisdn',
+        'x-hcl-msisdn',
+        'x-forwarded-for-msisdn',
+        'http_x_msisdn',
+        'http-x-msisdn',
+        'http_msisdn',
+        'http-msisdn',
+        'http_x_up_calling_line_id',
+        'http-x-up-calling-line-id'
+    ]
+
+    # 1. Check local headers first
+    for key in header_keys:
+        val = request.headers.get(key) or request.headers.get(key.lower())
+        if val:
+            logger.info(f"[Flask Auto-Fetch] Found MSISDN in local header '{key}': {val}")
+            return jsonify({"msisdn": val.strip()})
+
+    # 2. Fallback: Query external detector
+    logger.info("[Flask HE] MSISDN not in local headers. Querying external detector at 54.154.2.113:8000...")
+    headers = {}
+    for key, val in request.headers.items():
+        if key.lower() != 'host':
+            headers[key] = val
+
+    try:
+        res = requests.get('http://54.154.2.113:8000/', headers=headers, timeout=5)
+        if res.status_code == 200:
+            import re
+            match = re.search(r'id=["\']msisdn-val["\'][^>]*>([^<]+)<', res.text)
+            if match:
+                detected_msisdn = match.group(1).strip()
+                logger.info(f"[Flask HE] External site detected MSISDN: {detected_msisdn}")
+                return jsonify({"msisdn": detected_msisdn})
+    except Exception as e:
+        logger.error(f"[Flask HE] Error fetching from external detector: {str(e)}")
+
+    return jsonify({"msisdn": None})
+
 @app.route('/api/service-search', methods=['POST'])
 @rate_limit(10, 60)
 def service_search():
@@ -235,20 +287,20 @@ def service_search():
             return jsonify({"error": "Phone number (msisdn) is required"}), 400
 
         token = get_bima_token()
-        url = f"https://bcare.milvikpakistan.com/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY"
+        url = f"https://pkcm.milvik.io/tp/service/search/{msisdn}/PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY?deductionFrequency=MONTHLY&campaignCode=default"
         headers = {
             "auth-token": token
         }
 
         logger.info(f"Calling service search API for {msisdn}...")
-        res = requests.get(url, headers=headers, timeout=15)
+        res = requests.get(url, headers=headers, timeout=15, verify=False)
 
         # Retry once if token expired
         if res.status_code in (401, 403):
             logger.info("[Flask Backend] Token unauthorized. Refreshing...")
             token = get_bima_token(force_refresh=True)
             headers["auth-token"] = token
-            res = requests.get(url, headers=headers, timeout=15)
+            res = requests.get(url, headers=headers, timeout=15, verify=False)
 
         if res.status_code != 200:
             try:
@@ -276,6 +328,100 @@ def service_search():
 
     except Exception as e:
         logger.error(f"[/api/service-search] Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+def get_campaigns_file_path():
+    env = os.getenv('APP_ENV', os.getenv('ENVIRONMENT', os.getenv('FLASK_ENV', 'production'))).strip().lower()
+    if env in ['qa', 'staging', 'dev', 'development']:
+        qa_path = os.path.join(app.root_path, 'campaigns_qa.json')
+        if os.path.exists(qa_path):
+            return qa_path, env
+    prod_path = os.path.join(app.root_path, 'campaigns_prod.json')
+    if os.path.exists(prod_path):
+        return prod_path, env
+    return prod_path, env
+
+@app.route('/api/campaign-service-search', methods=['POST'])
+@rate_limit(10, 60)
+def campaign_service_search():
+    try:
+        data = request.get_json() or {}
+        msisdn = data.get('msisdn')
+        if not msisdn:
+            return jsonify({"error": "Phone number (msisdn) is required"}), 400
+
+        req_campaign_code = data.get('campaignCode', 'default')
+        req_product_code = data.get('productCode', '')
+
+        campaign_code = req_campaign_code
+        product_code = req_product_code
+        bima_campaign_code = ''
+        bima_product_code = ''
+
+        # Read campaigns configuration file based on environment (QA vs Prod)
+        try:
+            campaigns_path, current_env = get_campaigns_file_path()
+            if os.path.exists(campaigns_path):
+                with open(campaigns_path, 'r', encoding='utf-8') as f:
+                    file_content = f.read()
+                file_content = re.sub(r'//.*$', '', file_content, flags=re.MULTILINE)
+                campaigns = json.loads(file_content)
+                clean_code = (req_campaign_code or '').strip().lower()
+                config = campaigns.get(clean_code) or campaigns.get('default')
+                if config:
+                    if not product_code:
+                        product_code = config.get('productCode', '')
+                    campaign_code = config.get('campaignCode', campaign_code)
+                    bima_campaign_code = config.get('bimaCampaignCode', '')
+                    bima_product_code = config.get('bimaProductCode', '')
+        except Exception as e:
+            logger.warning(f"[campaign-service-search] Could not read campaign config: {e}")
+
+        target_product_code = bima_product_code or product_code or 'PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY'
+        target_campaign_code = bima_campaign_code or 'default'
+
+        token = get_bima_token()
+        url = f"https://pkcm.milvik.io/tp/service/search/{msisdn}/{target_product_code}?deductionFrequency=MONTHLY&campaignCode={target_campaign_code}"
+        headers = {
+            "auth-token": token
+        }
+
+        logger.info(f"Calling campaign service search API for {msisdn} with productCode={target_product_code}, campaignCode={target_campaign_code}...")
+        res = requests.get(url, headers=headers, timeout=15, verify=False)
+
+        # Retry once if token expired
+        if res.status_code in (401, 403):
+            logger.info("[Flask Backend] Token unauthorized. Refreshing...")
+            token = get_bima_token(force_refresh=True)
+            headers["auth-token"] = token
+            res = requests.get(url, headers=headers, timeout=15, verify=False)
+
+        if res.status_code != 200:
+            try:
+                body = res.json()
+            except ValueError:
+                body = res.text
+            return jsonify(body), res.status_code
+
+        try:
+            body = res.json()
+        except ValueError:
+            return jsonify({"error": "Invalid response format from service provider"}), 502
+
+        trans_id = (body.get('result', {}) or {}).get('transId') or \
+                   (body.get('result', {}) or {}).get('requestId') or \
+                   (body.get('result', {}) or {}).get('transaction_id') or \
+                   body.get('transId') or body.get('requestId') or body.get('transaction_id') or ''
+
+        if not trans_id:
+            return jsonify({"error": "Transaction ID was not returned by service provider"}), 502
+
+        session_token = generate_payment_token(msisdn, trans_id)
+        body['paymentSessionToken'] = session_token
+        return jsonify(body)
+
+    except Exception as e:
+        logger.error(f"[/api/campaign-service-search] Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/jazzcash-form', methods=['GET'])
@@ -321,6 +467,7 @@ def jazzcash_form():
     return jsonify({
         "actionUrl": action_url,
         "pp_MerchantID": merchant_id,
+        "pp_Password": password,
         "pp_RequestID": trans_id,
         "pp_ReturnURL": return_url,
         "pp_MSISDN": msisdn,
@@ -330,17 +477,76 @@ def jazzcash_form():
 from urllib.parse import urlencode
 
 @app.route('/jcms/callback', methods=['GET', 'POST'])
+@app.route('/jcm/callback', methods=['GET', 'POST'])
 def jcms_callback():
     status = request.values.get('status', '')
     message = request.values.get('message', '')
     trx_ref_no = request.values.get('trxRefNo', '')
+    campaignCode = request.values.get('campaignCode', '')
+    source = request.values.get('source', '')
 
-    query = urlencode({
+    query_params = {
         "status": status,
         "message": message,
-        "trxRefNo": trx_ref_no
-    })
+        "trxRefNo": trx_ref_no,
+        "campaignCode": campaignCode
+    }
+    if source:
+        query_params["source"] = source
+
+    query = urlencode(query_params)
     return redirect(f"/callback.html?{query}")
+
+@app.route('/jcms/callback-dynamic', methods=['GET', 'POST'])
+@app.route('/jcms/callback_dynamic', methods=['GET', 'POST'])
+@app.route('/jcm/callback-dynamic', methods=['GET', 'POST'])
+@app.route('/jcm/callback_dynamic', methods=['GET', 'POST'])
+def jcms_callback_dynamic():
+    status = request.values.get('status', '')
+    message = request.values.get('message', '')
+    trx_ref_no = request.values.get('trxRefNo', '')
+    campaignCode = request.values.get('campaignCode', '')
+    source = request.values.get('source', '')
+
+    query_params = {
+        "status": status,
+        "message": message,
+        "trxRefNo": trx_ref_no,
+        "campaignCode": campaignCode
+    }
+    if source:
+        query_params["source"] = source
+
+    query = urlencode(query_params)
+    return redirect(f"/callback_dynamic.html?{query}")
+
+@app.route('/api/campaign/<code>', methods=['GET'])
+def get_campaign_config(code):
+    try:
+        campaigns_path, current_env = get_campaigns_file_path()
+        if not os.path.exists(campaigns_path):
+            return jsonify({"success": False, "message": "Campaign configuration file missing"}), 404
+        
+        with open(campaigns_path, 'r', encoding='utf-8') as f:
+            file_content = f.read()
+        file_content = re.sub(r'//.*$', '', file_content, flags=re.MULTILINE)
+        campaigns = json.loads(file_content)
+        
+        clean_code = (code or '').strip().lower()
+        campaign_data = campaigns.get(clean_code) or campaigns.get('default')
+
+        if not campaign_data:
+            return jsonify({"success": False, "message": "Campaign not found"}), 404
+
+        return jsonify({
+            "success": True,
+            "environment": current_env,
+            "campaignCode": campaign_data.get("campaignCode", clean_code),
+            "config": campaign_data
+        })
+    except Exception as e:
+        logger.error(f"Error fetching campaign config: {e}")
+        return jsonify({"success": False, "message": "Internal server error"}), 500
 
 @app.route('/api/grant-access', methods=['POST'])
 def grant_access():
@@ -394,14 +600,14 @@ def grant_access():
             }), 500
 
         # ── Step 1: Check consultation eligibility ──
-        eligibility_url = f"https://dtc.milvikpakistan.com/tp/service/api/v1/check_consultation_eligibility?msisdn={msisdn}"
+        eligibility_url = f"https://pkcm.milvik.io/tp/service/api/v1/check_consultation_eligibility?msisdn={msisdn}"
         eligibility_headers = {
             "x-api-key": eligibility_api_key
         }
 
         logger.info(f"Calling Eligibility API for {msisdn}...")
         try:
-            elig_response = requests.get(eligibility_url, headers=eligibility_headers, timeout=10)
+            elig_response = requests.get(eligibility_url, headers=eligibility_headers, timeout=10, verify=False)
         except requests.RequestException as e:
             logger.error(f"Eligibility API request error: {str(e)}")
             return jsonify({
@@ -468,7 +674,7 @@ def grant_access():
 
         logger.info(f"Requesting Video deep-link for {resp_msisdn} (Policy: {product_code}, Correlation ID: {correlation_id})...")
         try:
-            grant_response = requests.post(grant_url, headers=grant_headers, json=payload, timeout=10)
+            grant_response = requests.post(grant_url, headers=grant_headers, json=payload, timeout=10, verify=False)
         except requests.RequestException as e:
             logger.error(f"Video URL API request error: {str(e)}")
             return jsonify({
@@ -514,6 +720,56 @@ def grant_access():
             "status": "error",
             "message": "An unexpected server error occurred. Please try again later."
         }), 500
+
+@app.route('/landingpage', methods=['GET'])
+def landing_page_he():
+    query_str = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
+    return redirect('/BimaVoucher/landingpage.html' + query_str)
+
+@app.route('/BimaVoucher/fetch/index2.html', methods=['GET'])
+@app.route('/fetch/index2.html', methods=['GET'])
+def serve_fetch_index2():
+    return send_from_directory('BimaVoucher', 'index2.html')
+
+@app.route('/BimaVoucher/index2.html', methods=['POST'])
+@app.route('/BimaVoucher/fetch/index2.html', methods=['POST'])
+@app.route('/BimaVoucher/fetch/index2', methods=['POST'])
+@app.route('/index2.html', methods=['POST'])
+@app.route('/index2', methods=['POST'])
+@app.route('/fetch/index2.html', methods=['POST'])
+@app.route('/fetch/index2', methods=['POST'])
+def index2_post():
+    import json
+    msisdn = ''
+    if request.is_json and request.json:
+        msisdn = request.json.get('msisdn', '')
+    if not msisdn:
+        msisdn = request.form.get('msisdn', '') or request.values.get('msisdn', '')
+    
+    target_path = request.path
+    logger.info(f"[Flask POST index2] Received POST MSISDN payload for {target_path}: {msisdn}")
+    index_path = os.path.join(app.root_path, 'BimaVoucher', 'index2.html')
+    try:
+        with open(index_path, 'r', encoding='utf-8') as f:
+            html = f.read()
+        injected_html = html.replace(
+            '<head>',
+            f'<head><script>window.SERVER_DETECTED_MSISDN = {json.dumps(msisdn)};</script>'
+        )
+        return Response(injected_html, mimetype='text/html')
+    except Exception as e:
+        logger.error(f"Error reading index2.html: {e}")
+        return send_from_directory('BimaVoucher', 'index2.html')
+
+@app.route('/BimaVoucher/<path:filename>')
+def serve_bima_voucher(filename):
+    return send_from_directory('BimaVoucher', filename)
+
+@app.route('/<path:filename>')
+def serve_root_files(filename):
+    if filename.endswith('.py') or filename.endswith('.env') or filename.startswith('.'):
+        return "Access denied", 403
+    return send_from_directory('.', filename)
 
 if __name__ == '__main__':
     # Load port from .env or default to 3000

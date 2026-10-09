@@ -12,5 +12,7 @@ INTEGRITY_SALT=
 PP_RETURN_URL=
 JAZZCASH_ACTION_URL=
 
-# ── Server ────────────────────────────────────────────────────────
+# ── Server Environment ────────────────────────────────────────────
+# Options: 'qa' (uses campaigns_qa.json) | 'production' (uses campaigns_prod.json)
+APP_ENV=qa
 PORT=3000

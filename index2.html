@@ -19,6 +19,24 @@
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
+    <!-- Meta Pixel Code -->
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '1048814397473573');
+        fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=1048814397473573&ev=PageView&noscript=1" />
+    </noscript>
+    <!-- End Meta Pixel Code -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIMA Health - Get Connected with Specialist Doctors</title>
@@ -198,9 +216,9 @@
             <button type="submit" class="continue-btn">Activate Now</button>
 
             <div class="trust-text" style="display: flex; align-items: flex-start; gap: 8px; background: rgba(0,0,0,0.55); padding: 5px 8px; border-radius: 6px; height: auto !important; box-sizing: border-box; z-index: 10;">
-                <input type="checkbox" id="consentCheckbox" style="margin-top: 2px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0;" required>
+                <input type="checkbox" id="consentCheckbox" style="margin-top: 2px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0;" checked required>
                 <label for="consentCheckbox" style="font-size: clamp(9px, 2.1cqw, 10px); color: #ffffff; line-height: 1.35; cursor: pointer; user-select: none; text-align: left;">
-                    I agree to recurring charges and accept the <a href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions" target="_blank" style="color: #bfdbfe; text-decoration: underline; font-weight: 500;">Terms & Conditions and Privacy Policy</a>
+                    By clicking Activate Now, you accept the <a href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions" target="_blank" style="color: #bfdbfe; text-decoration: underline; font-weight: 500;">Terms & Conditions</a>
                 </label>
             </div>
         </form>

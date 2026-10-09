@@ -6,7 +6,7 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-FLKEQYY9E9"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
         gtag('config', 'G-FLKEQYY9E9', { send_page_view: false });
         gtag('event', 'View Content');
@@ -23,7 +23,23 @@
             };
 
             ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: true });
-            ttq.track('View Content');
+            ttq.track('View Content', {
+                content_id: 'bima_telemed_voucher',
+                content_type: 'product',
+                content_name: 'BIMA Telemedicine Voucher',
+                content_category: 'Healthcare',
+                price: 300,
+                value: 300,
+                currency: 'PKR',
+                quantity: 1,
+                contents: [{
+                    content_id: 'bima_telemed_voucher',
+                    content_name: 'BIMA Telemedicine Voucher',
+                    content_category: 'Healthcare',
+                    price: 300,
+                    quantity: 1
+                }]
+            });
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
@@ -283,7 +299,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(13, 39, 67, 0.85); /* Semi-transparent background matching theme color */
+            background: rgba(13, 39, 67, 0.85);
+            /* Semi-transparent background matching theme color */
             backdrop-filter: blur(8px);
             z-index: 10000;
             align-items: center;
@@ -325,12 +342,14 @@
         .modal-icon {
             width: 60px;
             height: 60px;
-            background: rgba(255, 225, 0, 0.15); /* Yellow tinted glow */
+            background: rgba(255, 225, 0, 0.15);
+            /* Yellow tinted glow */
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #FFE100; /* Yellow highlight color */
+            color: #FFE100;
+            /* Yellow highlight color */
             animation: pulse-glow 2s infinite;
         }
 
@@ -382,9 +401,11 @@
             0% {
                 box-shadow: 0 0 0 0 rgba(255, 225, 0, 0.4);
             }
+
             70% {
                 box-shadow: 0 0 0 10px rgba(255, 225, 0, 0);
             }
+
             100% {
                 box-shadow: 0 0 0 0 rgba(255, 225, 0, 0);
             }
@@ -411,11 +432,12 @@
             <!-- Consent Row (combining visible styled checkbox and text in a single container for perfect layout) -->
             <div class="consent-container">
                 <label class="consent-label" for="consentCheckbox">
-                    <input type="checkbox" id="consentCheckbox" style="margin-top: 2px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0;" required>
+                    <input type="checkbox" id="consentCheckbox"
+                        style="margin-top: 2px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0;"
+                        checked required>
                     <span class="consent-text">
-                        I agree to recurring charges of Rs. 10/day and accept the <a
-                            href="https://customerportal.milvikpakistan.com/telemedicine/terms-and-conditions"
-                            target="_blank">Terms & Conditions and Privacy Policy</a>
+                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.html?returnUrl=index.html"
+                            target="_blank" onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms & Conditions</a>
                     </span>
                 </label>
             </div>
@@ -430,7 +452,8 @@
         <div class="modal-card">
             <div class="modal-header">
                 <div class="modal-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="12" y1="8" x2="12" y2="12"></line>
                         <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -438,7 +461,8 @@
                 </div>
             </div>
             <div class="modal-body">
-                <p id="customAlertMessage">You're already registered to Telemedicine Product, please reachout to 042 111 11 9878</p>
+                <p id="customAlertMessage">You're already registered to Telemedicine Product, please reachout to 042 111
+                    11 9878</p>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeCustomAlert()" class="modal-btn">OK</button>
@@ -529,19 +553,57 @@
             const e164_phone = '+92' + rawNum;
             sessionStorage.setItem('user_phone_e164', e164_phone);
 
+            const eventParams = {
+                content_id: 'bima_telemed_voucher',
+                content_type: 'product',
+                content_name: 'BIMA Telemedicine Voucher',
+                content_category: 'Healthcare',
+                price: 300,
+                value: 300,
+                currency: 'PKR',
+                quantity: 1,
+                contents: [{
+                    content_id: 'bima_telemed_voucher',
+                    content_name: 'BIMA Telemedicine Voucher',
+                    content_category: 'Healthcare',
+                    price: 300,
+                    quantity: 1
+                }]
+            };
+
             if (window.ttq) {
                 sha256(e164_phone).then(hashedPhone => {
                     window.ttq.identify({
                         phone_number: hashedPhone
                     });
-                    window.ttq.track('Initiate Checkout');
+                    window.ttq.track('Initiate Checkout', eventParams);
                 }).catch(err => {
                     console.error('TikTok identification hashing failed:', err);
-                    window.ttq.track('Initiate Checkout');
+                    window.ttq.track('Initiate Checkout', eventParams);
+                });
+            }
+            if (typeof fbq === 'function') {
+                sha256(e164_phone).then(hashedPhone => {
+                    fbq('init', '1048814397473573', { ph: hashedPhone });
+                    fbq('track', 'InitiateCheckout', {
+                        content_ids: ['bima_telemed_voucher'],
+                        content_type: 'product',
+                        content_name: 'BIMA Telemedicine Voucher',
+                        value: 300,
+                        currency: 'PKR'
+                    });
+                }).catch(() => {
+                    fbq('track', 'InitiateCheckout', {
+                        content_ids: ['bima_telemed_voucher'],
+                        content_type: 'product',
+                        content_name: 'BIMA Telemedicine Voucher',
+                        value: 300,
+                        currency: 'PKR'
+                    });
                 });
             }
             if (typeof gtag === 'function') {
-                gtag('event', 'Initiate Checkout');
+                gtag('event', 'Initiate Checkout', eventParams);
             }
 
             setLoading(true);
@@ -560,7 +622,7 @@
                     throw new Error(serviceData.message || serviceData.error || 'Service lookup failed: ' + serviceRes.status);
                 }
 
-                // Check if customer is already registered (if any subscriptionStatus != INACTIVE)
+                // Helper to deep search keys in response JSON
                 const findAllFields = (obj, key) => {
                     let results = [];
                     if (!obj || typeof obj !== 'object') return results;
@@ -582,11 +644,18 @@
                 };
 
                 const subscriptionStatuses = findAllFields(serviceData, 'subscriptionStatus');
-                const isAlreadyRegistered = subscriptionStatuses.some(status => 
+                const isAlreadyRegistered = subscriptionStatuses.some(status =>
                     status && ['NO_PAY', 'ACTIVE', 'CONFIRMED'].includes(status.toUpperCase())
                 );
 
                 if (isAlreadyRegistered) {
+                    if (window.ttq) {
+                        window.ttq.track('duplicate');
+                    }
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'duplicate');
+                    }
+                    setLoading(false);
                     showCustomAlert("You're already registered to Telemedicine Product, please reachout to 042 111 11 9878");
                     return;
                 }
@@ -638,6 +707,48 @@
         /* ── Keep input digits only ── */
         document.getElementById('phoneNumber').addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        /* ── Auto-fetch MSISDN from mobile data headers or URL on load ── */
+        window.addEventListener('DOMContentLoaded', () => {
+            // First check if MSISDN is passed in URL query string (e.g. ?msisdn=03001234567)
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryMsisdn = urlParams.get('msisdn');
+            if (queryMsisdn) {
+                populateMsisdn(queryMsisdn);
+                return;
+            }
+
+            // Fallback: check headers via external detector directly if on HTTP (to trigger carrier injection)
+            const detectorUrl = window.location.protocol === 'https:'
+                ? '/api/detect-msisdn'
+                : 'http://54.154.2.113:8000/api/detect-msisdn';
+
+            fetch(detectorUrl)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.msisdn) {
+                        populateMsisdn(data.msisdn);
+                    }
+                })
+                .catch(err => console.error('Failed to auto-fetch MSISDN from headers:', err));
+
+            function populateMsisdn(rawVal) {
+                const cleanNum = rawVal.replace(/[^0-9]/g, '');
+                let localPart = cleanNum;
+                if (cleanNum.startsWith('92')) {
+                    localPart = cleanNum.substring(2);
+                } else if (cleanNum.startsWith('03')) {
+                    localPart = cleanNum.substring(1);
+                } else if (cleanNum.startsWith('3') && cleanNum.length === 10) {
+                    localPart = cleanNum;
+                }
+                const input = document.getElementById('phoneNumber');
+                if (input) {
+                    input.value = localPart;
+                    console.log('Populated MSISDN:', rawVal);
+                }
+            }
         });
     </script>
 </body>

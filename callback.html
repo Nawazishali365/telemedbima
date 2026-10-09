@@ -6,9 +6,8 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-FLKEQYY9E9"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-        gtag('config', 'G-FLKEQYY9E9', { send_page_view: false });
     </script>
     <!-- TikTok Pixel Code Start -->
     <script>
@@ -20,11 +19,21 @@
                 var r = "https://analytics.tiktok.com/i18n/pixel/events.js", o = n && n.partner; ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = r, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {}; n = document.createElement("script")
                     ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
             };
-
-            ttq.load('D8J9AARC77UAEKHUNU60', { autoConfig: true });
         }(window, document, 'ttq');
     </script>
     <!-- TikTok Pixel Code End -->
+    <!-- Meta Pixel Code -->
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+    </script>
+    <!-- End Meta Pixel Code -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIMA Health - Transaction Result</title>
@@ -50,7 +59,7 @@
             background: white;
             border-radius: 0;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-            max-width: 430px; /* Optimal for iPhone Pro Max */
+            max-width: 430px;
             width: 100%;
             min-height: 100vh;
             padding: 30px 20px;
@@ -65,6 +74,7 @@
             body {
                 padding: 20px;
             }
+
             .container {
                 min-height: auto;
                 height: auto;
@@ -191,11 +201,25 @@
         }
 
         @media (max-width: 480px) {
-            body { padding: 5px; }
-            .container { padding: 15px 12px; }
-            .logo-img { height: 40px; }
-            .heading h1 { font-size: 24px; }
-            .result-container { padding: 15px; }
+            body {
+                padding: 5px;
+            }
+
+            .container {
+                padding: 15px 12px;
+            }
+
+            .logo-img {
+                height: 40px;
+            }
+
+            .heading h1 {
+                font-size: 24px;
+            }
+
+            .result-container {
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -247,159 +271,380 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
 
-        // Parse URL parameters and display them
+        // Helper: SHA-256 Hashing
+        async function sha256(msg) {
+            const msgBuffer = new TextEncoder().encode(msg);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Tracking Helper Functions (Picks all event names dynamically from campaign config)
+        const META_STANDARD_MAP = {
+            'addpaymentinfo': 'AddPaymentInfo',
+            'addtocart': 'AddToCart',
+            'addtowishlist': 'AddToWishlist',
+            'completeregistration': 'CompleteRegistration',
+            'contact': 'Contact',
+            'customizeproduct': 'CustomizeProduct',
+            'donate': 'Donate',
+            'findlocation': 'FindLocation',
+            'initiatecheckout': 'InitiateCheckout',
+            'lead': 'Lead',
+            'pageview': 'PageView',
+            'purchase': 'Purchase',
+            'schedule': 'Schedule',
+            'search': 'Search',
+            'starttrial': 'StartTrial',
+            'submitapplication': 'SubmitApplication',
+            'subscribe': 'Subscribe',
+            'viewcontent': 'ViewContent'
+        };
+
+        const META_EVENT_DEDUPE_WINDOW_MS = 2000;
+        const recentMetaEvents = new Map();
+        const initializedMetaPixels = new Map(); // pixelId -> hashedPhone or 'anonymous'
+
+        if (window.CAMPAIGN_VARS && window.CAMPAIGN_VARS.pixelId) {
+            initializedMetaPixels.set(window.CAMPAIGN_VARS.pixelId, 'anonymous');
+        }
+
+        async function waitForMetaPixel(timeoutMs = 1000) {
+            const startedAt = Date.now();
+            while (typeof fbq !== 'function' && Date.now() - startedAt < timeoutMs) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            return typeof fbq === 'function';
+        }
+
+        async function fireMetaEvent(pixelId, eventName, params, userPhone) {
+            if (!pixelId || !eventName) return false;
+            if (!await waitForMetaPixel()) {
+                console.error('[META EVENT] Meta Pixel SDK was not ready:', { pixelId, eventName });
+                return false;
+            }
+            const targetPixel = pixelId;
+            const eventKey = `${targetPixel}:${eventName}`;
+            const now = Date.now();
+            const lastFiredAt = recentMetaEvents.get(eventKey);
+            if (lastFiredAt && now - lastFiredAt < META_EVENT_DEDUPE_WINDOW_MS) {
+                console.log(`[META EVENT] Deduped ${eventName} (already fired within ${META_EVENT_DEDUPE_WINDOW_MS}ms)`);
+                return false;
+            }
+            recentMetaEvents.set(eventKey, now);
+
+            // Normalize event name to check if it matches a standard Meta event (case-insensitive & space-tolerant)
+            const cleanKey = eventName.toLowerCase().replace(/[\s_-]+/g, '');
+            const standardName = META_STANDARD_MAP[cleanKey];
+
+            const fire = () => {
+                if (standardName) {
+                    console.log(`🎯 [Meta Pixel] Firing Standard Event: "${standardName}" (from config "${eventName}")`, { pixelId: targetPixel, params });
+                    fbq('track', standardName, params);
+                } else {
+                    console.log(`🎯 [Meta Pixel] Firing Custom Event: "${eventName}"`, { pixelId: targetPixel, params });
+                    fbq('trackCustom', eventName, params);
+                }
+            };
+
+            if (userPhone) {
+                let hashedPhone = null;
+                try {
+                    hashedPhone = await sha256(userPhone);
+                } catch (e) { }
+                if (initializedMetaPixels.get(targetPixel) !== hashedPhone) {
+                    fbq('init', targetPixel, hashedPhone ? { ph: hashedPhone } : undefined);
+                    initializedMetaPixels.set(targetPixel, hashedPhone || 'anonymous');
+                }
+            } else if (!initializedMetaPixels.has(targetPixel)) {
+                fbq('init', targetPixel);
+                initializedMetaPixels.set(targetPixel, 'anonymous');
+            }
+
+            fire();
+            return true;
+        }
+
+        function fireTikTokEvent(pixelId, eventName, params, userPhone) {
+            if (!pixelId || !eventName || !window.ttq) return;
+            if (!window._ttqLoadedPixels) window._ttqLoadedPixels = {};
+            if (!window._ttqLoadedPixels[pixelId]) {
+                try { window.ttq.load(pixelId, { autoConfig: false }); } catch (e) { }
+                window._ttqLoadedPixels[pixelId] = true;
+            }
+            console.log(`🎯 [TikTok Pixel] Firing Event: "${eventName}"`, { pixelId, params });
+            if (userPhone) {
+                sha256(userPhone).then(h => {
+                    window.ttq.identify({ phone_number: h });
+                    window.ttq.track(eventName, params);
+                }).catch(() => {
+                    window.ttq.track(eventName, params);
+                });
+            } else {
+                window.ttq.track(eventName, params);
+            }
+        }
+
+        function fireGoogleEvent(pixelId, eventName, params) {
+            if (!pixelId || !eventName || typeof gtag !== 'function') return;
+            console.log(`🎯 [Google Tracking] Firing Event: "${eventName}"`, { pixelId, params });
+            gtag('config', pixelId);
+            gtag('event', eventName, Object.assign({ send_to: pixelId }, params));
+        }
+
+        // Parse URL parameters and display dynamic callback information
         window.addEventListener('DOMContentLoaded', async () => {
-            const source = sessionStorage.getItem('jazzcash_source') || 'index.html';
-            const isIndex2 = source === 'index2.html';
-            const isBimaFamily = source.startsWith('BimaTelemedicine') || source === 'Bima Sehat/index.html';
-            const isBimaVoucher = source.startsWith('BimaVoucher') || source === 'BimaVoucher/index.html';
+            const params = new URLSearchParams(window.location.search);
+
+            // Extract campaignCode parameter from URL or sessionStorage
+            const rawCampaignCode = (params.get('campaignCode') || params.get('campaign') || sessionStorage.getItem('campaign_code') || 'default').trim();
             
-            // Set home button destination dynamically
+            // Use server-injected campaign configuration if available, otherwise fetch from API
+            let cVars = (window.CAMPAIGN_VARS && Object.keys(window.CAMPAIGN_VARS).length > 0 && window.CAMPAIGN_VARS.campaignCode)
+                ? window.CAMPAIGN_VARS
+                : {
+                    campaignCode: rawCampaignCode,
+                    campaignPlatform: 'meta',
+                    pixelId: '',
+                    productCode: 'bima_telemed_voucher',
+                    price: 300,
+                    currency: 'PKR',
+                    events: {}
+                };
+
+            if (!window.CAMPAIGN_VARS || Object.keys(window.CAMPAIGN_VARS).length === 0 || !window.CAMPAIGN_VARS.campaignCode) {
+                try {
+                    const res = await fetch(`/api/campaign/${rawCampaignCode}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success && data.config) {
+                            cVars = data.config;
+                            window.CAMPAIGN_VARS = data.config;
+                            console.log(' Dynamic callback loaded campaign config from API fallback:', cVars);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to fetch campaign config for callback page, using defaults:', e);
+                }
+            } else {
+                console.log(' Dynamic callback using server-injected campaign config:', cVars);
+            }
+
+            const platform = (cVars.campaignPlatform || 'meta').toLowerCase();
+            const pixelId = cVars.pixelId || '';
+            const productCode = cVars.productCode || 'bima_telemed_voucher';
+            const price = Number(cVars.price) || 300;
+            const currency = cVars.currency || 'PKR';
+            const events = cVars.events || {};
+
+            // Dynamic Home button destination
+            const paramSource = params.get('source');
+            const sessionSource = sessionStorage.getItem('jazzcash_source');
+            const referrer = document.referrer;
+
+            let source = paramSource || sessionSource || '';
+            if (!source && referrer) {
+                if (referrer.includes('BimaVoucher')) source = 'BimaVoucher/index4.html';
+                else if (referrer.includes('index4')) source = 'BimaVoucher/index4.html';
+                else if (referrer.includes('index3')) source = 'BimaVoucher/index3.html';
+                else if (referrer.includes('BimaTelemedicine')) source = 'BimaTelemedicine/index.html';
+            }
+            if (!source) source = 'BimaVoucher/index4.html';
+
             const homeBtn = document.querySelector('.home-btn');
             if (homeBtn) {
-                if (isBimaFamily) {
+                if (source.includes('index4')) {
+                    homeBtn.href = `/BimaVoucher/index4.html?campaignCode=${encodeURIComponent(rawCampaignCode)}`;
+                } else if (source.includes('index3')) {
+                    homeBtn.href = `/BimaVoucher/index3.html?campaignCode=${encodeURIComponent(rawCampaignCode)}`;
+                } else if (source.includes('index2')) {
+                    homeBtn.href = '/BimaVoucher/index2.html';
+                } else if (source.includes('BimaTelemedicine')) {
                     homeBtn.href = '/BimaTelemedicine/';
-                } else if (isBimaVoucher) {
-                    homeBtn.href = '/BimaVoucher/';
                 } else {
-                    homeBtn.href = isIndex2 ? '/index2.html' : '/';
+                    homeBtn.href = `/BimaVoucher/index4.html?campaignCode=${encodeURIComponent(rawCampaignCode)}`;
                 }
             }
 
-            const params = new URLSearchParams(window.location.search);
-            const status = params.get('status') || 'N/A';
-            const message = params.get('message') || 'No message provided';
-            const trxRefNo = params.get('trxRefNo') || 'N/A';
+            const rawStatus = (params.get('status') || params.get('pp_ResponseCode') || 'N/A').trim();
+            const rawMessage = (params.get('message') || params.get('pp_ResponseMessage') || 'No message provided').trim();
+            const trxRefNo = params.get('trxRefNo') || params.get('pp_TxnRefNo') || params.get('pp_RetrievalReferenceNo') || 'N/A';
+            const normalizedStatus = rawStatus.toLowerCase();
 
             const statusEl = document.getElementById('resStatus');
             const messageEl = document.getElementById('resMessage');
             const trxRefNoEl = document.getElementById('resTrxRefNo');
 
-            // Custom Message Logic based on Status
-            let displayMessage = message;
-            let displayStatus = status;
+            const isExplicitFailure = (
+                rawStatus === '0' ||
+                normalizedStatus === 'fail' ||
+                normalizedStatus === 'failed' ||
+                normalizedStatus.includes('error')
+            );
 
-            if (status === '0') {
-                displayStatus = "Failed!";
-                displayMessage = "JazzCash Account Linkage Failed!";
-            } else if (status === '1') {
+            const isSuccess = !isExplicitFailure && (
+                normalizedStatus === '000' ||
+                normalizedStatus === '121' ||
+                normalizedStatus === '200' ||
+                normalizedStatus === '1' ||
+                normalizedStatus.includes('success') ||
+                rawMessage.toLowerCase().includes('success') ||
+                rawMessage.toLowerCase().includes('approved') ||
+                rawMessage.toLowerCase().includes('completed')
+            );
+
+            let displayMessage = rawMessage;
+            let displayStatus = rawStatus;
+
+            if (isSuccess) {
                 displayStatus = "Successful!";
-                displayMessage = "JazzCash Account Linked Successfully!";
+                displayMessage = (rawMessage && rawMessage !== 'No message provided') ? rawMessage : "JazzCash Account Linked Successfully!";
+            } else if (rawStatus === '0' || rawStatus.toLowerCase().includes('fail') || rawStatus.toLowerCase().includes('error')) {
+                displayStatus = "Failed!";
+                displayMessage = (rawMessage && rawMessage !== 'No message provided') ? rawMessage : "JazzCash Account Linkage Failed!";
             }
 
             statusEl.textContent = displayStatus;
             messageEl.textContent = displayMessage;
-            
             trxRefNoEl.textContent = trxRefNo;
 
-            // SHA-256 Hashing helper
-            async function sha256(msg) {
-                const msgBuffer = new TextEncoder().encode(msg);
-                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-            }
+            const userPhone = sessionStorage.getItem('user_phone_e164');
 
-            // Highlight border and text color for success
-            if (status === '1' || status.toLowerCase().includes('success') || status === '000') {
+            if (isSuccess) {
                 statusEl.classList.add('status-success');
                 const container = document.getElementById('resultContainer');
-                container.style.borderColor = '#4ecca7';
-                container.style.boxShadow = '0 8px 25px rgba(78, 204, 167, 0.25)';
-
-                // Trigger TikTok Subscribe/Purchase event on success
-                if (window.ttq && isBimaVoucher) {
-                    const userPhone = sessionStorage.getItem('user_phone_e164');
-                    if (userPhone) {
-                        try {
-                            const hashedPhone = await sha256(userPhone);
-                            window.ttq.identify({
-                                phone_number: hashedPhone
-                            });
-                        } catch (e) {
-                            console.error('Failed to hash phone number:', e);
-                        }
-                    }
-                    window.ttq.track('Purchase', {
-                        value: 300,
-                        currency: 'PKR',
-                        content_type: 'product',
-                        content_id: 'bima_voucher_food_campaign',
-                        content_ids: ['bima_voucher_food_campaign'],
-                        content_name: 'BIMA Voucher Food Campaign',
-                        description: 'BIMA Free Food Voucher Campaign Subscription',
-                        contents: [{
-                            content_id: 'bima_voucher_food_campaign',
-                            content_type: 'product',
-                            content_name: 'BIMA Voucher Food Campaign',
-                            quantity: 1,
-                            price: 300
-                        }]
-                    });
+                if (container) {
+                    container.style.borderColor = '#4ecca7';
+                    container.style.boxShadow = '0 8px 25px rgba(78, 204, 167, 0.25)';
                 }
 
-                if (isBimaVoucher && typeof gtag === 'function') {
-                    gtag('event', 'Purchase', {
-                        value: 300,
-                        currency: 'PKR',
-                        transaction_id: trxRefNo
-                    });
+                console.log(' Payment Successful! Triggering conversion & purchase events...');
+
+                // Deduplication guard: ensure purchase events fire exactly ONCE per transaction (unless testing)
+                const hasTransactionReference = trxRefNo && trxRefNo !== 'N/A';
+                const guardKey = hasTransactionReference ? 'purchase_event_fired_' + trxRefNo : null;
+                const isTestingUrl = (params.get('test') === '1') || (trxRefNo && trxRefNo.toLowerCase().startsWith('test'));
+                if (!isTestingUrl && guardKey && sessionStorage.getItem(guardKey)) {
+                    console.log(' Conversion events already recorded for transaction:', trxRefNo);
+                    return;
                 }
-                
-                // Trigger Firebase Subscribe/Purchase event on success
-                logEvent(analytics, isBimaVoucher ? 'Purchase' : (isBimaFamily ? 'Subscribe_BimaFamily' : (isIndex2 ? 'Subscribe_2' : 'Subscribe')), {
-                    value: 300,
-                    currency: 'PKR',
-                    content_type: 'insurance',
-                    content_name: isBimaVoucher ? 'BIMA Voucher Food Campaign' : (isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance'),
-                    description: isBimaVoucher ? 'BIMA Free Food Voucher Campaign Subscription' : (isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription' : 'Monthly Insurance Subscription'),
-                    debug_mode: true
+                if (guardKey) sessionStorage.setItem(guardKey, 'true');
+
+                // Dynamic Purchase Event from campaign config
+                const purchaseEventName = platform === 'meta' ? (events.purchase || 'Purchase') : events.purchase;
+                console.log('[CALLBACK SUCCESS] Meta configuration:', {
+                    status: rawStatus,
+                    campaignCode: rawCampaignCode,
+                    platform,
+                    pixelId,
+                    purchaseEventName,
+                    trxRefNo
                 });
-            } else if (status === '0' || status.toLowerCase().includes('fail') || status.toLowerCase().includes('error')) {
+                if (purchaseEventName) {
+                    if (platform === 'meta') {
+                        const metaPurchaseParams = {
+                            value: price,
+                            currency: currency,
+                            content_ids: [productCode],
+                            content_type: 'product',
+                            content_name: 'BIMA Telemedicine Voucher',
+                            campaign_code: rawCampaignCode,
+                            pixel_id: pixelId,
+                            transaction_id: trxRefNo
+                        };
+                        await fireMetaEvent(pixelId, 'Purchase', metaPurchaseParams, userPhone);
+                        if (purchaseEventName && purchaseEventName !== 'Purchase') {
+                            await fireMetaEvent(pixelId, purchaseEventName, metaPurchaseParams, userPhone);
+                        }
+                    } else if (platform === 'tiktok') {
+                        fireTikTokEvent(pixelId, purchaseEventName, {
+                            content_id: productCode,
+                            content_type: 'product',
+                            content_name: 'BIMA Telemedicine Voucher',
+                            content_category: 'Healthcare',
+                            price: price,
+                            value: price,
+                            currency: currency,
+                            quantity: 1,
+                            campaign_code: rawCampaignCode,
+                            pixel_id: pixelId,
+                            contents: [{
+                                content_id: productCode,
+                                content_name: 'BIMA Telemedicine Voucher',
+                                content_category: 'Healthcare',
+                                price: price,
+                                quantity: 1
+                            }]
+                        }, userPhone);
+                    } else if (platform === 'google') {
+                        fireGoogleEvent(pixelId, purchaseEventName, {
+                            value: price,
+                            currency: currency,
+                            transaction_id: trxRefNo,
+                            campaign_code: rawCampaignCode,
+                            items: [{
+                                id: productCode,
+                                name: 'BIMA Telemedicine Voucher',
+                                category: 'Healthcare',
+                                price: price,
+                                quantity: 1
+                            }]
+                        });
+                    }
+
+                    // Firebase Analytics Purchase event
+                    logEvent(analytics, purchaseEventName, {
+                        value: price,
+                        currency: currency,
+                        transaction_id: trxRefNo,
+                        content_type: 'insurance',
+                        content_name: 'BIMA Telemedicine Campaign',
+                        campaign_code: rawCampaignCode,
+                        debug_mode: true
+                    });
+                }
+
+            } else {
                 statusEl.classList.add('status-error');
 
-                // Trigger TikTok failure event
-                if (window.ttq && isBimaVoucher) {
-                    const userPhone = sessionStorage.getItem('user_phone_e164');
-                    if (userPhone) {
-                        try {
-                            const hashedPhone = await sha256(userPhone);
-                            window.ttq.identify({
-                                phone_number: hashedPhone
-                            });
-                        } catch (e) {
-                            console.error('Failed to hash phone number:', e);
-                        }
-                    }
-                    window.ttq.track('Purchase Failed', {
-                        content_type: 'product',
-                        content_id: 'bima_voucher_food_campaign',
-                        content_ids: ['bima_voucher_food_campaign'],
-                        content_name: 'BIMA Voucher Food Campaign',
-                        description: 'BIMA Free Food Voucher Campaign Subscription Failed',
-                        contents: [{
-                            content_id: 'bima_voucher_food_campaign',
+                // Dynamic Purchase Failed Event from campaign config
+                const failureEventName = events.purchase_failed;
+                if (failureEventName) {
+                    if (platform === 'meta') {
+                        await fireMetaEvent(pixelId, failureEventName, {
+                            content_ids: [productCode],
                             content_type: 'product',
-                            content_name: 'BIMA Voucher Food Campaign',
-                            quantity: 1,
-                            price: 300
-                        }]
+                            content_name: 'BIMA Telemedicine Voucher',
+                            value: price,
+                            currency: currency,
+                            campaign_code: rawCampaignCode,
+                            pixel_id: pixelId,
+                            transaction_id: trxRefNo
+                        }, userPhone);
+                    } else if (platform === 'tiktok') {
+                        fireTikTokEvent(pixelId, failureEventName, {
+                            content_type: 'product',
+                            content_id: productCode,
+                            content_name: 'BIMA Telemedicine Voucher',
+                            campaign_code: rawCampaignCode,
+                            pixel_id: pixelId
+                        }, userPhone);
+                    } else if (platform === 'google') {
+                        fireGoogleEvent(pixelId, failureEventName, {
+                            campaign_code: rawCampaignCode
+                        });
+                    }
+
+                    logEvent(analytics, failureEventName, {
+                        content_type: 'insurance',
+                        content_name: 'BIMA Telemedicine Campaign',
+                        campaign_code: rawCampaignCode,
+                        debug_mode: true
                     });
                 }
-
-                if (isBimaVoucher && typeof gtag === 'function') {
-                    gtag('event', 'Purchase Failed');
-                }
-                
-                // Trigger Firebase Subscribe_Failed event on failure
-                logEvent(analytics, isBimaVoucher ? 'Purchase Failed' : (isBimaFamily ? 'Subscribe_Failed_BimaFamily' : (isIndex2 ? 'Subscribe_Failed_2' : 'Subscribe_Failed')), {
-                    content_type: 'insurance',
-                    content_name: isBimaVoucher ? 'BIMA Voucher Food Campaign' : (isBimaFamily ? 'BIMA Family Telemedicine' : 'BIMA Insurance'),
-                    description: isBimaVoucher ? 'BIMA Free Food Voucher Campaign Subscription Failed' : (isBimaFamily ? 'Monthly BIMA Family Telemedicine Subscription Failed' : 'Monthly Insurance Subscription Failed'),
-                    debug_mode: true
-                });
             }
         });
     </script>
 </body>
+
 </html>
