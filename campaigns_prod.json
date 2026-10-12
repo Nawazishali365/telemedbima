@@ -39,6 +39,27 @@
       "duplicate": "Duplicate"
     }
   },
+  "meta_300": {
+    "campaignCode": "meta_300",
+    "campaignPlatform": "meta",
+    "pixelId": "921206134158451",
+    "metaDomainVerification": "gxb6jmrkaywgswv25tzyu413jlqr66",
+    "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_FAMILY",
+    "price": 300,
+    "currency": "PKR",
+    "artworkImage": "campaign_artwork_tiktok_300.jpeg",
+    "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
+    "termsUrl": "terms_and_conditions_bima.html",
+    "events": {
+      "page_view": "PageView",
+      "add_to_cart": "AddToCart",
+      "initiate_checkout": "InitiateCheckout",
+      "purchase": "Purchase",
+      "purchase_failed": "FailedSubscription",
+      "duplicate": "Duplicate"
+    }
+  },
   "default": {
     "campaignCode": "default",
     "campaignPlatform": "tiktok",
