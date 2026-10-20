@@ -65,7 +65,7 @@ function getCampaignConfig(requestedCode, pagePath = '') {
         const appEnv = (process.env.APP_ENV || currentEnv || '').toString().trim().toLowerCase();
         const isQa = ['qa', 'staging', 'dev', 'development'].includes(appEnv);
 
-        const isMetaPage = pagePath && (pagePath.includes('meta') || pagePath.includes('index4'));
+        const isMetaPage = pagePath && (pagePath.includes('meta') || pagePath.includes('index4') || pagePath.includes('hpass'));
         const defaultCode = isQa
             ? (isMetaPage ? 'qa_meta_600' : 'qa_default')
             : (isMetaPage ? 'meta_600' : 'default');
@@ -281,6 +281,18 @@ app.post(/.*meta(\.html)?$/, (req, res) => {
     const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
     console.log(`\n[ENDPOINT HIT] POST meta.html -> MSISDN: "${msisdn}"`);
     renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'meta.html'), req, res, msisdn);
+});
+
+// Health Pass Landing Page
+app.get(/.*hpass(\.html)?$/, (req, res) => {
+    console.log(`\n[ENDPOINT HIT] GET hpass.html -> Serving hpass.html with server-injected campaign for path: ${req.path}`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'hpass.html'), req, res);
+});
+
+app.post(/.*hpass(\.html)?$/, (req, res) => {
+    const msisdn = (req.body && req.body.msisdn) || (req.query && req.query.msisdn) || '';
+    console.log(`\n[ENDPOINT HIT] POST hpass.html -> MSISDN: "${msisdn}"`);
+    renderHtmlWithCampaign(path.join(__dirname, 'BimaVoucher', 'hpass.html'), req, res, msisdn);
 });
 
 // Callback Result Page Route (serves callback.html with server-injected campaign, domain verification, and pixel)
