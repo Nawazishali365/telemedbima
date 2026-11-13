@@ -60,6 +60,48 @@
       "duplicate": "Duplicate"
     }
   },
+  "meta_fam": {
+    "campaignCode": "meta_fam",
+    "campaignPlatform": "meta",
+    "pixelId": "1164520369371007",
+    "metaDomainVerification": "gxb6jmrkaywgswv25tzyu",
+    "productCode": "PAKISTAN_BIMA_HEALTH_PASS_FAMILY",
+    "price": 600,
+    "currency": "PKR",
+    "artworkImage": "Family Pass.webp",
+    "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
+    "termsUrl": "terms_and_conditions_bima.html",
+    "events": {
+      "page_view": "PageView",
+      "add_to_cart": "AddToCart",
+      "initiate_checkout": "InitiateCheckout",
+      "purchase": "Purchase",
+      "purchase_failed": "FailedSubscription",
+      "duplicate": "Duplicate"
+    }
+  },
+  "meta_solo": {
+    "campaignCode": "meta_solo",
+    "campaignPlatform": "meta",
+    "pixelId": "1164520369371007",
+    "metaDomainVerification": "gxb6jmrkaywgswv25tzyu41",
+    "productCode": "PAKISTAN_BIMA_HEALTH_PASS_SOLO",
+    "price": 400,
+    "currency": "PKR",
+    "artworkImage": "Solo Pass.webp",
+    "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
+    "termsUrl": "terms_and_conditions_bima.html",
+    "events": {
+      "page_view": "PageView",
+      "add_to_cart": "AddToCart",
+      "initiate_checkout": "InitiateCheckout",
+      "purchase": "Purchase",
+      "purchase_failed": "FailedSubscription",
+      "duplicate": "Duplicate"
+    }
+  },
   "default": {
     "campaignCode": "default",
     "campaignPlatform": "tiktok",

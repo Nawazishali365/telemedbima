@@ -41,15 +41,15 @@
       "duplicate": "Duplicate"
     }
   },
-"qa_meta_fam": {
+  "qa_meta_fam": {
     "campaignCode": "qa_meta_fam",
     "campaignPlatform": "meta",
-    "pixelId": "090078601",
+    "pixelId": "1164520369371007",
     "metaDomainVerification": "gxb6jmrkaywgswv25tzyu",
     "productCode": "PAKISTAN_BIMA_HEALTH_PASS_FAMILY",
     "price": 600,
     "currency": "PKR",
-    "artworkImage": "campaign_artwork_meta_fam.png",
+    "artworkImage": "Family Pass.webp",
     "backgroundColor": "#0d2743",
     "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima.html",
@@ -62,15 +62,15 @@
       "duplicate": "Duplicate"
     }
   },
-"qa_meta_solo": {
+  "qa_meta_solo": {
     "campaignCode": "qa_meta_solo",
     "campaignPlatform": "meta",
-    "pixelId": "090078601",
+    "pixelId": "1164520369371007",
     "metaDomainVerification": "gxb6jmrkaywgswv25tzyu41",
     "productCode": "PAKISTAN_BIMA_HEALTH_PASS_SOLO",
     "price": 400,
     "currency": "PKR",
-    "artworkImage": "campaign_artwork_meta_solo.png",
+    "artworkImage": "Solo Pass.webp",
     "backgroundColor": "#0d2743",
     "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima.html",
