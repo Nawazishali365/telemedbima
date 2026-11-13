@@ -420,10 +420,11 @@
 
         .campaign-artwork-landing-solo .consent-text {
             font-size: clamp(7px, 1.8cqw, 8px);
+            line-height: 1.1;
         }
 
         .campaign-artwork-landing-solo .consent-text a {
-            padding: 1px 6px;
+            padding: 0 6px;
             background-color: #ffe100;
             color: #0d2743 !important;
             font-size: clamp(8px, 2.2cqw, 10px);
@@ -1095,8 +1096,14 @@
                     'campaign_artwork_meta_fam.png'
                 ].includes(artworkImage);
                 containerEl.classList.toggle('campaign-artwork-meta-pass', isLegacyHealthPassArtwork);
-                containerEl.classList.toggle('campaign-artwork-landing-family', artworkImage === 'Landing Page- Family Pass.png');
-                containerEl.classList.toggle('campaign-artwork-landing-solo', artworkImage === 'Landing Page- Solo Pass.png');
+                containerEl.classList.toggle('campaign-artwork-landing-family', [
+                    'Landing Page- Family Pass.png',
+                    'Family Pass.webp'
+                ].includes(artworkImage));
+                containerEl.classList.toggle('campaign-artwork-landing-solo', [
+                    'Landing Page- Solo Pass.png',
+                    'Solo Pass.webp'
+                ].includes(artworkImage));
             }
 
             // Dynamically update Terms & Conditions link href
