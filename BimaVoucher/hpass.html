@@ -28,6 +28,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIMA Health - Campaign</title>
     <script>
+        const initialArtwork = window.CAMPAIGN_VARS && window.CAMPAIGN_VARS.artworkImage;
+        if (initialArtwork) {
+            document.documentElement.style.setProperty(
+                '--campaign-artwork',
+                `url(${JSON.stringify(initialArtwork)})`
+            );
+        }
+    </script>
+    <script>
         function setMetaDomainVerification(token) {
             const existingTag = document.querySelector('meta[name="facebook-domain-verification"]');
             if (existingTag) existingTag.remove();
@@ -84,7 +93,7 @@
             max-width: 56.25vh;
             /* 9/16 ratio of viewport height */
             max-width: 56.25dvh;
-            background-image: url('campaign_artwork_meta_solo.png');
+            background-image: var(--campaign-artwork, none);
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -307,6 +316,124 @@
             width: 82.73%;
         }
 
+        .campaign-artwork-landing-family .input-box-overlay {
+            left: 12%;
+            top: 79.1%;
+            width: 76%;
+            height: 5.5%;
+        }
+
+        .campaign-artwork-landing-family .phone-input {
+            left: 24%;
+            width: 76%;
+            font-size: clamp(9px, 2.7cqw, 12px);
+        }
+
+        .campaign-artwork-landing-family .subscribe-btn-overlay {
+            left: 12%;
+            top: 85.8%;
+            width: 76%;
+            height: 5.3%;
+            font-size: clamp(12px, 4.1cqw, 19px);
+        }
+
+        .campaign-artwork-landing-family .price-info {
+            display: none;
+        }
+
+        .campaign-artwork-landing-family .consent-container {
+            left: 12%;
+            top: 91.5%;
+            width: 76%;
+        }
+
+        .campaign-artwork-landing-family .consent-label,
+        .campaign-artwork-landing-family .consent-text,
+        .campaign-artwork-landing-family .consent-text a {
+            color: #0d2743 !important;
+        }
+
+        .campaign-artwork-landing-family .consent-text,
+        .campaign-artwork-landing-solo .consent-text {
+            font-size: clamp(8px, 2cqw, 9px);
+        }
+
+        .campaign-artwork-landing-family .consent-text a,
+        .campaign-artwork-landing-solo .consent-text a {
+            display: inline-block;
+            margin-left: 2px;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            background-color: #0d2743;
+            color: #ffffff !important;
+            font-size: clamp(9px, 2.4cqw, 11px);
+            font-weight: 600;
+            line-height: 1.2;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .campaign-artwork-landing-family .consent-text a:hover,
+        .campaign-artwork-landing-solo .consent-text a:hover {
+            background-color: #16497b;
+        }
+
+        .campaign-artwork-landing-solo .input-box-overlay {
+            left: 9%;
+            top: 81%;
+            width: 82%;
+            height: 5.8%;
+        }
+
+        .campaign-artwork-landing-solo .phone-input {
+            left: 25%;
+            width: 75%;
+            font-size: clamp(9px, 2.7cqw, 12px);
+        }
+
+        .campaign-artwork-landing-solo .subscribe-btn-overlay {
+            left: 9%;
+            top: 88%;
+            width: 82%;
+            height: 5.8%;
+            font-size: clamp(12px, 4.1cqw, 19px);
+        }
+
+        .campaign-artwork-landing-solo .price-info {
+            display: none;
+        }
+
+        .campaign-artwork-landing-solo .consent-container {
+            left: 5%;
+            top: 94.2%;
+            width: 90%;
+        }
+
+        .campaign-artwork-landing-solo .consent-label,
+        .campaign-artwork-landing-solo .consent-text {
+            color: #ffffff !important;
+        }
+
+        .campaign-artwork-landing-solo .consent-label {
+            align-items: center;
+        }
+
+        .campaign-artwork-landing-solo .consent-text {
+            font-size: clamp(7px, 1.8cqw, 8px);
+        }
+
+        .campaign-artwork-landing-solo .consent-text a {
+            padding: 1px 6px;
+            background-color: #ffe100;
+            color: #0d2743 !important;
+            font-size: clamp(8px, 2.2cqw, 10px);
+            line-height: 1;
+        }
+
+        .campaign-artwork-landing-solo .consent-text a:hover {
+            background-color: #ffffff;
+        }
+
         /* Toast notifications */
         #toastMsg {
             display: none;
@@ -516,7 +643,7 @@
 
     <script>
         /*  Dynamic Campaign Parameters State (100% dynamically loaded from campaigns.json)  */
-        window.CAMPAIGN_VARS = {
+        window.CAMPAIGN_VARS = Object.assign({
             campaignCode: '',
             campaignPlatform: 'meta', // Meta events by default for index4.html
             pixelId: '',
@@ -524,7 +651,7 @@
             price: 300,
             currency: 'PKR',
             events: {}
-        };
+        }, window.CAMPAIGN_VARS || {});
 
         /*  Utility: Custom Alert Modal  */
         function showCustomAlert(message) {
@@ -963,8 +1090,13 @@
             const containerEl = document.querySelector('.container');
             if (containerEl && artworkImage) {
                 containerEl.style.backgroundImage = `url('${artworkImage}')`;
-                const isHealthPassArtwork = ['campaign_artwork_meta_solo.png', 'campaign_artwork_meta_fam.png'].includes(artworkImage);
-                containerEl.classList.toggle('campaign-artwork-meta-pass', isHealthPassArtwork);
+                const isLegacyHealthPassArtwork = [
+                    'campaign_artwork_meta_solo.png',
+                    'campaign_artwork_meta_fam.png'
+                ].includes(artworkImage);
+                containerEl.classList.toggle('campaign-artwork-meta-pass', isLegacyHealthPassArtwork);
+                containerEl.classList.toggle('campaign-artwork-landing-family', artworkImage === 'Landing Page- Family Pass.png');
+                containerEl.classList.toggle('campaign-artwork-landing-solo', artworkImage === 'Landing Page- Solo Pass.png');
             }
 
             // Dynamically update Terms & Conditions link href
