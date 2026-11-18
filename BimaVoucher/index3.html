@@ -71,7 +71,7 @@
 
         /* 
            Responsive Aspect Ratio Container 
-           Locks layout to 9:16 (1080x1920) matching the design image.
+           Locks layout to 9:16 (1125x2000) matching the campaign_artwork_tiktok_300.webp design image.
            Guarantees no scrollbars on any device or viewport.
         */
         .container {
@@ -85,7 +85,7 @@
             max-width: 56.25vh;
             /* 9/16 ratio of viewport height */
             max-width: 56.25dvh;
-            background-image: url('campaign2 artwork.jpeg');
+            background-image: url('campaign_artwork_tiktok_300.webp');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -110,78 +110,68 @@
             height: 100%;
         }
 
-        /* 
-           Input Box Overlay 
-           Position: y=1156 to 1260, x=124 to 753 in 900x1600 campaign2 artwork
-           Left: 13.78%, Top: 72.25%, Width: 70.00%, Height: 6.56%
-        */
-        .input-box-overlay {
+        /* Price info is already printed in the campaign artwork */
+        .price-info {
+            display: none;
+        }
+
+        /* =========================================================
+           1. TikTok 300 Artwork Layout (campaign_artwork_tiktok_300.webp)
+           ========================================================= */
+        .container:not(.campaign-artwork-tiktok-600) .input-box-overlay,
+        .container.campaign-artwork-tiktok-300 .input-box-overlay {
             position: absolute;
-            left: 13.78%;
-            top: 72.25%;
-            width: 70.00%;
-            height: 6.56%;
+            left: 9.96%;
+            top: 83.95%;
+            width: 78.93%;
+            height: 4.35%;
             display: flex;
             align-items: center;
             z-index: 10;
         }
 
-        /* 
-           Input field covering the text area to the right of the artwork's printed JazzCash logo & divider.
-           Using transparent background so it seamlessly blends with the artwork's printed white pill box!
-        */
-        .phone-input {
+        .container:not(.campaign-artwork-tiktok-600) .phone-input,
+        .container.campaign-artwork-tiktok-300 .phone-input {
             position: absolute;
-            left: 20.5%;
+            left: 36%;
             top: 0;
-            width: 79.5%;
+            width: 62%;
             height: 100%;
             border: none;
             outline: none;
             background: transparent !important;
-            color: #1e293b;
+            color: #0d2743;
             font-family: 'Outfit', sans-serif;
             font-size: 16px;
-            font-size: clamp(13px, 3.6cqw, 18px);
+            font-size: clamp(12px, 3.4cqw, 17px);
             font-weight: 500;
-            padding: 0 12px;
+            padding: 0 8px;
+            caret-color: #0d2743;
         }
 
-        .phone-input::placeholder {
-            color: #94a3b8;
+        .container:not(.campaign-artwork-tiktok-600) .phone-input::placeholder,
+        .container.campaign-artwork-tiktok-300 .phone-input::placeholder {
+            color: #7890a8;
             font-weight: 400;
+            font-size: clamp(10px, 2.7cqw, 14px);
         }
 
-        .phone-input:-webkit-autofill,
-        .phone-input:-webkit-autofill:hover,
-        .phone-input:-webkit-autofill:focus {
-            -webkit-text-fill-color: #1e293b;
-            -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
-            box-shadow: 0 0 0px 1000px transparent inset !important;
-            transition: background-color 5000s ease-in-out 0s;
-        }
-
-        /* 
-           Subscribe Button Overlay
-           Position: y=1298 to 1404, x=123 to 754 in 900x1600 campaign2 artwork
-           Left: 13.67%, Top: 81.125%, Width: 70.22%, Height: 6.68%
-           Using transparent background to overlay directly over the artwork's printed white button!
-        */
-        .subscribe-btn-overlay {
+        .container:not(.campaign-artwork-tiktok-600) .subscribe-btn-overlay,
+        .container.campaign-artwork-tiktok-300 .subscribe-btn-overlay {
             position: absolute;
-            left: 13.67%;
-            top: 81.125%;
-            width: 70.22%;
-            height: 6.68%;
+            left: 9.96%;
+            top: 89.45%;
+            width: 78.93%;
+            height: 4.45%;
             background: transparent;
-            color: #16497B;
+            color: #0d2743;
             border: none;
             border-radius: 9999px;
             font-family: 'Outfit', sans-serif;
             font-size: 19px;
-            font-size: clamp(15px, 4.2cqw, 21px);
+            font-size: clamp(15px, 4.0cqw, 20px);
             font-weight: 700;
-            letter-spacing: 0.2px;
+            letter-spacing: 0.3px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -190,8 +180,117 @@
             transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
         }
 
+        .container:not(.campaign-artwork-tiktok-600) .consent-container,
+        .container.campaign-artwork-tiktok-300 .consent-container {
+            position: absolute;
+            left: 35%;
+            top: 94.8%;
+            width: 30%;
+            height: 3.0%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* =========================================================
+           2. TikTok 600 Artwork Layout (campaign_artwork_tiktok_600.png)
+           ========================================================= */
+        .container.campaign-artwork-tiktok-600 {
+            background-image: url('campaign_artwork_tiktok_600.png');
+        }
+
+        .container.campaign-artwork-tiktok-600 .input-box-overlay {
+            position: absolute;
+            left: 8.93%;
+            top: 74.04%;
+            width: 82.15%;
+            height: 5.32%;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .container.campaign-artwork-tiktok-600 .phone-input {
+            position: absolute;
+            left: 40%;
+            top: 0;
+            width: 58%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: transparent !important;
+            color: #0d2743;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-size: clamp(12px, 3.4cqw, 17px);
+            font-weight: 500;
+            padding: 0 8px;
+            caret-color: #0d2743;
+        }
+
+        .container.campaign-artwork-tiktok-600 .phone-input:focus,
+        .container.campaign-artwork-tiktok-600 .phone-input:not(:placeholder-shown) {
+            background: #c8e6fd !important;
+            border-radius: 8px;
+        }
+
+        .container.campaign-artwork-tiktok-600 .phone-input::placeholder {
+            color: transparent;
+        }
+
+        .container.campaign-artwork-tiktok-600 .subscribe-btn-overlay {
+            position: absolute;
+            left: 8.82%;
+            top: 80.56%;
+            width: 82.36%;
+            height: 5.38%;
+            background: transparent;
+            color: transparent;
+            border: none;
+            border-radius: 9999px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 19px;
+            font-size: clamp(15px, 4.0cqw, 20px);
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+            transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
+        }
+
+        .container.campaign-artwork-tiktok-600 .subscribe-btn-overlay:disabled {
+            color: #0d2743;
+            background: #c8e6fd;
+        }
+
+        .container.campaign-artwork-tiktok-600 .consent-container {
+            position: absolute;
+            left: 35%;
+            top: 88.2%;
+            width: 30%;
+            height: 3.2%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* Common Elements & Shared Responsive Overlays */
+        .phone-input:-webkit-autofill,
+        .phone-input:-webkit-autofill:hover,
+        .phone-input:-webkit-autofill:focus {
+            -webkit-text-fill-color: #0d2743;
+            -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+            box-shadow: 0 0 0px 1000px transparent inset !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
         .subscribe-btn-overlay:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.25);
             transform: scale(1.015);
         }
 
@@ -205,58 +304,52 @@
             transform: none;
         }
 
-        /* White text price info centered under the Subscribe button */
-        .price-info {
-            position: absolute;
-            left: 0;
-            top: 88.4%;
-            width: 100%;
-            text-align: center;
-            font-size: 14.5px;
-            font-size: clamp(10.5px, 2.8cqw, 14.5px);
-            font-weight: 600;
-            color: #ffffff;
-            letter-spacing: 0.3px;
-        }
-
-        /* Consent Container (perfectly centered flex container to align checkbox and text) */
-        .consent-container {
-            position: absolute;
-            left: 13.67%;
-            width: 70.22%;
-            top: 90.8%;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            z-index: 10;
-        }
-
         .consent-label {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
             cursor: pointer;
             user-select: none;
         }
 
-        /* White text consent overlay with active hyperlink */
+        /* Checkbox remains functional in DOM for form validation & auto-submission */
+        .consent-label input[type="checkbox"] {
+            position: absolute !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Terms & Conditions link overlay covering the printed 'T&Cs Apply*' */
         .consent-text {
-            color: #ffffff;
-            font-size: 10.5px;
-            font-size: clamp(9px, 2.1cqw, 10.5px);
-            line-height: 1.35;
-            text-align: left;
-            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-size: 0;
+            line-height: 0;
+            color: transparent;
         }
 
         .consent-text a {
-            color: #ffffff;
-            text-decoration: underline;
-            font-weight: 500;
-            transition: color 0.2s ease;
+            display: block;
+            width: 100%;
+            height: 100%;
+            color: transparent !important;
+            text-decoration: none;
+            cursor: pointer;
+            border-radius: 4px;
         }
 
-        .consent-text a:hover {
-            color: #FFE100;
+        .consent-text a:hover,
+        .consent-text a:focus-visible {
+            background-color: rgba(13, 39, 67, 0.08);
+            outline: 1px dashed rgba(13, 39, 67, 0.35);
         }
 
         /* Toast notifications */
@@ -717,16 +810,25 @@
             const urlParams = new URLSearchParams(window.location.search);
 
             // Extract campaignCode parameter from URL query string
-            const rawCampaignCode = (urlParams.get('campaignCode') || urlParams.get('campaign') || sessionStorage.getItem('campaign_code') || 'default').trim();
-            if (urlParams.get('campaignCode')) {
+            const rawCampaignCode = (urlParams.get('campaignCode') || urlParams.get('campignCode') || urlParams.get('campaign') || sessionStorage.getItem('campaign_code') || 'default').trim();
+            if (urlParams.get('campaignCode') || urlParams.get('campignCode')) {
                 sessionStorage.setItem('campaign_code', rawCampaignCode);
             }
 
             // Fetch campaign configuration parameters from campaigns.json API endpoint
             try {
-                const res = await fetch(`/api/campaign/${rawCampaignCode}`);
+                let res = await fetch(`/api/campaign/${rawCampaignCode}`);
                 if (res.ok) {
-                    const data = await res.json();
+                    let data = await res.json();
+                    if (data && data.environment === 'qa' && !rawCampaignCode.startsWith('qa_') && data.code === 'qa_default' && rawCampaignCode !== 'default') {
+                        const qaRes = await fetch(`/api/campaign/qa_${rawCampaignCode}`);
+                        if (qaRes.ok) {
+                            const qaData = await qaRes.json();
+                            if (qaData.success && qaData.code !== 'qa_default') {
+                                data = qaData;
+                            }
+                        }
+                    }
                     if (data.success && data.config) {
                         window.CAMPAIGN_VARS = data.config;
                         if (data.code) window.CAMPAIGN_VARS.rawCode = data.code;
@@ -745,7 +847,17 @@
             const productCode = cVars.productCode || 'bima_telemed_voucher';
             const price = Number(cVars.price) || 300;
             const currency = cVars.currency || 'PKR';
-            const artworkImage = cVars.artworkImage || 'campaign2 artwork.jpeg';
+            let artworkImage = cVars.artworkImage || 'campaign_artwork_tiktok_300.webp';
+            const cleanCode = (campaignCode || '').toLowerCase();
+            const cleanArtwork = (artworkImage || '').toLowerCase();
+
+            const is600 = cleanCode.includes('600') || (rawCampaignCode || '').toLowerCase().includes('600') || cleanArtwork.includes('600');
+
+            if (is600) {
+                artworkImage = 'campaign_artwork_tiktok_600.png';
+            } else if (artworkImage === 'campaign_artwork_tiktok_300.jpeg' || artworkImage === 'campaign2 artwork.jpeg') {
+                artworkImage = 'campaign_artwork_tiktok_300.webp';
+            }
             const backgroundColor = cVars.backgroundColor || '#0d2743';
             const textColor = cVars.textColor || '#ffffff';
             const termsUrl = cVars.termsUrl || 'terms_and_conditions_bima.html';
@@ -782,10 +894,12 @@
                 }
             }
 
-            // Dynamically update container artwork background image
+            // Dynamically update container artwork background image & modifier classes
             const containerEl = document.querySelector('.container');
             if (containerEl && artworkImage) {
                 containerEl.style.backgroundImage = `url('${artworkImage}')`;
+                containerEl.classList.toggle('campaign-artwork-tiktok-600', is600);
+                containerEl.classList.toggle('campaign-artwork-tiktok-300', !is600);
             }
 
             // Dynamically update Terms & Conditions link href
