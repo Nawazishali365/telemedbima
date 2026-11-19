@@ -79,8 +79,22 @@ function getCampaignConfig(requestedCode, pagePath = '') {
         if (code === 'bima_bolo') {
             code = 'bima_solo';
         }
+        if (code === 'qa_bima_bolo') {
+            code = 'qa_bima_solo';
+        }
         if (!code || code === 'default') {
             code = defaultCode;
+        }
+
+        // Automatic bidirectional resolution between bima_fam/bima_solo and qa_bima_fam/qa_bima_solo
+        if (code === 'bima_fam' && !campaigns['bima_fam'] && campaigns['qa_bima_fam']) {
+            code = 'qa_bima_fam';
+        } else if (code === 'qa_bima_fam' && !campaigns['qa_bima_fam'] && campaigns['bima_fam']) {
+            code = 'bima_fam';
+        } else if (code === 'bima_solo' && !campaigns['bima_solo'] && campaigns['qa_bima_solo']) {
+            code = 'qa_bima_solo';
+        } else if (code === 'qa_bima_solo' && !campaigns['qa_bima_solo'] && campaigns['bima_solo']) {
+            code = 'bima_solo';
         }
 
         let campaignData = campaigns[code] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code);
@@ -90,9 +104,15 @@ function getCampaignConfig(requestedCode, pagePath = '') {
                 if (fs.existsSync(prodPath)) {
                     const prodContent = fs.readFileSync(prodPath, 'utf8').replace(/\/\/.*$/gm, '');
                     const prodCampaigns = JSON.parse(prodContent);
-                    campaignData = prodCampaigns[code] || Object.values(prodCampaigns).find(c => (c.campaignCode || '').toLowerCase() === code);
+                    const prodCode = (requestedCode || '').toLowerCase().trim();
+                    campaignData = prodCampaigns[prodCode] || Object.values(prodCampaigns).find(c => (c.campaignCode || '').toLowerCase() === prodCode);
                 }
             } catch (e) {}
+        }
+        if (!campaignData && (code.includes('fam') || code.includes('solo') || code.includes('bima'))) {
+            const isSolo = code.includes('solo') || code.includes('bolo');
+            const targetPharmacyCode = isQa ? (isSolo ? 'qa_bima_solo' : 'qa_bima_fam') : (isSolo ? 'bima_solo' : 'bima_fam');
+            campaignData = campaigns[targetPharmacyCode] || null;
         }
         if (!campaignData) {
             campaignData = campaigns[defaultCode] || campaigns['qa_meta_600'] || campaigns['default'] || null;

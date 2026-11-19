@@ -454,6 +454,30 @@
                     };
             }
 
+            // Safety guard: For pharmacy passes, NEVER allow falling back to TikTok or wrong product
+            const isPharmacyCampaign = ['bima_fam', 'bima_solo', 'qa_bima_fam', 'qa_bima_solo', 'bima_bolo'].includes(rawCampaignCode.toLowerCase());
+            if (isPharmacyCampaign && (!cVars || cVars.campaignPlatform !== 'meta' || !cVars.pixelId || cVars.pixelId.startsWith('D8') || cVars.pixelId.startsWith('D9'))) {
+                const isSolo = rawCampaignCode.toLowerCase().includes('solo') || rawCampaignCode.toLowerCase().includes('bolo');
+                cVars = {
+                    campaignCode: rawCampaignCode,
+                    campaignPlatform: 'meta',
+                    pixelId: '1564520369371090',
+                    metaDomainVerification: isSolo ? 'gxb6jmrkaywgswv25tztc' : 'gxb6jmrkaywgswv25tztd',
+                    productCode: isSolo ? 'PAKISTAN_BIMA_HEALTH_PASS_SOLO' : 'PAKISTAN_BIMA_HEALTH_PASS_FAMILY',
+                    price: isSolo ? 400 : 600,
+                    currency: 'PKR',
+                    events: {
+                        page_view: 'PageView',
+                        add_to_cart: 'AddToCart',
+                        initiate_checkout: 'InitiateCheckout',
+                        purchase: 'Purchase',
+                        purchase_failed: 'FailedSubscription',
+                        duplicate: 'Duplicate'
+                    }
+                };
+                window.CAMPAIGN_VARS = cVars;
+            }
+
             const platform = (cVars.campaignPlatform || 'meta').toLowerCase();
             const pixelId = cVars.pixelId || '';
             const productCode = cVars.productCode || 'bima_telemed_voucher';
