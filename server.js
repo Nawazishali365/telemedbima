@@ -66,16 +66,37 @@ function getCampaignConfig(requestedCode, pagePath = '') {
         const isQa = ['qa', 'staging', 'dev', 'development'].includes(appEnv);
 
         const isMetaPage = pagePath && (pagePath.includes('meta') || pagePath.includes('index4') || pagePath.includes('hpass'));
-        const defaultCode = isQa
+        const isPharmacyPage = pagePath && pagePath.toLowerCase().includes('pharmacy');
+        let defaultCode = isQa
             ? (isMetaPage ? 'qa_meta_600' : 'qa_default')
             : (isMetaPage ? 'meta_600' : 'default');
 
+        if (isPharmacyPage) {
+            defaultCode = pagePath.toLowerCase().includes('solo') ? 'bima_solo' : 'bima_fam';
+        }
+
         let code = (requestedCode || '').toLowerCase().trim();
+        if (code === 'bima_bolo') {
+            code = 'bima_solo';
+        }
         if (!code || code === 'default') {
             code = defaultCode;
         }
 
-        const campaignData = campaigns[code] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code) || campaigns[defaultCode] || campaigns['qa_meta_600'] || campaigns['default'] || null;
+        let campaignData = campaigns[code] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code);
+        if (!campaignData && campaignsPath !== path.join(__dirname, 'campaigns_prod.json')) {
+            try {
+                const prodPath = path.join(__dirname, 'campaigns_prod.json');
+                if (fs.existsSync(prodPath)) {
+                    const prodContent = fs.readFileSync(prodPath, 'utf8').replace(/\/\/.*$/gm, '');
+                    const prodCampaigns = JSON.parse(prodContent);
+                    campaignData = prodCampaigns[code] || Object.values(prodCampaigns).find(c => (c.campaignCode || '').toLowerCase() === code);
+                }
+            } catch (e) {}
+        }
+        if (!campaignData) {
+            campaignData = campaigns[defaultCode] || campaigns['qa_meta_600'] || campaigns['default'] || null;
+        }
         if (campaignData) {
             return {
                 ...campaignData,
@@ -163,7 +184,7 @@ function renderHtmlWithCampaign(filePath, req, res, msisdn = '') {
             return res.status(500).send('Error loading page');
         }
 
-        const rawCampaignCode = (req.query.campaignCode || req.query.campaign || (req.body && req.body.campaignCode) || '').trim();
+        const rawCampaignCode = (req.query.campaignCode || req.query.campignCode || req.query.campaign || (req.body && (req.body.campaignCode || req.body.campignCode || req.body.campaign)) || '').trim();
         const campaignConfig = getCampaignConfig(rawCampaignCode, filePath);
 
         const headInjections = [];
@@ -587,8 +608,19 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
                 let fileContent = fs.readFileSync(campaignsPath, 'utf8');
                 fileContent = fileContent.replace(/\/\/.*$/gm, '');
                 const campaigns = JSON.parse(fileContent);
-                const cleanCode = (campaignCode || '').toLowerCase().trim();
-                const config = campaigns[cleanCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns[defaultCampaignCode] || campaigns['default'];
+                let cleanCode = (campaignCode || '').toLowerCase().trim();
+                if (cleanCode === 'bima_bolo') cleanCode = 'bima_solo';
+                let config = campaigns[cleanCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode);
+                if (!config && campaignsPath !== path.join(__dirname, 'campaigns_prod.json')) {
+                    try {
+                        const prodPath = path.join(__dirname, 'campaigns_prod.json');
+                        if (fs.existsSync(prodPath)) {
+                            const prodCampaigns = JSON.parse(fs.readFileSync(prodPath, 'utf8').replace(/\/\/.*$/gm, ''));
+                            config = prodCampaigns[cleanCode] || Object.values(prodCampaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode);
+                        }
+                    } catch (e) {}
+                }
+                if (!config) config = campaigns[defaultCampaignCode] || campaigns['default'];
                 if (config) {
                     if (!productCode) productCode = config.productCode;
                     campaignCode = config.campaignCode || campaignCode;
@@ -690,8 +722,19 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
                 let fileContent = fs.readFileSync(campaignsPath, 'utf8');
                 fileContent = fileContent.replace(/\/\/.*$/gm, '');
                 const campaigns = JSON.parse(fileContent);
-                const cleanCode = (campaignCode || '').toLowerCase().trim();
-                const config = campaigns[cleanCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns[defaultCampaignCode] || campaigns['default'];
+                let cleanCode = (campaignCode || '').toLowerCase().trim();
+                if (cleanCode === 'bima_bolo') cleanCode = 'bima_solo';
+                let config = campaigns[cleanCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode);
+                if (!config && campaignsPath !== path.join(__dirname, 'campaigns_prod.json')) {
+                    try {
+                        const prodPath = path.join(__dirname, 'campaigns_prod.json');
+                        if (fs.existsSync(prodPath)) {
+                            const prodCampaigns = JSON.parse(fs.readFileSync(prodPath, 'utf8').replace(/\/\/.*$/gm, ''));
+                            config = prodCampaigns[cleanCode] || Object.values(prodCampaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode);
+                        }
+                    } catch (e) {}
+                }
+                if (!config) config = campaigns[defaultCampaignCode] || campaigns['default'];
                 if (config) {
                     if (!productCode) productCode = config.productCode;
                     campaignCode = config.campaignCode || campaignCode;
