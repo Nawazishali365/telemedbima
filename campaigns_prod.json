@@ -105,7 +105,7 @@
   "bima_solo": {
     "campaignCode": "bima_solo",
     "campaignPlatform": "meta",
-    "pixelId": "1164520369371007",
+    "pixelId": "1564520369371090",
     "metaDomainVerification": "gxb6jmrkaywgswv25tztd",
     "productCode": "PAKISTAN_BIMA_HEALTH_PASS_SOLO",
     "price": 400,
@@ -126,7 +126,7 @@
   "bima_fam": {
     "campaignCode": "bima_fam",
     "campaignPlatform": "meta",
-    "pixelId": "1164520369371007",
+    "pixelId": "1564520369371090",
     "metaDomainVerification": "gxb6jmrkaywgswv25tztc",
     "productCode": "PAKISTAN_BIMA_HEALTH_PASS_FAMILY",
     "price": 600,
