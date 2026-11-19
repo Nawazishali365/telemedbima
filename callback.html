@@ -455,8 +455,12 @@
             }
 
             // Safety guard: For pharmacy passes, NEVER allow falling back to TikTok or wrong product
+            // Only override if cVars is missing, the platform is wrong (not meta), or the campaignCode doesn't match.
+            // Do NOT check pixelId prefix here — that caused valid bima_fam configs to be overwritten.
             const isPharmacyCampaign = ['bima_fam', 'bima_solo', 'qa_bima_fam', 'qa_bima_solo', 'bima_bolo'].includes(rawCampaignCode.toLowerCase());
-            if (isPharmacyCampaign && (!cVars || cVars.campaignPlatform !== 'meta' || !cVars.pixelId || cVars.pixelId.startsWith('D8') || cVars.pixelId.startsWith('D9'))) {
+            const isWrongCampaignLoaded = !cVars || cVars.campaignPlatform !== 'meta' || !cVars.pixelId ||
+                (cVars.campaignCode && cVars.campaignCode.toLowerCase() !== rawCampaignCode.toLowerCase());
+            if (isPharmacyCampaign && isWrongCampaignLoaded) {
                 const isSolo = rawCampaignCode.toLowerCase().includes('solo') || rawCampaignCode.toLowerCase().includes('bolo');
                 cVars = {
                     campaignCode: rawCampaignCode,
