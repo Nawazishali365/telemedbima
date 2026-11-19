@@ -652,6 +652,9 @@
                 document.body.appendChild(jcForm);
                 sessionStorage.setItem('jazzcash_source', 'pharmacy_campaign/family.html');
                 sessionStorage.setItem('campaign_code', campaignCode);
+                localStorage.setItem('jazzcash_source', 'pharmacy_campaign/family.html');
+                localStorage.setItem('campaign_code', campaignCode);
+                document.cookie = `bima_campaign_code=${encodeURIComponent(campaignCode)}; path=/; max-age=86400; SameSite=Lax`;
 
                 setTimeout(() => jcForm.submit(), 800);
 
@@ -670,6 +673,12 @@
         window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             let rawCampaignCode = (urlParams.get('campaignCode') || urlParams.get('campignCode') || urlParams.get('campaign') || 'bima_fam').trim();
+
+            sessionStorage.setItem('campaign_code', rawCampaignCode);
+            localStorage.setItem('campaign_code', rawCampaignCode);
+            sessionStorage.setItem('jazzcash_source', 'pharmacy_campaign/family.html');
+            localStorage.setItem('jazzcash_source', 'pharmacy_campaign/family.html');
+            document.cookie = `bima_campaign_code=${encodeURIComponent(rawCampaignCode)}; path=/; max-age=86400; SameSite=Lax`;
 
             // Fetch dynamic campaign configuration object from campaigns_prod.json via API
             if (!window.CAMPAIGN_VARS || !window.CAMPAIGN_VARS.campaignCode || ['qa_default', 'default'].includes(window.CAMPAIGN_VARS.campaignCode)) {

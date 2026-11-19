@@ -626,6 +626,12 @@
 
             setMetaDomainVerification(cfg.metaDomainVerification);
 
+            sessionStorage.setItem('campaign_code', targetCode);
+            localStorage.setItem('campaign_code', targetCode);
+            sessionStorage.setItem('jazzcash_source', 'pharmacy_campaign/index.html');
+            localStorage.setItem('jazzcash_source', 'pharmacy_campaign/index.html');
+            document.cookie = `bima_campaign_code=${encodeURIComponent(targetCode)}; path=/; max-age=86400; SameSite=Lax`;
+
             // Update URL without full reload
             const url = new URL(window.location.href);
             url.searchParams.set('campaignCode', targetCode);
@@ -880,6 +886,9 @@
                 document.body.appendChild(jcForm);
                 sessionStorage.setItem('jazzcash_source', 'pharmacy_campaign/index.html');
                 sessionStorage.setItem('campaign_code', campaignCode);
+                localStorage.setItem('jazzcash_source', 'pharmacy_campaign/index.html');
+                localStorage.setItem('campaign_code', campaignCode);
+                document.cookie = `bima_campaign_code=${encodeURIComponent(campaignCode)}; path=/; max-age=86400; SameSite=Lax`;
 
                 setTimeout(() => jcForm.submit(), 800);
 

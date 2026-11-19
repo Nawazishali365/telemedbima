@@ -177,6 +177,14 @@ app.use((req, res, next) => {
     next();
 });
 
+// Helper to extract cookie from request
+function getRequestCookie(req, name) {
+    const raw = req.headers.cookie;
+    if (!raw) return '';
+    const match = raw.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
 function renderHtmlWithCampaign(filePath, req, res, msisdn = '') {
     fs.readFile(filePath, 'utf8', (err, html) => {
         if (err) {
@@ -184,7 +192,8 @@ function renderHtmlWithCampaign(filePath, req, res, msisdn = '') {
             return res.status(500).send('Error loading page');
         }
 
-        const rawCampaignCode = (req.query.campaignCode || req.query.campignCode || req.query.campaign || (req.body && (req.body.campaignCode || req.body.campignCode || req.body.campaign)) || '').trim();
+        const cookieCampaign = getRequestCookie(req, 'bima_campaign_code');
+        const rawCampaignCode = (req.query.campaignCode || req.query.campignCode || req.query.campaign || (req.body && (req.body.campaignCode || req.body.campignCode || req.body.campaign)) || cookieCampaign || '').trim();
         const campaignConfig = getCampaignConfig(rawCampaignCode, filePath);
 
         const headInjections = [];
@@ -239,6 +248,9 @@ src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"
         let cleanHtml = html.replace(/<meta\s+name=["']facebook-domain-verification["']\s+content=["'][^"']*["']\s*\/?>/gi, '');
         const injectedHtml = cleanHtml.replace('<head>', '<head>\n    ' + headInjections.join('\n    '));
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        if (!filePath.toLowerCase().includes('callback') && campaignConfig && (campaignConfig.rawCode || campaignConfig.campaignCode)) {
+            res.setHeader('Set-Cookie', `bima_campaign_code=${encodeURIComponent(campaignConfig.rawCode || campaignConfig.campaignCode)}; Path=/; Max-Age=86400; SameSite=Lax`);
+        }
         res.send(injectedHtml);
     });
 }
@@ -787,6 +799,7 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
         }
 
         const sessionToken = generatePaymentToken(msisdn, transId, campaignCode);
+        res.setHeader('Set-Cookie', `bima_campaign_code=${encodeURIComponent(campaignCode)}; Path=/; Max-Age=86400; SameSite=Lax`);
         return res.json({
             ...result.body,
             paymentSessionToken: sessionToken,
@@ -846,6 +859,8 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
 
     console.log('[/api/jazzcash-form] secureHash calculated successfully.');
 
+    res.setHeader('Set-Cookie', `bima_campaign_code=${encodeURIComponent(campaignCode || '')}; Path=/; Max-Age=86400; SameSite=Lax`);
+
     // Note: JazzCash DTC API requires pp_Password in the HTML POST body sent from the user's browser.
     res.json({
         actionUrl,
@@ -875,7 +890,8 @@ const handleJcmsCallback = (req, res) => {
     const message = data.message || data.pp_ResponseMessage || data.pp_TxnResponseMessage || '';
     const trxRefNo = data.trxRefNo || data.pp_TxnRefNo || data.pp_RetrievalReferenceNo || data.pp_RefNo || '';
     const source = data.source || data.ppmp_1 || '';
-    const campaignCode = data.campaignCode || data.campaign || data.ppmp_2 || '';
+    const cookieCampaign = getRequestCookie(req, 'bima_campaign_code');
+    const campaignCode = data.campaignCode || data.campaign || data.ppmp_2 || cookieCampaign || '';
 
     const queryParams = { status, message, trxRefNo, campaignCode };
     if (source) queryParams.source = source;
@@ -890,6 +906,7 @@ const handleJcmsCallback = (req, res) => {
 
 // Standard Callback Routes (supports /jcms/callback and /jcm/callback)
 app.post('/jcms/callback', handleJcmsCallback);
+app.get('/jcms/callback', handleJcmsCallback);
 // app.get('/jcms/callback', handleJcmsCallback);
 // app.post('/jcm/callback', handleJcmsCallback);
 // app.get('/jcm/callback', handleJcmsCallback);
