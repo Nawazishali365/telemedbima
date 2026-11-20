@@ -66,16 +66,57 @@ function getCampaignConfig(requestedCode, pagePath = '') {
         const isQa = ['qa', 'staging', 'dev', 'development'].includes(appEnv);
 
         const isMetaPage = pagePath && (pagePath.includes('meta') || pagePath.includes('index4') || pagePath.includes('hpass'));
-        const defaultCode = isQa
+        const isPharmacyPage = pagePath && pagePath.toLowerCase().includes('pharmacy');
+        let defaultCode = isQa
             ? (isMetaPage ? 'qa_meta_600' : 'qa_default')
             : (isMetaPage ? 'meta_600' : 'default');
 
+        if (isPharmacyPage) {
+            defaultCode = pagePath.toLowerCase().includes('solo') ? 'bima_solo' : 'bima_fam';
+        }
+
         let code = (requestedCode || '').toLowerCase().trim();
+        if (code === 'bima_bolo') {
+            code = 'bima_solo';
+        }
+        if (code === 'qa_bima_bolo') {
+            code = 'qa_bima_solo';
+        }
         if (!code || code === 'default') {
             code = defaultCode;
         }
 
-        const campaignData = campaigns[code] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code) || campaigns[defaultCode] || campaigns['qa_meta_600'] || campaigns['default'] || null;
+        // Automatic bidirectional resolution between bima_fam/bima_solo and qa_bima_fam/qa_bima_solo
+        if (code === 'bima_fam' && !campaigns['bima_fam'] && campaigns['qa_bima_fam']) {
+            code = 'qa_bima_fam';
+        } else if (code === 'qa_bima_fam' && !campaigns['qa_bima_fam'] && campaigns['bima_fam']) {
+            code = 'bima_fam';
+        } else if (code === 'bima_solo' && !campaigns['bima_solo'] && campaigns['qa_bima_solo']) {
+            code = 'qa_bima_solo';
+        } else if (code === 'qa_bima_solo' && !campaigns['qa_bima_solo'] && campaigns['bima_solo']) {
+            code = 'bima_solo';
+        }
+
+        let campaignData = campaigns[code] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === code);
+        if (!campaignData && campaignsPath !== path.join(__dirname, 'campaigns_prod.json')) {
+            try {
+                const prodPath = path.join(__dirname, 'campaigns_prod.json');
+                if (fs.existsSync(prodPath)) {
+                    const prodContent = fs.readFileSync(prodPath, 'utf8').replace(/\/\/.*$/gm, '');
+                    const prodCampaigns = JSON.parse(prodContent);
+                    const prodCode = (requestedCode || '').toLowerCase().trim();
+                    campaignData = prodCampaigns[prodCode] || Object.values(prodCampaigns).find(c => (c.campaignCode || '').toLowerCase() === prodCode);
+                }
+            } catch (e) {}
+        }
+        if (!campaignData && (code.includes('fam') || code.includes('solo') || code.includes('bima'))) {
+            const isSolo = code.includes('solo') || code.includes('bolo');
+            const targetPharmacyCode = isQa ? (isSolo ? 'qa_bima_solo' : 'qa_bima_fam') : (isSolo ? 'bima_solo' : 'bima_fam');
+            campaignData = campaigns[targetPharmacyCode] || null;
+        }
+        if (!campaignData) {
+            campaignData = campaigns[defaultCode] || campaigns['qa_meta_600'] || campaigns['default'] || null;
+        }
         if (campaignData) {
             return {
                 ...campaignData,
@@ -156,6 +197,14 @@ app.use((req, res, next) => {
     next();
 });
 
+// Helper to extract cookie from request
+function getRequestCookie(req, name) {
+    const raw = req.headers.cookie;
+    if (!raw) return '';
+    const match = raw.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
 function renderHtmlWithCampaign(filePath, req, res, msisdn = '') {
     fs.readFile(filePath, 'utf8', (err, html) => {
         if (err) {
@@ -163,7 +212,8 @@ function renderHtmlWithCampaign(filePath, req, res, msisdn = '') {
             return res.status(500).send('Error loading page');
         }
 
-        const rawCampaignCode = (req.query.campaignCode || req.query.campaign || (req.body && req.body.campaignCode) || '').trim();
+        const cookieCampaign = getRequestCookie(req, 'bima_campaign_code');
+        const rawCampaignCode = (req.query.campaignCode || req.query.campignCode || req.query.campaign || (req.body && (req.body.campaignCode || req.body.campignCode || req.body.campaign)) || cookieCampaign || '').trim();
         const campaignConfig = getCampaignConfig(rawCampaignCode, filePath);
 
         const headInjections = [];
@@ -218,6 +268,9 @@ src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"
         let cleanHtml = html.replace(/<meta\s+name=["']facebook-domain-verification["']\s+content=["'][^"']*["']\s*\/?>/gi, '');
         const injectedHtml = cleanHtml.replace('<head>', '<head>\n    ' + headInjections.join('\n    '));
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        if (!filePath.toLowerCase().includes('callback') && campaignConfig && (campaignConfig.rawCode || campaignConfig.campaignCode)) {
+            res.setHeader('Set-Cookie', `bima_campaign_code=${encodeURIComponent(campaignConfig.rawCode || campaignConfig.campaignCode)}; Path=/; Max-Age=86400; SameSite=Lax`);
+        }
         res.send(injectedHtml);
     });
 }
@@ -587,8 +640,19 @@ app.post('/api/service-search', rateLimitMiddleware(10, 60000), async (req, res)
                 let fileContent = fs.readFileSync(campaignsPath, 'utf8');
                 fileContent = fileContent.replace(/\/\/.*$/gm, '');
                 const campaigns = JSON.parse(fileContent);
-                const cleanCode = (campaignCode || '').toLowerCase().trim();
-                const config = campaigns[cleanCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns[defaultCampaignCode] || campaigns['default'];
+                let cleanCode = (campaignCode || '').toLowerCase().trim();
+                if (cleanCode === 'bima_bolo') cleanCode = 'bima_solo';
+                let config = campaigns[cleanCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode);
+                if (!config && campaignsPath !== path.join(__dirname, 'campaigns_prod.json')) {
+                    try {
+                        const prodPath = path.join(__dirname, 'campaigns_prod.json');
+                        if (fs.existsSync(prodPath)) {
+                            const prodCampaigns = JSON.parse(fs.readFileSync(prodPath, 'utf8').replace(/\/\/.*$/gm, ''));
+                            config = prodCampaigns[cleanCode] || Object.values(prodCampaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode);
+                        }
+                    } catch (e) {}
+                }
+                if (!config) config = campaigns[defaultCampaignCode] || campaigns['default'];
                 if (config) {
                     if (!productCode) productCode = config.productCode;
                     campaignCode = config.campaignCode || campaignCode;
@@ -690,8 +754,19 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
                 let fileContent = fs.readFileSync(campaignsPath, 'utf8');
                 fileContent = fileContent.replace(/\/\/.*$/gm, '');
                 const campaigns = JSON.parse(fileContent);
-                const cleanCode = (campaignCode || '').toLowerCase().trim();
-                const config = campaigns[cleanCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode) || campaigns[defaultCampaignCode] || campaigns['default'];
+                let cleanCode = (campaignCode || '').toLowerCase().trim();
+                if (cleanCode === 'bima_bolo') cleanCode = 'bima_solo';
+                let config = campaigns[cleanCode] || Object.values(campaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode);
+                if (!config && campaignsPath !== path.join(__dirname, 'campaigns_prod.json')) {
+                    try {
+                        const prodPath = path.join(__dirname, 'campaigns_prod.json');
+                        if (fs.existsSync(prodPath)) {
+                            const prodCampaigns = JSON.parse(fs.readFileSync(prodPath, 'utf8').replace(/\/\/.*$/gm, ''));
+                            config = prodCampaigns[cleanCode] || Object.values(prodCampaigns).find(c => (c.campaignCode || '').toLowerCase() === cleanCode);
+                        }
+                    } catch (e) {}
+                }
+                if (!config) config = campaigns[defaultCampaignCode] || campaigns['default'];
                 if (config) {
                     if (!productCode) productCode = config.productCode;
                     campaignCode = config.campaignCode || campaignCode;
@@ -744,6 +819,7 @@ app.post('/api/campaign-service-search', rateLimitMiddleware(10, 60000), async (
         }
 
         const sessionToken = generatePaymentToken(msisdn, transId, campaignCode);
+        res.setHeader('Set-Cookie', `bima_campaign_code=${encodeURIComponent(campaignCode)}; Path=/; Max-Age=86400; SameSite=Lax`);
         return res.json({
             ...result.body,
             paymentSessionToken: sessionToken,
@@ -803,6 +879,8 @@ app.get('/api/jazzcash-form', rateLimitMiddleware(10, 60000), (req, res) => {
 
     console.log('[/api/jazzcash-form] secureHash calculated successfully.');
 
+    res.setHeader('Set-Cookie', `bima_campaign_code=${encodeURIComponent(campaignCode || '')}; Path=/; Max-Age=86400; SameSite=Lax`);
+
     // Note: JazzCash DTC API requires pp_Password in the HTML POST body sent from the user's browser.
     res.json({
         actionUrl,
@@ -832,7 +910,8 @@ const handleJcmsCallback = (req, res) => {
     const message = data.message || data.pp_ResponseMessage || data.pp_TxnResponseMessage || '';
     const trxRefNo = data.trxRefNo || data.pp_TxnRefNo || data.pp_RetrievalReferenceNo || data.pp_RefNo || '';
     const source = data.source || data.ppmp_1 || '';
-    const campaignCode = data.campaignCode || data.campaign || data.ppmp_2 || '';
+    const cookieCampaign = getRequestCookie(req, 'bima_campaign_code');
+    const campaignCode = data.campaignCode || data.campaign || data.ppmp_2 || cookieCampaign || '';
 
     const queryParams = { status, message, trxRefNo, campaignCode };
     if (source) queryParams.source = source;
@@ -847,6 +926,7 @@ const handleJcmsCallback = (req, res) => {
 
 // Standard Callback Routes (supports /jcms/callback and /jcm/callback)
 app.post('/jcms/callback', handleJcmsCallback);
+app.get('/jcms/callback', handleJcmsCallback);
 // app.get('/jcms/callback', handleJcmsCallback);
 // app.post('/jcm/callback', handleJcmsCallback);
 // app.get('/jcm/callback', handleJcmsCallback);

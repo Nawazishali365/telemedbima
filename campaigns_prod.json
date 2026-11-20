@@ -6,7 +6,7 @@
     "productCode": "PAKISTAN_BIMA_JAZZDTC_TELEMEDICINE_BCARE_LITE",
     "price": 600,
     "currency": "PKR",
-    "artworkImage": "campaign_artwork_tiktok_600.png",
+    "artworkImage": "campaign_artwork_tiktok_600.webp",
     "backgroundColor": "#0d2743",
     "textColor": "#111111",
     "termsUrl": "terms_and_conditions_bima_600.html",
@@ -93,6 +93,48 @@
     "backgroundColor": "#0d2743",
     "textColor": "#ffffff",
     "termsUrl": "terms_and_conditions_bima.html",
+    "events": {
+      "page_view": "PageView",
+      "add_to_cart": "AddToCart",
+      "initiate_checkout": "InitiateCheckout",
+      "purchase": "Purchase",
+      "purchase_failed": "FailedSubscription",
+      "duplicate": "Duplicate"
+    }
+  },
+  "bima_solo": {
+    "campaignCode": "bima_solo",
+    "campaignPlatform": "meta",
+    "pixelId": "1564520369371090",
+    "metaDomainVerification": "gxb6jmrkaywgswv25tztd",
+    "productCode": "PAKISTAN_BIMA_HEALTH_PASS_SOLO",
+    "price": 400,
+    "currency": "PKR",
+    "artworkImage": "Solo Pass.webp",
+    "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
+    "termsUrl": "terms_and_conditions_bima.pdf",
+    "events": {
+      "page_view": "PageView",
+      "add_to_cart": "AddToCart",
+      "initiate_checkout": "InitiateCheckout",
+      "purchase": "Purchase",
+      "purchase_failed": "FailedSubscription",
+      "duplicate": "Duplicate"
+    }
+  },
+  "bima_fam": {
+    "campaignCode": "bima_fam",
+    "campaignPlatform": "meta",
+    "pixelId": "1564520369371090",
+    "metaDomainVerification": "gxb6jmrkaywgswv25tztc",
+    "productCode": "PAKISTAN_BIMA_HEALTH_PASS_FAMILY",
+    "price": 600,
+    "currency": "PKR",
+    "artworkImage": "Family Pass.webp",
+    "backgroundColor": "#0d2743",
+    "textColor": "#ffffff",
+    "termsUrl": "terms_and_conditions_bima.pdf",
     "events": {
       "page_view": "PageView",
       "add_to_cart": "AddToCart",

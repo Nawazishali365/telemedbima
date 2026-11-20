@@ -194,18 +194,18 @@
         }
 
         /* =========================================================
-           2. TikTok 600 Artwork Layout (campaign_artwork_tiktok_600.png)
+           2. TikTok 600 Artwork Layout (campaign_artwork_tiktok_600.webp)
            ========================================================= */
         .container.campaign-artwork-tiktok-600 {
-            background-image: url('campaign_artwork_tiktok_600.png');
+            background-image: url('campaign_artwork_tiktok_600.webp');
         }
 
         .container.campaign-artwork-tiktok-600 .input-box-overlay {
             position: absolute;
-            left: 8.93%;
-            top: 74.04%;
-            width: 82.15%;
-            height: 5.32%;
+            left: 9.60%;
+            top: 79.65%;
+            width: 80.44%;
+            height: 6.70%;
             display: flex;
             align-items: center;
             z-index: 10;
@@ -213,9 +213,9 @@
 
         .container.campaign-artwork-tiktok-600 .phone-input {
             position: absolute;
-            left: 40%;
+            left: 36%;
             top: 0;
-            width: 58%;
+            width: 62%;
             height: 100%;
             border: none;
             outline: none;
@@ -229,24 +229,20 @@
             caret-color: #0d2743;
         }
 
-        .container.campaign-artwork-tiktok-600 .phone-input:focus,
-        .container.campaign-artwork-tiktok-600 .phone-input:not(:placeholder-shown) {
-            background: #c8e6fd !important;
-            border-radius: 8px;
-        }
-
         .container.campaign-artwork-tiktok-600 .phone-input::placeholder {
-            color: transparent;
+            color: #7890a8;
+            font-weight: 400;
+            font-size: clamp(10px, 2.7cqw, 14px);
         }
 
         .container.campaign-artwork-tiktok-600 .subscribe-btn-overlay {
             position: absolute;
-            left: 8.82%;
-            top: 80.56%;
-            width: 82.36%;
-            height: 5.38%;
+            left: 9.35%;
+            top: 86.95%;
+            width: 81.25%;
+            height: 5.50%;
             background: transparent;
-            color: transparent;
+            color: #0d2743;
             border: none;
             border-radius: 9999px;
             font-family: 'Outfit', sans-serif;
@@ -263,14 +259,14 @@
         }
 
         .container.campaign-artwork-tiktok-600 .subscribe-btn-overlay:disabled {
-            color: #0d2743;
-            background: #c8e6fd;
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .container.campaign-artwork-tiktok-600 .consent-container {
             position: absolute;
             left: 35%;
-            top: 88.2%;
+            top: 93.8%;
             width: 30%;
             height: 3.2%;
             display: flex;
@@ -787,8 +783,13 @@
                 });
 
                 document.body.appendChild(jcForm);
-                sessionStorage.setItem('jazzcash_source', 'BimaVoucher/index3.html');
+
+                const sourceUrl = window.location.pathname + (window.location.search || `?campaignCode=${encodeURIComponent(campaignCode)}`);
+                sessionStorage.setItem('jazzcash_source', sourceUrl);
+                localStorage.setItem('jazzcash_source', sourceUrl);
                 sessionStorage.setItem('campaign_code', campaignCode);
+                localStorage.setItem('campaign_code', campaignCode);
+                document.cookie = `bima_campaign_code=${encodeURIComponent(campaignCode)}; path=/; max-age=86400; SameSite=Lax`;
 
                 setTimeout(() => jcForm.submit(), 1000);
 
@@ -809,11 +810,28 @@
         window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
 
-            // Extract campaignCode parameter from URL query string
-            const rawCampaignCode = (urlParams.get('campaignCode') || urlParams.get('campignCode') || urlParams.get('campaign') || sessionStorage.getItem('campaign_code') || 'default').trim();
-            if (urlParams.get('campaignCode') || urlParams.get('campignCode')) {
-                sessionStorage.setItem('campaign_code', rawCampaignCode);
+            function getCookie(name) {
+                const match = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+                return match ? decodeURIComponent(match[1]) : null;
             }
+
+            // Extract campaignCode parameter from URL, sessionStorage, localStorage, or cookie
+            const rawCampaignCode = (
+                urlParams.get('campaignCode') ||
+                urlParams.get('campignCode') ||
+                urlParams.get('campaign') ||
+                sessionStorage.getItem('campaign_code') ||
+                localStorage.getItem('campaign_code') ||
+                getCookie('bima_campaign_code') ||
+                'default'
+            ).trim();
+
+            const currentSourceUrl = window.location.pathname + (window.location.search || `?campaignCode=${encodeURIComponent(rawCampaignCode)}`);
+            sessionStorage.setItem('campaign_code', rawCampaignCode);
+            localStorage.setItem('campaign_code', rawCampaignCode);
+            sessionStorage.setItem('jazzcash_source', currentSourceUrl);
+            localStorage.setItem('jazzcash_source', currentSourceUrl);
+            document.cookie = `bima_campaign_code=${encodeURIComponent(rawCampaignCode)}; path=/; max-age=86400; SameSite=Lax`;
 
             // Fetch campaign configuration parameters from campaigns.json API endpoint
             try {
@@ -854,7 +872,7 @@
             const is600 = cleanCode.includes('600') || (rawCampaignCode || '').toLowerCase().includes('600') || cleanArtwork.includes('600');
 
             if (is600) {
-                artworkImage = 'campaign_artwork_tiktok_600.png';
+                artworkImage = 'campaign_artwork_tiktok_600.webp';
             } else if (artworkImage === 'campaign_artwork_tiktok_300.jpeg' || artworkImage === 'campaign2 artwork.jpeg') {
                 artworkImage = 'campaign_artwork_tiktok_300.webp';
             }
