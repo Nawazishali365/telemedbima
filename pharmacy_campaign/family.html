@@ -69,26 +69,24 @@
 
         /* 
            Responsive Aspect Ratio Container 
-           Locks layout to 9:16 (1125x2000) matching the Family Pass artwork.
+           Locks layout to exact 440x956 aspect ratio of Landing Page- Family Pass.webp.
+           Ensures 100% exact alignment across all devices without vertical cropping.
         */
         .container {
             container-type: inline-size;
             position: relative;
-            width: 100vw;
-            height: 177.78vw;
-            max-height: 100vh;
-            max-height: 100dvh;
-            max-width: 56.25vh;
-            max-width: 56.25dvh;
-            background-image: url('Landing Page- Family Pass.png');
-            background-size: cover;
+            width: min(100vw, calc(100dvh * (440 / 956)));
+            height: min(100dvh, calc(100vw * (956 / 440)));
+            aspect-ratio: 440 / 956;
+            background-image: url('Landing Page- Family Pass.webp');
+            background-size: 100% 100%;
             background-position: center;
             background-repeat: no-repeat;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
 
-        @media (max-width: 480px) and (max-aspect-ratio: 9/16) {
+        @media (max-width: 480px) {
             .container {
                 box-shadow: none;
             }
@@ -104,14 +102,15 @@
 
         /* 
            Input Box Overlay - Family Pass
-           Position: left: 12%, top: 79.1%, width: 76%, height: 5.5%
+           Exactly aligned to the white rounded box in the artwork:
+           top: 80.86%, height: 3.77%, left: 8.86%, width: 82.05%
         */
         .input-box-overlay {
             position: absolute;
-            left: 12%;
-            top: 79.1%;
-            width: 76%;
-            height: 5.5%;
+            left: 8.86%;
+            top: 80.86%;
+            width: 82.05%;
+            height: 3.77%;
             display: flex;
             align-items: center;
             z-index: 10;
@@ -119,22 +118,22 @@
 
         .phone-input {
             position: absolute;
-            left: 24%;
+            left: 0;
             top: 0;
-            width: 76%;
+            width: 100%;
             height: 100%;
             border: none;
             outline: none;
             background: transparent !important;
             color: #0d2743;
             font-family: 'Outfit', sans-serif;
-            font-size: clamp(9px, 2.7cqw, 15px);
-            font-weight: 600;
-            padding: 0 10px;
+            font-size: clamp(10px, 3.4cqw, 16px);
+            font-weight: 500;
+            padding: 0 16px;
         }
 
         .phone-input::placeholder {
-            color: #64748b;
+            color: #94a3b8;
             font-weight: 400;
         }
 
@@ -149,38 +148,37 @@
 
         /* 
            Subscribe Button Overlay - Family Pass
-           Position: left: 12%, top: 85.8%, width: 76%, height: 5.3%
+           Exactly matches the "GET FAMILY PASS" button:
+           top: 91.63%, height: 2.8%, left: 27.50%, width: 50.23%
         */
         .subscribe-btn-overlay {
             position: absolute;
-            left: 12%;
-            top: 85.8%;
-            width: 76%;
-            height: 5.3%;
+            left: 27.50%;
+            top: 91.63%;
+            width: 50.23%;
+            height: 2.8%;
             background: transparent;
-            color: #16497b;
+            color: transparent;
             border: none;
             border-radius: 9999px;
             font-family: 'Outfit', sans-serif;
-            font-size: clamp(12px, 4.1cqw, 19px);
-            font-weight: 700;
-            letter-spacing: 0.2px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: none;
-            transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
+            transition: transform 0.15s ease, background-color 0.15s ease;
             z-index: 10;
         }
 
         .subscribe-btn-overlay:hover {
-            background-color: rgba(22, 73, 123, 0.08);
-            transform: scale(1.015);
+            background-color: rgba(255, 255, 255, 0.18);
+            transform: scale(1.02);
         }
 
         .subscribe-btn-overlay:active {
-            transform: scale(0.985);
+            transform: scale(0.98);
+            background-color: rgba(255, 255, 255, 0.25);
         }
 
         .subscribe-btn-overlay:disabled {
@@ -189,12 +187,19 @@
             transform: none;
         }
 
+        .subscribe-btn-overlay.is-loading {
+            background-color: rgba(255, 255, 255, 0.7);
+            color: #16497b;
+            font-size: clamp(10px, 3cqw, 14px);
+            font-weight: 700;
+        }
+
         .subscribe-btn-overlay.is-loading::after {
             content: '';
-            width: 16px;
-            height: 16px;
-            margin-left: 8px;
-            border: 2px solid currentColor;
+            width: 14px;
+            height: 14px;
+            margin-left: 6px;
+            border: 2px solid #16497b;
             border-right-color: transparent;
             border-radius: 50%;
             animation: button-spinner 0.7s linear infinite;
@@ -202,22 +207,22 @@
 
         /* 
            Consent Container - Family Pass
-           Position: left: 12%, top: 91.5%, width: 76%
+           Anchored safely at the bottom below GET FAMILY PASS
         */
         .consent-container {
             position: absolute;
-            left: 12%;
-            top: 91.5%;
-            width: 76%;
+            left: 5%;
+            bottom: 1.2%;
+            width: 90%;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             z-index: 10;
         }
 
         .consent-label {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             cursor: pointer;
             user-select: none;
             color: #0d2743 !important;
@@ -225,20 +230,21 @@
 
         .consent-text {
             color: #0d2743 !important;
-            font-size: clamp(8px, 2cqw, 9.5px);
-            line-height: 1.35;
-            text-align: left;
+            font-size: clamp(7.5px, 2.2cqw, 10px);
+            line-height: 1.25;
+            text-align: center;
             font-weight: 500;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
         }
 
         .consent-text a {
             display: inline-block;
             margin-left: 2px;
-            padding: 2px 8px;
+            padding: 1px 6px;
             border-radius: 9999px;
             background-color: #0d2743;
             color: #ffffff !important;
-            font-size: clamp(9px, 2.4cqw, 11px);
+            font-size: clamp(8px, 2.4cqw, 10.5px);
             font-weight: 600;
             line-height: 1.2;
             text-decoration: none;
@@ -383,9 +389,8 @@
                         style="margin-top: 2px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0; accent-color: #0d2743;"
                         checked required>
                     <span class="consent-text">
-                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.html" id="termsLink"
-                            target="_blank"
-                            onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms &
+                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.pdf" id="termsLink"
+                            target="_blank">Terms &
                             Conditions</a>
                     </span>
                 </label>
@@ -700,7 +705,7 @@
 
             const termsLinkEl = document.getElementById('termsLink');
             if (termsLinkEl) {
-                termsLinkEl.href = `terms_and_conditions_bima.html?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                termsLinkEl.href = (cVars && cVars.termsUrl && cVars.termsUrl.endsWith('.pdf')) ? cVars.termsUrl : 'terms_and_conditions_bima.pdf';
             }
 
             if (cVars.pixelId && cVars.events && cVars.events.page_view) {

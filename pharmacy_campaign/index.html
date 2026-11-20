@@ -539,9 +539,8 @@
                         style="margin-top: 1px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0;"
                         checked required>
                     <span class="consent-text">
-                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.html" id="termsLink"
-                            target="_blank"
-                            onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms &
+                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.pdf" id="termsLink"
+                            target="_blank">Terms &
                             Conditions</a>
                     </span>
                 </label>
@@ -925,7 +924,7 @@
 
             const termsLinkEl = document.getElementById('termsLink');
             if (termsLinkEl) {
-                termsLinkEl.href = `terms_and_conditions_bima.html?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                termsLinkEl.href = (cVars && cVars.termsUrl && cVars.termsUrl.endsWith('.pdf')) ? cVars.termsUrl : 'terms_and_conditions_bima.pdf';
             }
 
             const queryMsisdn = urlParams.get('msisdn');

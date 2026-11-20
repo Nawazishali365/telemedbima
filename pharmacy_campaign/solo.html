@@ -69,26 +69,24 @@
 
         /* 
            Responsive Aspect Ratio Container 
-           Locks layout to 9:16 (1125x2000) matching the Solo Pass artwork.
+           Locks layout to exact 850x1850 aspect ratio of Landing Page- Solo Pass.webp.
+           Ensures 100% exact alignment across all devices without vertical cropping.
         */
         .container {
             container-type: inline-size;
             position: relative;
-            width: 100vw;
-            height: 177.78vw;
-            max-height: 100vh;
-            max-height: 100dvh;
-            max-width: 56.25vh;
-            max-width: 56.25dvh;
-            background-image: url('Landing Page- Solo Pass.png');
-            background-size: cover;
+            width: min(100vw, calc(100dvh * (850 / 1850)));
+            height: min(100dvh, calc(100vw * (1850 / 850)));
+            aspect-ratio: 850 / 1850;
+            background-image: url('Landing Page- Solo Pass.webp');
+            background-size: 100% 100%;
             background-position: center;
             background-repeat: no-repeat;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
 
-        @media (max-width: 480px) and (max-aspect-ratio: 9/16) {
+        @media (max-width: 480px) {
             .container {
                 box-shadow: none;
             }
@@ -104,44 +102,45 @@
 
         /* 
            Input Box Overlay - Solo Pass
-           Position: left: 9%, top: 81%, width: 82%, height: 5.8%
+           Rendered cleanly right above the MONTH/YEAR tabs:
+           top: 76.8%, height: 4.6%, left: 7%, width: 86%
         */
         .input-box-overlay {
             position: absolute;
-            left: 9%;
-            top: 81%;
-            width: 82%;
-            height: 5.8%;
+            left: 7%;
+            top: 76.8%;
+            width: 86%;
+            height: 4.6%;
             display: flex;
             align-items: center;
+            background: #ffffff;
+            border-radius: 9999px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            padding: 0 16px;
             z-index: 10;
         }
 
         .phone-input {
-            position: absolute;
-            left: 25%;
-            top: 0;
-            width: 75%;
+            width: 100%;
             height: 100%;
             border: none;
             outline: none;
             background: transparent !important;
-            color: #0d2743;
+            color: #031e45;
             font-family: 'Outfit', sans-serif;
-            font-size: clamp(9px, 2.7cqw, 15px);
-            font-weight: 600;
-            padding: 0 10px;
+            font-size: clamp(10px, 3.4cqw, 16px);
+            font-weight: 500;
         }
 
         .phone-input::placeholder {
-            color: #64748b;
+            color: #94a3b8;
             font-weight: 400;
         }
 
         .phone-input:-webkit-autofill,
         .phone-input:-webkit-autofill:hover,
         .phone-input:-webkit-autofill:focus {
-            -webkit-text-fill-color: #0d2743;
+            -webkit-text-fill-color: #031e45;
             -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
             box-shadow: 0 0 0px 1000px transparent inset !important;
             transition: background-color 5000s ease-in-out 0s;
@@ -149,38 +148,37 @@
 
         /* 
            Subscribe Button Overlay - Solo Pass
-           Position: left: 9%, top: 88%, width: 82%, height: 5.8%
+           Matches the "GET SOLO PASS" pill button:
+           top: 90.05%, height: 4.92%, left: 25.65%, width: 48.47%
         */
         .subscribe-btn-overlay {
             position: absolute;
-            left: 9%;
-            top: 88%;
-            width: 82%;
-            height: 5.8%;
+            left: 25.65%;
+            top: 90.05%;
+            width: 48.47%;
+            height: 4.92%;
             background: transparent;
-            color: #16497b;
+            color: transparent;
             border: none;
             border-radius: 9999px;
             font-family: 'Outfit', sans-serif;
-            font-size: clamp(12px, 4.1cqw, 19px);
-            font-weight: 700;
-            letter-spacing: 0.2px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: none;
-            transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
+            transition: transform 0.15s ease, background-color 0.15s ease;
             z-index: 10;
         }
 
         .subscribe-btn-overlay:hover {
-            background-color: rgba(22, 73, 123, 0.08);
-            transform: scale(1.015);
+            background-color: rgba(255, 255, 255, 0.18);
+            transform: scale(1.02);
         }
 
         .subscribe-btn-overlay:active {
-            transform: scale(0.985);
+            transform: scale(0.98);
+            background-color: rgba(255, 255, 255, 0.25);
         }
 
         .subscribe-btn-overlay:disabled {
@@ -189,12 +187,19 @@
             transform: none;
         }
 
+        .subscribe-btn-overlay.is-loading {
+            background-color: rgba(255, 255, 255, 0.7);
+            color: #031e45;
+            font-size: clamp(10px, 3cqw, 14px);
+            font-weight: 700;
+        }
+
         .subscribe-btn-overlay.is-loading::after {
             content: '';
-            width: 16px;
-            height: 16px;
-            margin-left: 8px;
-            border: 2px solid currentColor;
+            width: 14px;
+            height: 14px;
+            margin-left: 6px;
+            border: 2px solid #031e45;
             border-right-color: transparent;
             border-radius: 50%;
             animation: button-spinner 0.7s linear infinite;
@@ -202,12 +207,12 @@
 
         /* 
            Consent Container - Solo Pass
-           Position: left: 5%, top: 94.2%, width: 90%
+           Anchored safely at the bottom below GET SOLO PASS
         */
         .consent-container {
             position: absolute;
             left: 5%;
-            top: 94.2%;
+            bottom: 1.2%;
             width: 90%;
             display: flex;
             justify-content: center;
@@ -225,10 +230,11 @@
 
         .consent-text {
             color: #ffffff !important;
-            font-size: clamp(7.5px, 1.9cqw, 9px);
+            font-size: clamp(7.5px, 2.2cqw, 10px);
             line-height: 1.25;
-            text-align: left;
+            text-align: center;
             font-weight: 400;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
         }
 
         .consent-text a {
@@ -238,7 +244,7 @@
             border-radius: 4px;
             background-color: #ffe100;
             color: #0d2743 !important;
-            font-size: clamp(8px, 2.2cqw, 10px);
+            font-size: clamp(8px, 2.4cqw, 10.5px);
             font-weight: 700;
             line-height: 1.1;
             text-decoration: none;
@@ -383,9 +389,8 @@
                         style="margin-top: 1px; margin-right: 6px; width: 13px; height: 13px; cursor: pointer; flex-shrink: 0; accent-color: #ffe100;"
                         checked required>
                     <span class="consent-text">
-                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.html" id="termsLink"
-                            target="_blank"
-                            onclick="sessionStorage.setItem('tc_return_url', window.location.href)">Terms &
+                        By clicking Subscribe, you accept the <a href="terms_and_conditions_bima.pdf" id="termsLink"
+                            target="_blank">Terms &
                             Conditions</a>
                     </span>
                 </label>
@@ -702,7 +707,7 @@
 
             const termsLinkEl = document.getElementById('termsLink');
             if (termsLinkEl) {
-                termsLinkEl.href = `terms_and_conditions_bima.html?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                termsLinkEl.href = (cVars && cVars.termsUrl && cVars.termsUrl.endsWith('.pdf')) ? cVars.termsUrl : 'terms_and_conditions_bima.pdf';
             }
 
             if (cVars.pixelId && cVars.events && cVars.events.page_view) {

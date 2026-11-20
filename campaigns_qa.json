@@ -189,7 +189,7 @@
     "artworkImage": "Family Pass.webp",
     "backgroundColor": "#0d2743",
     "textColor": "#ffffff",
-    "termsUrl": "terms_and_conditions_bima.html",
+    "termsUrl": "terms_and_conditions_bima.pdf",
     "events": {
       "page_view": "PageView",
       "add_to_cart": "AddToCart",
@@ -210,7 +210,7 @@
     "artworkImage": "Solo Pass.webp",
     "backgroundColor": "#0d2743",
     "textColor": "#ffffff",
-    "termsUrl": "terms_and_conditions_bima.html",
+    "termsUrl": "terms_and_conditions_bima.pdf",
     "events": {
       "page_view": "PageView",
       "add_to_cart": "AddToCart",
