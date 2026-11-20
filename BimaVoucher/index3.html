@@ -783,8 +783,13 @@
                 });
 
                 document.body.appendChild(jcForm);
-                sessionStorage.setItem('jazzcash_source', 'BimaVoucher/index3.html');
+
+                const sourceUrl = window.location.pathname + (window.location.search || `?campaignCode=${encodeURIComponent(campaignCode)}`);
+                sessionStorage.setItem('jazzcash_source', sourceUrl);
+                localStorage.setItem('jazzcash_source', sourceUrl);
                 sessionStorage.setItem('campaign_code', campaignCode);
+                localStorage.setItem('campaign_code', campaignCode);
+                document.cookie = `bima_campaign_code=${encodeURIComponent(campaignCode)}; path=/; max-age=86400; SameSite=Lax`;
 
                 setTimeout(() => jcForm.submit(), 1000);
 
@@ -805,11 +810,28 @@
         window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
 
-            // Extract campaignCode parameter from URL query string
-            const rawCampaignCode = (urlParams.get('campaignCode') || urlParams.get('campignCode') || urlParams.get('campaign') || sessionStorage.getItem('campaign_code') || 'default').trim();
-            if (urlParams.get('campaignCode') || urlParams.get('campignCode')) {
-                sessionStorage.setItem('campaign_code', rawCampaignCode);
+            function getCookie(name) {
+                const match = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+                return match ? decodeURIComponent(match[1]) : null;
             }
+
+            // Extract campaignCode parameter from URL, sessionStorage, localStorage, or cookie
+            const rawCampaignCode = (
+                urlParams.get('campaignCode') ||
+                urlParams.get('campignCode') ||
+                urlParams.get('campaign') ||
+                sessionStorage.getItem('campaign_code') ||
+                localStorage.getItem('campaign_code') ||
+                getCookie('bima_campaign_code') ||
+                'default'
+            ).trim();
+
+            const currentSourceUrl = window.location.pathname + (window.location.search || `?campaignCode=${encodeURIComponent(rawCampaignCode)}`);
+            sessionStorage.setItem('campaign_code', rawCampaignCode);
+            localStorage.setItem('campaign_code', rawCampaignCode);
+            sessionStorage.setItem('jazzcash_source', currentSourceUrl);
+            localStorage.setItem('jazzcash_source', currentSourceUrl);
+            document.cookie = `bima_campaign_code=${encodeURIComponent(rawCampaignCode)}; path=/; max-age=86400; SameSite=Lax`;
 
             // Fetch campaign configuration parameters from campaigns.json API endpoint
             try {
