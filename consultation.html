@@ -381,8 +381,14 @@
             if (_isSubmitting) return;
             _isSubmitting = true;
 
-            const countryCode = document.getElementById('countryCode').value; // e.g. "+92"
-            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const countryCode = (document.getElementById('countryCode')?.value || '+92').trim();
+            let phoneNumber = (document.getElementById('phoneNumber')?.value || '').trim();
+
+            if (!phoneNumber && window._autoDetectedMsisdn) {
+                phoneNumber = window._autoDetectedMsisdn;
+                const input = document.getElementById('phoneNumber');
+                if (input) input.value = phoneNumber;
+            }
 
             if (!phoneNumber || phoneNumber.length < 10) {
                 showToast('Please enter a valid 10-digit phone number.', false);
@@ -411,15 +417,19 @@
             setLoading(true);
 
             // ── Event 3: Form Submit ──
-            console.log('Tracking Event: SubmitForm');
-            if (window.gtag) {
-                gtag('event', 'form_submit');
-            }
-            if (window.fbq) {
-                fbq('track', 'Lead');
-            }
-            if (window.ttq) {
-                ttq.track('SubmitForm');
+            try {
+                console.log('Tracking Event: SubmitForm');
+                if (window.gtag) {
+                    gtag('event', 'form_submit');
+                }
+                if (window.fbq) {
+                    fbq('track', 'Lead');
+                }
+                if (window.ttq) {
+                    ttq.track('SubmitForm');
+                }
+            } catch (trackErr) {
+                console.warn('Analytics tracking error:', trackErr);
             }
 
             try {
@@ -562,21 +572,62 @@
             const urlParams = new URLSearchParams(window.location.search);
             const detectedMsisdn = extractMsisdnFromParams(urlParams);
 
+            function populateMsisdn(rawVal) {
+                const localPart = cleanTo10Digits(rawVal);
+                const input = document.getElementById('phoneNumber');
+                if (localPart) {
+                    window._autoDetectedMsisdn = localPart;
+                }
+                if (input && localPart) {
+                    input.value = localPart;
+                    try {
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    } catch (e) { }
+                    console.log('Populated MSISDN:', localPart);
+                }
+            }
+
+            function triggerConsultation() {
+                const btn = document.querySelector('.continue-btn');
+                const form = document.querySelector('.form-container');
+
+                // 1. Direct button click (works natively across all mobile and desktop browsers)
+                if (btn) {
+                    try {
+                        btn.click();
+                        if (_isSubmitting) return;
+                    } catch (e) {
+                        console.warn('btn.click() warning:', e);
+                    }
+                }
+
+                // 2. Form requestSubmit fallback
+                if (form && typeof form.requestSubmit === 'function') {
+                    try {
+                        form.requestSubmit();
+                        if (_isSubmitting) return;
+                    } catch (e) {
+                        console.warn('form.requestSubmit() warning:', e);
+                    }
+                }
+
+                // 3. Direct submit handler fallback
+                try {
+                    handleSubmit(new Event('submit'));
+                } catch (e) {
+                    console.error('handleSubmit error:', e);
+                }
+            }
+
             if (detectedMsisdn) {
                 populateMsisdn(detectedMsisdn);
                 trackMsisdnEnter();
                 showToast('Phone number detected. Starting consultation…', true);
 
                 setTimeout(() => {
-                    const form = document.querySelector('.form-container');
-                    if (form) {
-                        if (typeof form.requestSubmit === 'function') {
-                            form.requestSubmit();
-                        } else {
-                            handleSubmit(new Event('submit'));
-                        }
-                    }
-                }, 400);
+                    triggerConsultation();
+                }, 500);
                 return;
             }
 
@@ -593,15 +644,6 @@
                     }
                 })
                 .catch(err => console.error('Failed to auto-fetch MSISDN from headers:', err));
-
-            function populateMsisdn(rawVal) {
-                const localPart = cleanTo10Digits(rawVal);
-                const input = document.getElementById('phoneNumber');
-                if (input && localPart) {
-                    input.value = localPart;
-                    console.log('Populated MSISDN:', localPart);
-                }
-            }
         });
 
         /* ── Event 2: Click Button / Select Content (triggered on phone input interaction) ── */
@@ -609,15 +651,19 @@
         function trackMsisdnEnter() {
             if (msisdnTracked) return;
             msisdnTracked = true;
-            console.log('Tracking Event: ClickButton / SelectContent');
-            if (window.gtag) {
-                gtag('event', 'select_content');
-            }
-            if (window.fbq) {
-                fbq('track', 'ViewContent');
-            }
-            if (window.ttq) {
-                ttq.track('ClickButton');
+            try {
+                console.log('Tracking Event: ClickButton / SelectContent');
+                if (window.gtag) {
+                    gtag('event', 'select_content');
+                }
+                if (window.fbq) {
+                    fbq('track', 'ViewContent');
+                }
+                if (window.ttq) {
+                    ttq.track('ClickButton');
+                }
+            } catch (e) {
+                console.warn('trackMsisdnEnter error:', e);
             }
         }
 
