@@ -986,6 +986,62 @@ app.get('/bima_family', (req, res) => {
     res.redirect('/BimaTelemedicine/');
 });
 
+// ── Token caching for bundle API ──
+let cachedToken = null;
+let tokenExpiryTime = null;
+
+async function getOrRefreshToken() {
+    const now = Date.now();
+
+    // Return cached token if still valid (with 5 minute buffer)
+    if (cachedToken && tokenExpiryTime && now < tokenExpiryTime - 300000) {
+        console.log('[Token Cache] Using cached token');
+        return cachedToken;
+    }
+
+    console.log('[Token Cache] Fetching new token from token API...');
+    const tokenPayload = JSON.stringify({
+        username: "21459",
+        password: "ACULYAh8YE",
+        token_type: "auth-token",
+        country_partner: "PAKISTAN_SIMPAISA"
+    });
+
+    const tokenResult = await httpsRequest({
+        hostname: 'pkcm.milvik.io',
+        path: '/authorize/tp/login',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(tokenPayload)
+        }
+    }, tokenPayload);
+
+    if (tokenResult.status !== 200) {
+        throw new Error(`Token API returned status ${tokenResult.status}`);
+    }
+
+    const tokenData = tokenResult.body;
+    if (!tokenData.result || !tokenData.result.token) {
+        throw new Error('Token not found in token API response');
+    }
+
+    cachedToken = tokenData.result.token;
+
+    // Parse JWT to get expiry (optional - fallback to 1 hour if parsing fails)
+    try {
+        const payload = JSON.parse(Buffer.from(cachedToken.split('.')[1], 'base64').toString());
+        tokenExpiryTime = payload.exp * 1000; // Convert to milliseconds
+        console.log(`[Token Cache] New token cached, expires at ${new Date(tokenExpiryTime).toISOString()}`);
+    } catch (e) {
+        // Fallback: assume 1 hour validity
+        tokenExpiryTime = now + 3600000;
+        console.log('[Token Cache] New token cached (assumed 1 hour validity)');
+    }
+
+    return cachedToken;
+}
+
 app.post('/api/grant-access', async (req, res) => {
     console.log(`\n========================================`);
     console.log(`[ENDPOINT HIT] POST /api/grant-access -> MSISDN: ${req.body?.msisdn}`);
@@ -1069,7 +1125,74 @@ app.post('/api/grant-access', async (req, res) => {
             });
         }
 
-        // ── Step 2: Request Video deep-link ──
+        // ── Step 2: Check if productCode is BIMAMHEALTH2POSTPAID and perform bundle search ──
+        let finalProductCode = productCode;
+        if (productCode === 'BIMAMHEALTH2POSTPAID') {
+            console.log(`[Node.js Proxy] Product code is BIMAMHEALTH2POSTPAID, performing bundle search...`);
+
+            try {
+                // Get or refresh token
+                let token = await getOrRefreshToken();
+
+                // Call bundle search API
+                const bundleResult = await httpsRequest({
+                    hostname: 'pkcm.milvik.io',
+                    path: `/customers/${msisdn}/bundle-subscription-preview`,
+                    method: 'GET',
+                    headers: {
+                        'auth-token': token
+                    }
+                });
+
+                if (bundleResult.status !== 200) {
+                    console.error(`[Node.js Proxy] Bundle search API returned status ${bundleResult.status}:`, bundleResult.body);
+                    return res.status(502).json({
+                        status: 'error',
+                        message: 'Bundle search failed. Please try again later.'
+                    });
+                }
+
+                const bundleData = bundleResult.body;
+                const now = new Date();
+
+                // Product name to product code mapping
+                const productMapping = {
+                    'APNA Clinic Pro Plan1': 'APNACLINICPROPLANT1',
+                    'APNA Clinic Pro Plan2': 'APNACLINICPROPLANT2',
+                    'APNA Clinic Pro Plan3': 'APNACLINICPROPLANT3'
+                };
+
+                // Find matching product with valid end time
+                let matchedProductCode = null;
+                if (bundleData.result && Array.isArray(bundleData.result)) {
+                    for (const subscription of bundleData.result) {
+                        const productName = subscription.productName;
+                        if (productMapping[productName] && subscription.latestCovers && subscription.latestCovers.length > 0) {
+                            const endTime = new Date(subscription.latestCovers[0].endTime);
+                            if (endTime > now) {
+                                matchedProductCode = productMapping[productName];
+                                console.log(`[Node.js Proxy] Found active subscription: ${productName} -> ${matchedProductCode} (valid until ${endTime})`);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (matchedProductCode) {
+                    finalProductCode = matchedProductCode;
+                    console.log(`[Node.js Proxy] Using mapped product code: ${finalProductCode}`);
+                } else {
+                    console.warn(`[Node.js Proxy] No matching active subscription found in bundle, using original productCode: ${productCode}`);
+                }
+
+            } catch (bundleErr) {
+                console.error(`[Node.js Proxy] Bundle search error:`, bundleErr.message);
+                // Continue with original productCode if bundle search fails
+                console.warn(`[Node.js Proxy] Continuing with original productCode due to bundle search error`);
+            }
+        }
+
+        // ── Step 3: Request Video deep-link ──
         let correlationId;
         if (crypto.randomUUID) {
             correlationId = crypto.randomUUID();
@@ -1099,7 +1222,7 @@ app.post('/api/grant-access', async (req, res) => {
         const payload = JSON.stringify({
             user_id: respMsisdn,
             user_id_type: 'mobile_number',
-            policy_code: productCode,
+            policy_code: finalProductCode,
             service: 'mhealth',
             device_id: '',
             correlation_id: correlationId
